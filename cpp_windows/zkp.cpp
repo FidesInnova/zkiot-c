@@ -55,6 +55,15 @@ std::string trim(const std::string& str) {
     return str.substr(first, last - first + 1);
 }
 
+// Helper function to Remove commas from a string
+std::string removeCommas(const std::string& str) {
+    size_t first = str.find_first_not_of(',');
+    if (first == std::string::npos)
+        return "";
+    size_t last = str.find_last_not_of(',');
+    return str.substr(first, last - first + 1);
+}
+
 
 void ZKP::createMat(const std::string& filename, std::vector<std::vector<int>>& A, std::vector<std::vector<int>>& B, std::vector<std::vector<int>>& C) {
     // Reading the instructions from the file
@@ -95,8 +104,13 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int>>& 
             inputs[R] = X; // Store the input value
         } else {
             ss >> xStr >> yStr;
+            xStr = trim(xStr);
+            yStr = trim(yStr);
+            xStr = removeCommas(xStr);
+            yStr = removeCommas(yStr);
             n_g++;
         }
+        std::cout << "operation: " << operation << "\tX: " << xStr << "\tY: " << yStr << "\n";
     }
 
     // Matrix order
@@ -111,127 +125,74 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int>>& 
 
     // Fill matrices based on the instructions
     int gateIndex = 0;
-    for (const auto& instr : instructions) {
-        std::stringstream ss(instr);
+        int64_t z[n];
+        z[0] = 1;
+    for (int i = 0; i < n-1; i++) {
+        std::stringstream ss(instructions[i]);
         std::string operation, rStr, xStr, yStr;
-        
         ss >> operation >> rStr;
         int R = std::stoi(rStr.substr(1));
 
-        if (operation != "li") {
+        if (operation == "li") {
+            ss >> xStr;
+        }
+        else {
             ss >> xStr >> yStr;
+        }
 
-            // Remove commas
-            xStr.pop_back();
-            yStr.pop_back();
 
-            // Trim spaces
-            xStr = trim(xStr);
-            yStr = trim(yStr);
+        // Remove commas
+        xStr = removeCommas(xStr);
+        yStr = removeCommas(yStr);
 
-            std::cout << "operation: " << operation << "\tR: " << R << "\tX: " << xStr << "\tY: " << yStr << "\n";
-            // int X = std::isdigit(xStr[0]) ? std::stoi(xStr) : std::stoi(xStr.substr(1));
-            // int Y = std::isdigit(yStr[0]) ? std::stoi(yStr) : std::stoi(yStr.substr(1));
+        // Trim spaces
+        xStr = trim(xStr);
+        yStr = trim(yStr);
 
+        std::cout << "operation: " << operation << "\tX: " << xStr << "\tY: " << yStr << "\n";
+
+        // int X = std::isdigit(xStr[0]) ? std::stoi(xStr) : std::stoi(xStr.substr(1));
+        // int Y = std::isdigit(yStr[0]) ? std::stoi(yStr) : std::stoi(yStr.substr(1));
+        int X,Y;
+        if (operation == "li") {
+            X = std::stoi(xStr);
+            z[i+1] = X;
+        } else {
+            ss >> xStr >> yStr;
+            
             gateIndex++;
             int i = gateIndex + n_i;
             C[i][i] = 1;
 
-            // if (operation == "add") {
-            //     A[i][1] = 1;
+            if (operation == "add") {
+                A[n_i+i-1][1-1] = 1;
 
-            //     if (inputs.find(X) != inputs.end()) {
-            //         B[i][1] = inputs[X]; // Set the left input value
-            //     } else {
-            //         B[i][1 + X] = 1; // Set the left input as a register
-            //     }
+                if (std::isdigit(xStr[0])) {
+                    X = std::stoi(xStr);
+                    z[i+1] = z[i] + X;
+                    B[n_i+i-1][0] = X;
+                    B[n_i+i-1][i-1] = 1;
+                } else if(std::isdigit(yStr[0])){
+                    Y = std::stoi(yStr);
+                    z[i+1] = z[i-1] + Y;
+                    B[n_i+i-1][0] = Y;
+                    B[n_i+i-1][i-1] = 1;
+                }
 
-            //     if (inputs.find(Y) != inputs.end()) {
-            //         B[i][1] = inputs[Y]; // Set the right input value
-            //     } else {
-            //         B[i][1 + Y] = 1; // Set the right input as a register
-            //     }
-            // } else if (operation == "mul") {
-            //     if (inputs.find(X) != inputs.end()) {
-            //         A[i][1] = inputs[X]; // Set the left input value
-            //     } else {
-            //         A[i][1 + X] = 1; // Set the left input as a register
-            //     }
-
-            //     if (inputs.find(Y) != inputs.end()) {
-            //         B[i][1] = inputs[Y]; // Set the right input value
-            //     } else {
-            //         B[i][1 + Y] = 1; // Set the right input as a register
-            //     }
-            // }
+            } else if (operation == "mul") {
+                if (std::isdigit(xStr[0])) {
+                    X = std::stoi(xStr);
+                    z[i+1] = z[i] * X;
+                    A[n_i+i-1][i-1] = X;
+                    B[n_i+i-1][i-1] = 1;
+                } else if (std::isdigit(yStr[0])) {
+                    Y = std::stoi(yStr);
+                    z[i+1] = z[i] * Y;
+                    A[n_i+i-1][i-1] = 1;
+                    B[n_i+i-1][0] = Y;
+                }
+            }
         }
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//     // Fill matrices based on the instructions
-//     int gateIndex = 0;
-//     for (const auto& instr : instructions) {
-//         std::stringstream ss(instr);
-//         std::string operation;
-//         char R, X, Y;
-//         ss >> operation >> R >> X >> Y;
-
-//         // parseInstruction(instr, operation, R, X, Y);
-//         std::cout << "operation: " << operation << "\tR: " << R << "\tX: " << X << "\tY: " << Y << "\n";
-//         if (operation == "add" || operation == "mul") {
-//             gateIndex++;
-//             int i = gateIndex + n_i;
-//             C[i][i] = 1;
-            
-//             if (operation == "add") {
-//                 A[i][1] = 1;
-
-//                 // if (inputs.find(X) != inputs.end()) {
-//                 //     B[i][1] = inputs[X]; // Set the left input value
-//                 // } else {
-//                 //     B[i][1 + X] = 1; // Set the left input as a register
-//                 // }
-
-//                 // if (inputs.find(Y) != inputs.end()) {
-//                 //     B[i][1] = inputs[Y]; // Set the right input value
-//                 // } else {
-//                 //     B[i][1 + Y] = 1; // Set the right input as a register
-//                 // }
-//             } else if (operation == "mul") {
-//                 // if (inputs.find(X) != inputs.end()) {
-//                 //     A[i][1] = inputs[X]; // Set the left input value
-//                 // } else {
-//                 //     A[i][1 + X] = 1; // Set the left input as a register
-//                 // }
-
-//                 // if (inputs.find(Y) != inputs.end()) {
-//                 //     B[i][1] = inputs[Y]; // Set the right input value
-//                 // } else {
-//                 //     B[i][1 + Y] = 1; // Set the right input as a register
-//                 // }
-//             }
-//         }
-//     }
-//     std::cout << "gateIndex: " << gateIndex << "\n";
-// }
