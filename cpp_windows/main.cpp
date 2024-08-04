@@ -21,7 +21,7 @@ int main() {
     std::vector<std::vector<int>> A, B, C;
     
     try {
-        lib.createMat("instructions.txt", A, B, C);
+        lib.createMat("instructions.txt", A, B, C, p);
 
         // Print the matrices
         auto printMatrix = [](const std::vector<std::vector<int>>& matrix, const std::string& name) {
