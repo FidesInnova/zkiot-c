@@ -44,38 +44,92 @@ uint64_t mod_inverse(uint64_t a, uint64_t mod) {
     return t;
 }
 
-// Function to calculate the Lagrange basis polynomial
-uint64_t lagrange_basis(const std::vector<uint64_t>& x, int i, uint64_t xi, uint64_t mod) {
-    uint64_t result = 1;
-    int n = x.size();
-    for (int j = 0; j < n; j++) {
-        if (j != i) {
-            uint64_t numerator = (xi + x[j]) % mod;
-            uint64_t denominator = (x[i] + x[j]) % mod;
-            uint64_t inv_denominator = mod_inverse(denominator, mod);
-            result = (result * numerator % mod) * inv_denominator % mod;
+
+// Function to multiply two polynomials
+vector<uint64_t> multiplyPolynomials(const vector<uint64_t>& poly1, const vector<uint64_t>& poly2, uint64_t mod) {
+    vector<uint64_t> result(poly1.size() + poly2.size() - 1, 0);
+
+    for (size_t i = 0; i < poly1.size(); i++) {
+        for (size_t j = 0; j < poly2.size(); j++) {
+            result[i + j] = (result[i + j] + poly1[i] * poly2[j]) % mod;
         }
     }
     return result;
 }
 
-// Function to interpolate using Lagrange polynomial
-std::tuple<uint64_t, uint64_t, uint64_t> lagrange_interpolation(const std::vector<uint64_t>& x, const std::vector<uint64_t>& y, uint64_t mod) {
-    int n = x.size();
-    uint64_t c2 = 0, c1 = 0, c0 = 0;
+// Function to compute Lagrange basis polynomial L_i(x)
+vector<uint64_t> LagrangePolynomial(int i, const vector<uint64_t>& x_values, uint64_t mod) {
+    int n = x_values.size();
+    vector<uint64_t> result = {1};  // Start with 1 for the polynomial (constant term)
 
-    for (int i = 0; i < n; i++) {
-        uint64_t L_i2 = lagrange_basis(x, i, 2, mod); // coefficient of x^2
-        uint64_t L_i1 = lagrange_basis(x, i, 1, mod); // coefficient of x
-        uint64_t L_i0 = lagrange_basis(x, i, 0, mod); // constant term
+    for (int j = 0; j < n; j++) {
+        if (j != i) {
+            vector<uint64_t> term = {static_cast<uint64_t>((mod - x_values[j]) % mod), 1};  // (x - x_j)
+            uint64_t denominator = (x_values[i] + mod - x_values[j]) % mod;
 
-        c2 = (c2 + y[i] * L_i2 % mod) % mod;
-        c1 = (c1 + y[i] * L_i1 % mod) % mod;
-        c0 = (c0 + y[i] * L_i0 % mod) % mod;
+            // Inverse of the denominator modulo mod
+            uint64_t inv_denominator = 1;
+            for (uint64_t d = 1; d < mod; d++) {
+                if ((denominator * d) % mod == 1) {
+                    inv_denominator = d;
+                    break;
+                }
+            }
+
+            // Multiply the result by (x - x_j) / (x_i - x_j)
+            vector<uint64_t> temp = multiplyPolynomials(result, term, mod);
+            for (uint64_t& coef : temp) {
+                coef = (coef * inv_denominator) % mod;
+            }
+            result = temp;
+        }
     }
-
-    return {c2, c1, c0};
+    return result;
 }
+
+// Function to print polynomial
+void PrintPolynomial(const vector<uint64_t>& poly, const string& name) {
+    cout << name << "(x) = ";
+    bool first = true;
+    for (int i = poly.size() - 1; i >= 0; i--) {
+        if (poly[i] != 0) {
+            if (!first) {
+                cout << " + ";
+            }
+            cout << poly[i] << "x^" << i;
+            first = false;
+        }
+    }
+    cout << endl;
+}
+
+void setupLagrangePolynomial (vector<uint64_t> x_values, vector<uint64_t> y_values, uint64_t mod) {
+    // Automatically detect number of points
+    int num_points = x_values.size();
+
+    // Compute z-hatA(x) polynomial
+    vector<uint64_t> z_hatA(1, 0);  // Start with a zero polynomial
+
+    for (int i = 0; i < num_points; i++) {
+        if (y_values[i] != 0) {  // Only process non-zero y-values
+            vector<uint64_t> Li = LagrangePolynomial(i, x_values, mod);
+            PrintPolynomial(Li, "L" + to_string(i + 1));
+
+            // Multiply the L_i(x) by y_i and add to the final polynomial
+            for (int j = 0; j < Li.size(); j++) {
+                if (j >= z_hatA.size()) {
+                    z_hatA.push_back(0);  // Ensure z_hatA is large enough to accommodate all terms
+                }
+                z_hatA[j] = (z_hatA[j] + y_values[i] * Li[j]) % mod;
+            }
+        }
+    }
+    // Print the final z-hatA(x) polynomial
+    PrintPolynomial(z_hatA, "z-hatA");
+}
+
+
+
 
 void ZKP::setup(uint64_t g, uint64_t d, uint64_t l, uint64_t p, std::vector<uint64_t>& pp) {
     pp.clear();
@@ -281,21 +335,97 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int>>& 
     }
     std::cout << "\n";
 
-
-
-
-    // std::vector<uint64_t> x(t), y(t);
-
-    // Input the points
-    std::vector<uint64_t> xL = {1, 43, 39};
-    std::vector<uint64_t> yL = {42, 125, 135};
-
-    // Calculate the interpolation
-    auto [c2, c1, c0] = lagrange_interpolation(xL, yL, p);
-
+    vector<vector<uint64_t>> Az(n, vector<uint64_t>(1, 0));
+    vector<vector<uint64_t>> Bz(n, vector<uint64_t>(1, 0));
+    vector<vector<uint64_t>> Cz(n, vector<uint64_t>(1, 0));
+    // Matrix multiplication with modulo
+    for (uint64_t i = 0; i < n; i++) {
+        for (uint64_t j = 0; j < 1; j++) {
+            for (uint64_t k = 0; k < n; k++) {
+                Az[i][j] = (Az[i][j] + (A[i][k] * z[k]) % p) % p;
+                Bz[i][j] = (Bz[i][j] + (B[i][k] * z[k]) % p) % p;
+                Cz[i][j] = (Cz[i][j] + (C[i][k] * z[k]) % p) % p;
+            }
+        }
+    }
+    
+    
     // Output the result
-    std::cout << "row_A(x) = " << c2 << "x^2 + " << c1 << "x + " << c0 << " (mod " << p << ")" << std::endl;
-    std::cout << "mod_inverse: " << mod_inverse(148, p) << "\n";
+    cout << "Matrice Az under modulo " << p << " is:\n";
+    for (uint64_t i = 0; i < n; i++) {
+        cout << Az[i][0] << "\n";
+    }
+    cout << "Matrice Bz under modulo " << p << " is:" << "\n";
+    for (uint64_t i = 0; i < n; i++) {
+        cout << Bz[i][0] << "\n";
+    }
+    cout << "Matrice Cz under modulo " << p << " is:" << "\n";
+    for (uint64_t i = 0; i < n; i++) {
+        cout << Cz[i][0] << "\n";
+    }
+
+    int b = 2;
+    
+    
+    // Given x-values and corresponding y-values
+    vector<uint64_t> x_values;
+    vector<uint64_t> y_values;
+
+    
+    uint64_t zA0 [n+b];
+    uint64_t zA1 [n+b];
+    cout << "zA(x) is:" << endl;
+    for(uint64_t i = 0; i < n; i++) {
+        zA0[i] = H[i];
+        zA1[i] = Az[i][0];
+        cout << "zA(" << zA0[i] << ")=" << zA1[i] << endl;
+    }
+    zA0[5] = 150;
+    zA1[5] = 5;
+    zA0[6] = 80;
+    zA1[6] = 47;
+
+    x_values.assign(zA0, zA0 + n+b);
+    y_values.assign(zA1, zA1 + n+b);
+    setupLagrangePolynomial(x_values, y_values, p);
+
+    uint64_t zB0 [n+b];
+    uint64_t zB1 [n+b];
+    cout << "zB(x) is:" << endl;
+    for(uint64_t i = 0; i < n; i++) {
+        zB0[i] = H[i];
+        zB1[i] = Bz[i][0];
+        cout << "zB(" << zB0[i] << ")=" << zB1[i] << endl;
+    }
+    zB0[5] = zA0[5];
+    zB1[5] = 15;
+    zB0[6] = zA0[6];
+    zB1[6] = 170;
+
+    x_values.assign(zB0, zB0 + n+b);
+    y_values.assign(zB1, zB1 + n+b);
+    setupLagrangePolynomial(x_values, y_values, p);
+    
+    uint64_t zC0 [n+b];
+    uint64_t zC1 [n+b];
+    cout << "zC(x) is:" << endl;
+    for(uint64_t i = 0; i < n; i++) {
+        zC0[i] = H[i];
+        zC1[i] = Cz[i][0];
+        cout << "zC(" << zC0[i] << ")=" << zC1[i] << endl;
+    }
+    zC0[5] = zA0[5];
+    zC1[5] = 1;
+    zC0[6] = zA0[6];
+    zC1[6] = 100;
+    x_values.assign(zC0, zC0 + n+b);
+    y_values.assign(zC1, zC1 + n+b);
+    setupLagrangePolynomial(x_values, y_values, p);
+    
+
+    
+
+
 
 }
 
