@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="http://fidesonnova.io/" target="blank"><img src="https://fidesinnova.io/Download/logo/gihub-cover-fides.png" /></a>
+  <a href="http://fidesonnova.io/" target="blank"><img src="https://fidesinnova.io/Download/logo/g-c-zk-c.png" /></a>
 </p>
 
 # Zero-Knowledge Internet of Things (zk-IoT) in C++
