@@ -237,10 +237,12 @@ vector<int64_t> generateRandomPolynomial(size_t numTerms, size_t maxDegree, int6
     return polynomial;
 }
 
+
 // Function to create a polynomial for (x - root)
 vector<int64_t> createLinearPolynomial(int64_t root) {
     return {-root, 1};  // Represents (x - root)
 }
+
 
 // Function to compute Lagrange basis polynomial L_i(x)
 vector<int64_t> LagrangePolynomial(int64_t i, const std::vector<int64_t>& x_values, int64_t mod) {
@@ -271,6 +273,7 @@ vector<int64_t> LagrangePolynomial(int64_t i, const std::vector<int64_t>& x_valu
     }
     return result;
 }
+
 
 // Function to print polynomial
 void PrintPolynomial(const vector<int64_t>& poly, const string& name) {
@@ -307,6 +310,7 @@ void storePolynomial(const std::vector<int64_t>& poly, const char* name) {
     cout << name << " = " << LagrangeOutput[name] << endl;
 }
 
+
 void setupLagrangePolynomial (const std::vector<int64_t> x_values, const std::vector<int64_t> y_values, int64_t mod, const char* name) {
     // Automatically detect number of points
     int64_t num_points = x_values.size();
@@ -333,8 +337,6 @@ void setupLagrangePolynomial (const std::vector<int64_t> x_values, const std::ve
 }
 
 
-
-
 void ZKP::setup(int64_t g, int64_t d, int64_t l, int64_t p, std::vector<int64_t>& pp) {
     pp.clear();
     int64_t pMinusOne = p - 1;
@@ -350,6 +352,7 @@ void ZKP::setup(int64_t g, int64_t d, int64_t l, int64_t p, std::vector<int64_t>
     }
     //pp=(2,66,83,91,96,24,2,66,83)
 }
+
 
 // Function to parse the polynomial string and evaluate it
 int64_t evaluatePolynomial(const vector<int64_t>& polynomial, int64_t x, int64_t mod) {
@@ -552,11 +555,11 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
         }
     }
     
-    std::cout << "z[n]: ";
+    cout << "z[n]: ";
     for (int64_t i = 0; i < n; i++){
-        std::cout << z[i] << "\t";
+        cout << z[i] << " ";
     }
-    std::cout << "\n";
+    cout << endl;
 
     int64_t H[n];
     int64_t w, g_n;
@@ -568,11 +571,11 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     {
         H[i] = power(w, i, p);
     }
-    std::cout << "H[n]: ";
+    cout << "H[n]: ";
     for (int64_t i = 0; i < n; i++){
-        std::cout << H[i] << "\t";
+        cout << H[i] << " ";
     }
-    std::cout << "\n";
+    cout << "\n";
 
     int64_t y, m, t, g_m;
 
@@ -587,11 +590,11 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     {
         K[i] = power(y, i, p);
     }
-    std::cout << "K[m]: ";
+    cout << "K[m]: ";
     for (int64_t i = 0; i < m; i++){
-        std::cout << K[i] << "\t";
+        cout << K[i] << " ";
     }
-    std::cout << "\n";
+    cout << endl;
 
     vector<vector<int64_t>> Az(n, vector<int64_t>(1, 0));
     vector<vector<int64_t>> Bz(n, vector<int64_t>(1, 0));
@@ -790,10 +793,15 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     std::uniform_int_distribution<uint64_t> dis(0, p - 1);
 
     // Generate random numbers with the modulus applied
-    int64_t alpha = dis(gen);
-    int64_t etaA = dis(gen);
-    int64_t etaB = dis(gen);
-    int64_t etaC = dis(gen);
+    // int64_t alpha = dis(gen);
+    // int64_t etaA = dis(gen);
+    // int64_t etaB = dis(gen);
+    // int64_t etaC = dis(gen);
+
+    int64_t alpha = 10;
+    int64_t etaA = 2;
+    int64_t etaB = 30;
+    int64_t etaC = 100;
 
     // Print the generated numbers
     cout << "alpha: " << alpha << endl;
