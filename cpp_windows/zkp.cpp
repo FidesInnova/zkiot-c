@@ -34,12 +34,12 @@ int64_t power(int64_t base, int64_t exponent, int64_t mod) {
 }
 
 // Function to calculate the modular inverse using Extended Euclidean Algorithm
-uint64_t mod_inverse(uint64_t a, uint64_t mod) {
-    uint64_t t = 0, newt = 1;
-    uint64_t r = mod, newr = a;
+uint64_t mod_inverse(int64_t a, uint64_t mod) {
+    int64_t t = 0, newt = 1;
+    int64_t r = mod, newr = a;
 
     while (newr != 0) {
-        uint64_t quotient = r / newr;
+        int64_t quotient = r / newr;
         t = t - quotient * newt;
         std::swap(t, newt);
         r = r - quotient * newr;
@@ -49,6 +49,62 @@ uint64_t mod_inverse(uint64_t a, uint64_t mod) {
     if (r > 1) return 0; // a is not invertible
     if (t < 0) t += mod;
     return t;
+}
+
+
+// Function to get the row indices of non-zero entries in matrix
+vector<int64_t> getNonZeroRows(const vector<vector<int64_t>>& matrix) {
+    vector<int64_t> nonZeroRows;
+    for (int64_t i = 0; i < matrix.size(); i++) {
+        for (int64_t j = 0; j < matrix[i].size(); j++) {
+            if (matrix[i][j] != 0) {
+                nonZeroRows.push_back(i); // Storing row index
+                // break; // Move to the next row after finding the first non-zero
+            }
+        }
+    }
+    return nonZeroRows;
+}
+
+
+// Function to get the col indices of non-zero entries in matrix
+vector<int64_t> getNonZeroCols(const vector<vector<int64_t>>& matrix) {
+    vector<int64_t> nonZeroCols;
+    for (int64_t i = 0; i < matrix.size(); i++) {
+        for (int64_t j = 0; j < matrix[i].size(); j++) {
+            if (matrix[i][j] != 0) {
+                nonZeroCols.push_back(j); // Storing col index
+                // break; // Move to the next col after finding the first non-zero
+            }
+        }
+    }
+    return nonZeroCols;
+}
+
+
+// Function to create the row mapping
+vector<vector<int64_t>> createMapping(const vector<int64_t>& K, const vector<int64_t>& H, const vector<int64_t>& nonZeroRows) {
+    vector<vector<int64_t>> row(K.size());
+    
+    for (uint64_t i = 0; i < nonZeroRows.size(); i++) {
+        row[i].push_back(K[i]);
+        row[i].push_back(H[nonZeroRows[i]]);
+    }
+    for (uint64_t i = nonZeroRows.size(); i < row.size(); i++) {
+        row[i].push_back(K[i]);
+        row[i].push_back(H[i%H.size()]);
+    }
+
+    return row;
+}
+
+
+// Function to print the rowA mapping
+void printMapping(vector<vector<int64_t>>& row, const string& name) {
+    for (uint64_t i = 0; i < row.size(); i++) {
+        cout << name << "(" << row[i][0] << ") = " << row[i][1] << endl;
+    }
+    cout << endl;
 }
 
 
@@ -561,34 +617,36 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     }
     cout << endl;
 
-    int64_t H[n];
+    vector <int64_t> H;
     int64_t w, g_n;
 
-    H[0] = 1;
+    H.push_back(1);
+    // H[0] = 1;
     g_n = ((p - 1) / n) % p;
     w = power(2, g_n, p);
     for (int64_t i = 1; i < n; i++)
     {
-        H[i] = power(w, i, p);
+        // H[i] = power(w, i, p);
+        H.push_back(power(w, i, p));
     }
     cout << "H[n]: ";
     for (int64_t i = 0; i < n; i++){
         cout << H[i] << " ";
     }
-    cout << "\n";
+    cout << endl;
 
     int64_t y, m, t, g_m;
 
     t = n_i + 1;
     m = (((power(n, 2, p) - n) / 2) - ((power(t, 2, p) - t) / 2)) % p;
 
-    int64_t K[m];
-    K[0] = 1;
+    vector<int64_t> K;
+    K.push_back(1);
     g_m = ((p - 1) / m) % p;
     y = power(2, g_m, p);
     for (int64_t i = 1; i < m; i++)
     {
-        K[i] = power(y, i, p);
+        K.push_back(power(y, i, p));
     }
     cout << "K[m]: ";
     for (int64_t i = 0; i < m; i++){
@@ -771,8 +829,8 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     storePolynomial(s_x, "s(x)");
 
 
-    x_values.assign(H, H + n);
-    int64_t sigma_1 = sumOfEvaluations(s_x, x_values, p);
+    // x_values.assign(H, H + n);
+    int64_t sigma_1 = sumOfEvaluations(s_x, H, p);
     cout << "sigma1(H) = " << sigma_1 << endl;
 
     std::string proof= "proof{\n\tz-hat_A(x):" + LagrangeOutput["z_hatA(x)"] + ",\n" +
@@ -844,5 +902,65 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     storePolynomial(v_H, "v_H");
     vector<int64_t> z_hat_x = addPolynomials(multiplyPolynomials(w_hat_x, v_H, p), polyX_HAT_H, p);
     storePolynomial(z_hat_x, "z_hat(x)");
+
+
+
+    // Get the non-zero rows from matrix A
+    vector<int64_t> nonZeroRowsA = getNonZeroRows(A);
+    // Create the rowA mapping
+    vector<vector<int64_t>> rowA;
+    rowA = createMapping(K, H, nonZeroRowsA);
+    // Print the rowA mapping
+    printMapping(rowA, "rowA");
+
+    // Get the non-zero cols from matrix A
+    vector<int64_t> nonZeroColsA = getNonZeroCols(A);
+    // Create the colA mapping
+    vector<vector<int64_t>> colA;
+    colA = createMapping(K, H, nonZeroColsA);
+    // Print the colA mapping
+    printMapping(colA, "colA");
+
+
+
+    // Get the non-zero rows from matrix B
+    vector<int64_t> nonZeroRowsB = getNonZeroRows(B);
+    // Create the rowB mapping
+    vector<vector<int64_t>> rowB;
+    rowB = createMapping(K, H, nonZeroRowsB);
+    // Print the rowB mapping
+    printMapping(rowB, "rowB");
+
+    // Get the non-zero cols from matrix B
+    vector<int64_t> nonZeroColsB = getNonZeroCols(B);
+    // Create the colB mapping
+    vector<vector<int64_t>> colB;
+    colB = createMapping(K, H, nonZeroColsB);
+    // Print the colB mapping
+    printMapping(colB, "colB");
+
+
+    // Get the non-zero rows from matrix C
+    vector<int64_t> nonZeroRowsC = getNonZeroRows(C);
+    // Create the rowC mapping
+    vector<vector<int64_t>> rowC;
+    rowC = createMapping(K, H, nonZeroRowsC);
+    // Print the rowC mapping
+    printMapping(rowC, "rowC");
+
+    // Get the non-zero cols from matrix C
+    vector<int64_t> nonZeroColsC = getNonZeroCols(C);
+    // Create the colC mapping
+    vector<vector<int64_t>> colC;
+    colC = createMapping(K, H, nonZeroColsC);
+    // Print the colC mapping
+    printMapping(colC, "colC");
+
+
+
+
+
+
+    
 }
 
