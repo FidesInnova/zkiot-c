@@ -53,13 +53,23 @@ uint64_t mod_inverse(int64_t a, uint64_t mod) {
 
 
 // Function to get the row indices of non-zero entries in matrix
-vector<int64_t> getNonZeroRows(const vector<vector<int64_t>>& matrix) {
-    vector<int64_t> nonZeroRows;
+vector<vector<int64_t>> getNonZeroRows(const vector<vector<int64_t>>& matrix) {
+    uint64_t counter = 0;
     for (int64_t i = 0; i < matrix.size(); i++) {
         for (int64_t j = 0; j < matrix[i].size(); j++) {
             if (matrix[i][j] != 0) {
-                nonZeroRows.push_back(i); // Storing row index
-                // break; // Move to the next row after finding the first non-zero
+                counter++;
+            }
+        }
+    }
+    vector<vector<int64_t>> nonZeroRows(counter);
+    counter = 0;
+    for (int64_t i = 0; i < matrix.size(); i++) {
+        for (int64_t j = 0; j < matrix[i].size(); j++) {
+            if (matrix[i][j] != 0) {
+                nonZeroRows[counter].push_back(i); // Storing row index
+                nonZeroRows[counter].push_back(matrix[i][j]);
+                counter++;
             }
         }
     }
@@ -68,13 +78,23 @@ vector<int64_t> getNonZeroRows(const vector<vector<int64_t>>& matrix) {
 
 
 // Function to get the col indices of non-zero entries in matrix
-vector<int64_t> getNonZeroCols(const vector<vector<int64_t>>& matrix) {
-    vector<int64_t> nonZeroCols;
+vector<vector<int64_t>> getNonZeroCols(const vector<vector<int64_t>>& matrix) {
+    uint64_t counter = 0;
     for (int64_t i = 0; i < matrix.size(); i++) {
         for (int64_t j = 0; j < matrix[i].size(); j++) {
             if (matrix[i][j] != 0) {
-                nonZeroCols.push_back(j); // Storing col index
-                // break; // Move to the next col after finding the first non-zero
+                counter++;
+            }
+        }
+    }
+    vector<vector<int64_t>> nonZeroCols(counter);
+    counter = 0;
+    for (int64_t i = 0; i < matrix.size(); i++) {
+        for (int64_t j = 0; j < matrix[i].size(); j++) {
+            if (matrix[i][j] != 0) {
+                nonZeroCols[counter].push_back(j); // Storing col index
+                nonZeroCols[counter].push_back(matrix[i][j]);
+                counter++;
             }
         }
     }
@@ -82,15 +102,14 @@ vector<int64_t> getNonZeroCols(const vector<vector<int64_t>>& matrix) {
 }
 
 
-// Function to create the row mapping
-vector<vector<int64_t>> createMapping(const vector<int64_t>& K, const vector<int64_t>& H, const vector<int64_t>& nonZeroRows) {
+// Function to create the mapping
+vector<vector<int64_t>> createMapping(const vector<int64_t>& K, const vector<int64_t>& H, const vector<vector<int64_t>>& nonZero) {
     vector<vector<int64_t>> row(K.size());
-    
-    for (uint64_t i = 0; i < nonZeroRows.size(); i++) {
+    for (uint64_t i = 0; i < nonZero.size(); i++) {
         row[i].push_back(K[i]);
-        row[i].push_back(H[nonZeroRows[i]]);
+        row[i].push_back(H[nonZero[i][0]]);
     }
-    for (uint64_t i = nonZeroRows.size(); i < row.size(); i++) {
+    for (uint64_t i = nonZero.size(); i < row.size(); i++) {
         row[i].push_back(K[i]);
         row[i].push_back(H[i%H.size()]);
     }
@@ -99,12 +118,31 @@ vector<vector<int64_t>> createMapping(const vector<int64_t>& K, const vector<int
 }
 
 
-// Function to print the rowA mapping
+// Function to print the mapping
 void printMapping(vector<vector<int64_t>>& row, const string& name) {
     for (uint64_t i = 0; i < row.size(); i++) {
         cout << name << "(" << row[i][0] << ") = " << row[i][1] << endl;
     }
     cout << endl;
+}
+
+
+// Function to create the val mapping
+vector<vector<int64_t>> valMapping(const vector<int64_t>& K, const vector<int64_t>& H, vector<vector<int64_t>>& nonZeroRows, vector<vector<int64_t>>& nonZeroCols, uint64_t mod) {
+    vector<vector<int64_t>> val(K.size());
+
+    for (uint64_t i = 0; i < K.size(); i++) {
+        if(i < nonZeroRows.size()) {
+            val[i].push_back(K[i]);
+            val[i].push_back((nonZeroRows[i][1]*mod_inverse(((H.size()*power(H[nonZeroRows[i][0]], H.size()-1, mod))%mod) * ((H.size()*power(H[nonZeroCols[i][0]], H.size()-1, mod))%mod), mod))%mod);
+        }
+        else {
+            val[i].push_back(K[i]);
+            val[i].push_back(0);
+        }
+    }
+
+    return val;
 }
 
 
@@ -906,56 +944,54 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
 
 
     // Get the non-zero rows from matrix A
-    vector<int64_t> nonZeroRowsA = getNonZeroRows(A);
+    vector<vector<int64_t>> nonZeroRowsA = getNonZeroRows(A);
     // Create the rowA mapping
     vector<vector<int64_t>> rowA;
     rowA = createMapping(K, H, nonZeroRowsA);
     // Print the rowA mapping
-    printMapping(rowA, "rowA");
+    printMapping(rowA, "row_A");
 
     // Get the non-zero cols from matrix A
-    vector<int64_t> nonZeroColsA = getNonZeroCols(A);
+    vector<vector<int64_t>> nonZeroColsA = getNonZeroCols(A);
     // Create the colA mapping
     vector<vector<int64_t>> colA;
     colA = createMapping(K, H, nonZeroColsA);
     // Print the colA mapping
-    printMapping(colA, "colA");
+    printMapping(colA, "col_A");
+    
+    vector<vector<int64_t>> valA = valMapping(K, H, nonZeroRowsA, nonZeroColsA, p);
+    printMapping(valA, "val_A");
 
 
 
-    // Get the non-zero rows from matrix B
-    vector<int64_t> nonZeroRowsB = getNonZeroRows(B);
-    // Create the rowB mapping
+    vector<vector<int64_t>> nonZeroRowsB = getNonZeroRows(B);
     vector<vector<int64_t>> rowB;
     rowB = createMapping(K, H, nonZeroRowsB);
-    // Print the rowB mapping
-    printMapping(rowB, "rowB");
+    printMapping(rowB, "row_B");
 
-    // Get the non-zero cols from matrix B
-    vector<int64_t> nonZeroColsB = getNonZeroCols(B);
-    // Create the colB mapping
+    vector<vector<int64_t>> nonZeroColsB = getNonZeroCols(B);
     vector<vector<int64_t>> colB;
     colB = createMapping(K, H, nonZeroColsB);
-    // Print the colB mapping
-    printMapping(colB, "colB");
+    printMapping(colB, "col_B");
+
+    vector<vector<int64_t>> valB = valMapping(K, H, nonZeroRowsB, nonZeroColsB, p);
+    printMapping(valB, "val_B");
 
 
-    // Get the non-zero rows from matrix C
-    vector<int64_t> nonZeroRowsC = getNonZeroRows(C);
-    // Create the rowC mapping
+
+
+    vector<vector<int64_t>> nonZeroRowsC = getNonZeroRows(C);
     vector<vector<int64_t>> rowC;
     rowC = createMapping(K, H, nonZeroRowsC);
-    // Print the rowC mapping
-    printMapping(rowC, "rowC");
+    printMapping(rowC, "row_C");
 
-    // Get the non-zero cols from matrix C
-    vector<int64_t> nonZeroColsC = getNonZeroCols(C);
-    // Create the colC mapping
+    vector<vector<int64_t>> nonZeroColsC = getNonZeroCols(C);
     vector<vector<int64_t>> colC;
     colC = createMapping(K, H, nonZeroColsC);
-    // Print the colC mapping
-    printMapping(colC, "colC");
-
+    printMapping(colC, "col_C");
+    
+    vector<vector<int64_t>> valC = valMapping(K, H, nonZeroRowsC, nonZeroColsC, p);
+    printMapping(valC, "val_C");
 
 
 
