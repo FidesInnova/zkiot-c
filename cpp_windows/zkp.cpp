@@ -250,6 +250,13 @@ vector<int64_t> multiplyPolynomials(const vector<int64_t>& poly1, const vector<i
 }
 
 
+
+
+
+
+
+
+
 // Function to divide a polynomial by another polynomial
 vector<int64_t> dividePolynomials(const vector<int64_t>& dividend, const vector<int64_t>& divisor, int64_t mod) {
     vector<int64_t> quotient;
@@ -284,9 +291,47 @@ vector<int64_t> dividePolynomials(const vector<int64_t>& dividend, const vector<
     if (quotient.empty()) {
         quotient.push_back(0);
     }
+    for (uint64_t i = 0; i < remainder.size(); i++){
+        cout << "remainder " << i << ":" << remainder[i] << endl;
+    }
 
     return quotient;
 }
+
+
+
+// Function to divide a polynomial by a number
+vector<int64_t> dividePolynomialByNumber(const vector<int64_t>& dividend, int64_t divisor, int64_t mod) {
+    // Coefficients of the dividend (x^5 - 1)
+    // std::vector<int> dividend = {1, 0, 0, 0, 0, -1}; // Corresponds to x^5 + 0x^4 + 0x^3 + 0x^2 + 0x - 1
+    
+    // Coefficient of the divisor (x - 42)
+    int divisor = 59;
+    
+    // Quotient will have one less degree than the dividend
+    vector<int> quotient(H[i], 0); // Resultant quotient
+    
+    // Start the division process
+    for (int i = 0; i < H.size(); ++i) {
+        // The leading coefficient of the dividend becomes the leading coefficient of the quotient
+        quotient[i] = dividend[i];
+        quotient[i] % = mod;
+        
+        // Subtract the result of multiplying the divisor by the current quotient term from the next term of the dividend
+        dividend[i + 1] += (quotient[i] * divisor) % mod;
+    }
+    cout << "The quotient is: ";
+    for (int coeff : quotient) {
+        cout << coeff % p << " ";
+    }
+    cout << endl;
+
+    return coeff;
+}
+
+
+
+
 
 
 // Function to calculate Polynomial r(α,x) = (alpha^n - x^n) / (alpha - x)
@@ -905,24 +950,16 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     cout << "etaB: " << etaB << endl;
     cout << "etaC: " << etaC << endl;
 
-    int64_t etaA_z_hatA_x[n+b];
-    int64_t etaB_z_hatB_x[n+b];
-    int64_t etaC_z_hatC_x[n+b];
+    vector<int64_t> etaA_z_hatA_x(n+b);
+    vector<int64_t> etaB_z_hatB_x(n+b);
+    vector<int64_t> etaC_z_hatC_x(n+b);
     for (int64_t i = 0; i < n+b; i++){
-        etaA_z_hatA_x[i] = (z_hatA[i] * etaA) % p;
-        etaB_z_hatB_x[i] = (z_hatB[i] * etaB) % p;
-        etaC_z_hatC_x[i] = (z_hatC[i] * etaC) % p;
+        etaA_z_hatA_x.push_back((z_hatA[i] * etaA) % p);
+        etaB_z_hatB_x.push_back((z_hatB[i] * etaB) % p);
+        etaC_z_hatC_x.push_back((z_hatC[i] * etaC) % p);
     }
 
-    vector<int64_t> VetaA_z_hatA_x;
-    vector<int64_t> VetaB_z_hatB_x;
-    vector<int64_t> VetaC_z_hatC_x;
-
-    VetaA_z_hatA_x.assign(etaA_z_hatA_x, etaA_z_hatA_x + n + b);
-    VetaB_z_hatB_x.assign(etaB_z_hatB_x, etaB_z_hatB_x + n + b);
-    VetaC_z_hatC_x.assign(etaC_z_hatC_x, etaC_z_hatC_x + n + b);
-
-    vector<int64_t> Sum_M_eta_M_z_hat_M_x = addPolynomials(addPolynomials(VetaA_z_hatA_x, VetaB_z_hatB_x, p), VetaC_z_hatC_x, p);
+    vector<int64_t> Sum_M_eta_M_z_hat_M_x = addPolynomials(addPolynomials(etaA_z_hatA_x, etaB_z_hatB_x, p), etaC_z_hatC_x, p);
     storePolynomial(Sum_M_eta_M_z_hat_M_x, "Sum_M_z_hatM(x)");
 
     vector<int64_t> r_alpha_x = calculatePolynomial_r_alpha_x(alpha, n, p);
@@ -994,9 +1031,45 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     printMapping(valC, "val_C");
 
 
+    vector<int64_t> temp0(6), temp1(6);
+    temp0[5] = 1;
+    temp0[4] = 0;
+    temp0[3] = 0;
+    temp0[2] = 0;
+    temp0[1] = 0;
+    temp0[0] = -1;
 
+    temp1[5] = 1;
+    temp1[4] = 0;
+    temp1[3] = 0;
+    temp1[2] = 0;
+    temp1[1] = 0;
+    temp1[0] = -42;
+int64_t tmp = 0, t0 = 0, t1 = 0;
+    // vector<int64_t> A_hat = dividePolynomials(temp1, temp0, p);
+    for (uint64_t i = 0; i < H.size(); i++) {
+        // t0 += (K[i]-rowA[0][1])%p;
+        // if (t0<0)t0+=p;
+        // t1 += (power(K[i], H.size(), p) - 1) % p;
+        // if (t1<0)t1+=p;
+        // cout << "t: " << t << endl;
+        // tmp += (t1 * mod_inverse(t0, p)) % p;
+        // tmp %= p;
+        // temp0 = 
+        tmp = evaluatePolynomial(temp0, H[i], p);
+        cout << tmp << " A_hat(" << H[i] << ", x)" << endl;
 
+    }
+    vector<int64_t> tewq = {42};
+        // storePolynomial(dividePolynomials(temp0, temp1, p), "tewq");
+        
 
+    // storePolynomial(dividePolynomials(temp0, temp1, p), "test");
+    // storePolynomial(dividePolynomials(temp0, temp1, p), "polytmp(x)");
+    // storePolynomial(dividePolynomials(temp0, temp1, p), "temp");
+    // vector<int64_t> h0_x = dividePolynomials(zAzB_zC, vH_x, p);
+    // cout << "temp: " << temp << endl;
     
+
 }
 
