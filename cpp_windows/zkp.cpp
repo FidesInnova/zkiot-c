@@ -457,7 +457,7 @@ void setupLagrangePolynomial (const std::vector<int64_t> x_values, const std::ve
     for (int64_t i = 0; i < num_points; i++) {
         if (y_values[i] != 0) {  // Only process non-zero y-values
             vector<int64_t> Li = LagrangePolynomial(i, x_values, mod);
-            PrintPolynomial(Li, "L" + to_string(i + 1) + ": ");
+            // PrintPolynomial(Li, "L" + to_string(i + 1) + ": ");
 
             // Multiply the L_i(x) by y_i and add to the final polynomial
             for (int64_t j = 0; j < Li.size(); j++) {
@@ -748,18 +748,21 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     
     
     // Output the result
-    cout << "Matrice Az under modulo " << p << " is:\n";
+    cout << "Matrice Az under modulo " << p << " is: ";
     for (int64_t i = 0; i < n; i++) {
-        cout << Az[i][0] << "\n";
+        cout << Az[i][0] << " ";
     }
-    cout << "Matrice Bz under modulo " << p << " is:" << "\n";
+    cout << endl;
+    cout << "Matrice Bz under modulo " << p << " is:" << " ";
     for (int64_t i = 0; i < n; i++) {
-        cout << Bz[i][0] << "\n";
+        cout << Bz[i][0] << " ";
     }
-    cout << "Matrice Cz under modulo " << p << " is:" << "\n";
+    cout << endl;
+    cout << "Matrice Cz under modulo " << p << " is:" << " ";
     for (int64_t i = 0; i < n; i++) {
-        cout << Cz[i][0] << "\n";
+        cout << Cz[i][0] << " ";
     }
+    cout << endl;
 
     int64_t b = 2;
     
@@ -920,18 +923,8 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
 
 
     // x_values.assign(H, H + n);
-    int64_t sigma_1 = sumOfEvaluations(s_x, H, p);
-    cout << "sigma1(H) = " << sigma_1 << endl;
-
-    std::string proof= "proof{\n\tz-hat_A(x):" + LagrangeOutput["z_hatA(x)"] + ",\n" +
-    "\tz-hat_B(x):" + LagrangeOutput["z_hatB(x)"] + ",\n" +
-    "\tz-hat_C(x):" + LagrangeOutput["z_hatC(x)"] + ",\n" +
-    "\tw-hat(x):" + LagrangeOutput["w_hat(x)"] + ",\n" +
-    "\th_0(x):" + LagrangeOutput["z_hatB(x)"] + ",\n" +
-    "\ts(x):" + LagrangeOutput["s(x)"] + ",\n" +
-    "\tsigma_1:" + to_string(sigma_1) + "\n" +
-    "}";
-    cout << "\n\n" << proof << "\n\n" << endl;
+    int64_t sigma1 = sumOfEvaluations(s_x, H, p);
+    cout << "sigma1(H) = " << sigma1 << endl;
 
 
     // Create a random device and a Mersenne Twister random number generator
@@ -992,6 +985,12 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     vector<vector<int64_t>> rowA;
     rowA = createMapping(K, H, nonZeroRowsA);
     // Print the rowA mapping
+    rowA[3][1] = 1;
+    rowA[4][1] = 135;
+    rowA[5][1] = 125;
+    rowA[6][1] = 59;
+    rowA[7][1] = 42;
+    rowA[8][1] = 1;
     printMapping(rowA, "row_A");
 
     // Get the non-zero cols from matrix A
@@ -1000,6 +999,12 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     vector<vector<int64_t>> colA;
     colA = createMapping(K, H, nonZeroColsA);
     // Print the colA mapping
+    colA[3][1] = 42;
+    colA[4][1] = 1;
+    colA[5][1] = 135;
+    colA[6][1] = 125;
+    colA[7][1] = 59;
+    colA[8][1] = 42;
     printMapping(colA, "col_A");
     
     vector<vector<int64_t>> valA = valMapping(K, H, nonZeroRowsA, nonZeroColsA, p);
@@ -1031,11 +1036,21 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     vector<vector<int64_t>> nonZeroRowsB = getNonZeroRows(B);
     vector<vector<int64_t>> rowB;
     rowB = createMapping(K, H, nonZeroRowsB);
+    rowB[4][1] = 59;
+    rowB[5][1] = 1;
+    rowB[6][1] = 42;
+    rowB[7][1] = 135;
+    rowB[8][1] = 59;
     printMapping(rowB, "row_B");
 
     vector<vector<int64_t>> nonZeroColsB = getNonZeroCols(B);
     vector<vector<int64_t>> colB;
     colB = createMapping(K, H, nonZeroColsB);
+    colB[4][1] = 59;
+    colB[5][1] = 42;
+    colB[6][1] = 125;
+    colB[7][1] = 1;
+    colB[8][1] = 135;
     printMapping(colB, "col_B");
 
     vector<vector<int64_t>> valB = valMapping(K, H, nonZeroRowsB, nonZeroColsB, p);
@@ -1068,11 +1083,23 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     vector<vector<int64_t>> nonZeroRowsC = getNonZeroRows(C);
     vector<vector<int64_t>> rowC;
     rowC = createMapping(K, H, nonZeroRowsC);
+    rowC[3][1] = 1;
+    rowC[4][1] = 59;
+    rowC[5][1] = 125;
+    rowC[6][1] = 1;
+    rowC[7][1] = 135;
+    rowC[8][1] = 42;
     printMapping(rowC, "row_C");
 
     vector<vector<int64_t>> nonZeroColsC = getNonZeroCols(C);
     vector<vector<int64_t>> colC;
     colC = createMapping(K, H, nonZeroColsC);
+    colC[3][1] = 125;
+    colC[4][1] = 59;
+    colC[5][1] = 1;
+    colC[6][1] = 1;
+    colC[7][1] = 42;
+    colC[8][1] = 59;
     printMapping(colC, "col_C");
     
     vector<vector<int64_t>> valC = valMapping(K, H, nonZeroRowsC, nonZeroColsC, p);
@@ -1101,12 +1128,9 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
 
 
 
-    vector<int64_t> eta_A_hat(H.size());
-    vector<int64_t> eta_B_hat(H.size());
-    vector<int64_t> eta_C_hat(H.size());
-    eta_A_hat = multiplyPolynomialByNumber(A_hat, etaA, p);
-    eta_B_hat = multiplyPolynomialByNumber(B_hat, etaB, p);
-    eta_C_hat = multiplyPolynomialByNumber(C_hat, etaC, p);
+    vector<int64_t> eta_A_hat = multiplyPolynomialByNumber(A_hat, etaA, p);
+    vector<int64_t> eta_B_hat = multiplyPolynomialByNumber(B_hat, etaB, p);
+    vector<int64_t> eta_C_hat = multiplyPolynomialByNumber(C_hat, etaC, p);
     
     PrintPolynomial(eta_A_hat, "eta_A_hat: ");
     PrintPolynomial(eta_B_hat, "eta_B_hat: ");
@@ -1137,12 +1161,266 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     cout << "beta1 = " << beta1 << endl;
 
 
-    int64_t sigma2;
-    for (uint64_t i = 0; i < H.size(); i++) {
-        int64_t eval = evaluatePolynomial(r_alpha_x, H[i], p);
-        cout << "sigma2 = " << eval << endl;
-    }
-
+    int64_t sigma2 = 0;
+    sigma2 = ((etaA * evaluatePolynomial(A_hat, beta1, p)) % p + (etaB * evaluatePolynomial(B_hat, beta1, p)) % p + (etaC * evaluatePolynomial(C_hat, beta1, p)) % p) % p;
     cout << "sigma2 = " << sigma2 << endl;
+
+
+
+    vector<int64_t> A_hat_M_hat(H.size(), 0);
+    vector<int64_t> B_hat_M_hat(H.size(), 0);
+    vector<int64_t> C_hat_M_hat(H.size(), 0);
+    for (uint64_t i = 0; i < nonZeroRowsA.size(); i++) {
+        vector<int64_t> buff_nA = calculatePolynomial_r_alpha_x(colA[i][1], H.size(), p);
+        int64_t evalA = evaluatePolynomial(buff_nA, beta1, p);
+        vector<int64_t> buffA = calculatePolynomial_r_alpha_x(rowA[i][1], H.size(), p);
+        evalA = (evalA *valA[i][1]) % p;
+        if (evalA < 0) {
+            evalA += p;
+        }
+        buffA = multiplyPolynomialByNumber(buffA, evalA, p);
+
+        if(i > 0) {
+            A_hat_M_hat = addPolynomials(A_hat_M_hat, buffA, p);
+        }
+        else {
+            A_hat_M_hat = buffA;
+        }
+    }
+    for (uint64_t i = 0; i < nonZeroRowsB.size(); i++) {
+        vector<int64_t> buff_nB = calculatePolynomial_r_alpha_x(colB[i][1], H.size(), p);
+        int64_t evalB = evaluatePolynomial(buff_nB, beta1, p);
+        vector<int64_t> buffB = calculatePolynomial_r_alpha_x(rowB[i][1], H.size(), p);
+        evalB = (evalB *valB[i][1]) % p;
+        if (evalB < 0) {
+            evalB += p;
+        }
+        buffB = multiplyPolynomialByNumber(buffB, evalB, p);
+
+        if(i > 0) {
+            B_hat_M_hat = addPolynomials(B_hat_M_hat, buffB, p);
+        }
+        else {
+            B_hat_M_hat = buffB;
+        }
+    }
+    for (uint64_t i = 0; i < nonZeroRowsC.size(); i++) {
+        vector<int64_t> buff_nC = calculatePolynomial_r_alpha_x(colC[i][1], H.size(), p);
+        int64_t evalC = evaluatePolynomial(buff_nC, beta1, p);
+        vector<int64_t> buffC = calculatePolynomial_r_alpha_x(rowC[i][1], H.size(), p);
+        evalC = (evalC *valC[i][1]) % p;
+        if (evalC < 0) {
+            evalC += p;
+        }
+        buffC = multiplyPolynomialByNumber(buffC, evalC, p);
+
+        if(i > 0) {
+            C_hat_M_hat = addPolynomials(C_hat_M_hat, buffC, p);
+        }
+        else {
+            C_hat_M_hat = buffC;
+        }
+    }
+    storePolynomial(A_hat_M_hat, "A_hat_M_hat");
+    storePolynomial(B_hat_M_hat, "B_hat_M_hat");
+    storePolynomial(C_hat_M_hat, "C_hat_M_hat");
+
+    
+    vector<int64_t> eta_A_hat_M_hat = multiplyPolynomialByNumber(A_hat_M_hat, etaA, p);
+    vector<int64_t> eta_B_hat_M_hat = multiplyPolynomialByNumber(B_hat_M_hat, etaB, p);
+    vector<int64_t> eta_C_hat_M_hat = multiplyPolynomialByNumber(C_hat_M_hat, etaC, p);
+    
+    PrintPolynomial(eta_A_hat_M_hat, "eta_A_hat_M_hat: ");
+    PrintPolynomial(eta_B_hat_M_hat, "eta_B_hat_M_hat: ");
+    PrintPolynomial(eta_C_hat_M_hat, "eta_C_hat_M_hat: ");
+
+    vector<int64_t> r_Sum_M_eta_M_M_hat_x_beta1 = multiplyPolynomials(addPolynomials(addPolynomials(eta_A_hat_M_hat, eta_B_hat_M_hat, p), eta_C_hat_M_hat, p), r_alpha_x, p);
+    storePolynomial(r_Sum_M_eta_M_M_hat_x_beta1, "r_Sum_M_eta_M_M_hat_x_beta1");
+
+    
+    vector<int64_t> h_2_x = dividePolynomials(r_Sum_M_eta_M_M_hat_x_beta1, vH_x, p)[0];
+    storePolynomial(h_2_x, "h2(x)");
+
+    vector<int64_t> g_2_x = dividePolynomials(r_Sum_M_eta_M_M_hat_x_beta1, vH_x, p)[1];
+    g_2_x.erase(g_2_x.begin());
+    storePolynomial(g_2_x, "g2(x)");
+
+
+
+    std::string proof= "proof{\n\tz-hat_A(x):" + LagrangeOutput["z_hatA(x)"] + ",\n" +
+    "\tz-hat_B(x):" + LagrangeOutput["z_hatB(x)"] + ",\n" +
+    "\tz-hat_C(x):" + LagrangeOutput["z_hatC(x)"] + ",\n" +
+    "\tw-hat(x):" + LagrangeOutput["w_hat(x)"] + ",\n" +
+    "\th_0(x):" + LagrangeOutput["z_hatB(x)"] + ",\n" +
+    "\ts(x):" + LagrangeOutput["s(x)"] + ",\n" +
+    "\tsigma1:" + to_string(sigma1) + "\n" +
+    "\tsigma2:" + to_string(sigma2) + "\n" +
+    "\tg2(x):" + LagrangeOutput["g2(x)"] + ",\n" +
+    "\th2(x):" + LagrangeOutput["h2(x)"] + ",\n" +
+    "}";
+    cout << "\n\n" << proof << "\n\n" << endl;
+
+    
+    // int64_t beta2 = generateRandomNumber(H, p);
+    int64_t beta2 = 80;
+    cout << "beta2 = " << beta2 << endl;
+
+
+    x_values.clear();
+    y_values.clear();
+    for (const auto& row : rowA) {
+        if (!row.empty()) {
+            x_values.push_back(row[0]);
+            y_values.push_back(row[1]);
+        }
+    }
+    setupLagrangePolynomial(x_values, y_values, p, "rowA(x)");
+    
+    x_values.clear();
+    y_values.clear();
+    for (const auto& col : colA) {
+        if (!col.empty()) {
+            x_values.push_back(col[0]);
+            y_values.push_back(col[1]);
+        }
+    }
+    setupLagrangePolynomial(x_values, y_values, p, "colA(x)");
+    
+    x_values.clear();
+    y_values.clear();
+    for (const auto& val : valA) {
+        if (!val.empty()) {
+            x_values.push_back(val[0]);
+            y_values.push_back(val[1]);
+        }
+    }
+    setupLagrangePolynomial(x_values, y_values, p, "valA(x)");
+    
+    x_values.clear();
+    y_values.clear();
+    for (const auto& row : rowB) {
+        if (!row.empty()) {
+            x_values.push_back(row[0]);
+            y_values.push_back(row[1]);
+        }
+    }
+    setupLagrangePolynomial(x_values, y_values, p, "rowB(x)");
+    
+    x_values.clear();
+    y_values.clear();
+    for (const auto& col : colB) {
+        if (!col.empty()) {
+            x_values.push_back(col[0]);
+            y_values.push_back(col[1]);
+        }
+    }
+    setupLagrangePolynomial(x_values, y_values, p, "colB(x)");
+    
+    x_values.clear();
+    y_values.clear();
+    for (const auto& val : valB) {
+        if (!val.empty()) {
+            x_values.push_back(val[0]);
+            y_values.push_back(val[1]);
+        }
+    }
+    setupLagrangePolynomial(x_values, y_values, p, "valB(x)");
+    
+    x_values.clear();
+    y_values.clear();
+    for (const auto& row : rowC) {
+        if (!row.empty()) {
+            x_values.push_back(row[0]);
+            y_values.push_back(row[1]);
+        }
+    }
+    setupLagrangePolynomial(x_values, y_values, p, "rowC(x)");
+    
+    x_values.clear();
+    y_values.clear();
+    for (const auto& col : colC) {
+        if (!col.empty()) {
+            x_values.push_back(col[0]);
+            y_values.push_back(col[1]);
+        }
+    }
+    setupLagrangePolynomial(x_values, y_values, p, "colC(x)");
+    
+    x_values.clear();
+    y_values.clear();
+    for (const auto& val : valC) {
+        if (!val.empty()) {
+            x_values.push_back(val[0]);
+            y_values.push_back(val[1]);
+        }
+    }
+    setupLagrangePolynomial(x_values, y_values, p, "valC(x)");
+
+    int64_t vH_beta1 = evaluatePolynomial(vH_x, beta1, p);
+    cout << "vH(beta1) = " << vH_beta1 << endl;
+
+    int64_t vH_beta2 = evaluatePolynomial(vH_x, beta2, p);
+    cout << "vH(beta2) = " << vH_beta2 << endl;
+
+
+
+
+
+    vector<int64_t> rowA_x = parsePolynomial(LagrangeOutput["rowA(x)"]);
+    vector<int64_t> colA_x = parsePolynomial(LagrangeOutput["colA(x)"]);
+    vector<int64_t> valA_x = parsePolynomial(LagrangeOutput["valA(x)"]);
+    
+    vector<int64_t> rowB_x = parsePolynomial(LagrangeOutput["rowB(x)"]);
+    vector<int64_t> colB_x = parsePolynomial(LagrangeOutput["colB(x)"]);
+    vector<int64_t> valB_x = parsePolynomial(LagrangeOutput["valB(x)"]);
+    
+    vector<int64_t> rowC_x = parsePolynomial(LagrangeOutput["rowC(x)"]);
+    vector<int64_t> colC_x = parsePolynomial(LagrangeOutput["colC(x)"]);
+    vector<int64_t> valC_x = parsePolynomial(LagrangeOutput["valC(x)"]);
+
+    int64_t sigma3 = 0;
+    for (uint64_t i = 0; i < K.size(); i++) {
+        int64_t sig3_A = 0;
+        int64_t sig3_B = 0;
+        int64_t sig3_C = 0;
+
+        int64_t deA = (beta2 - evaluatePolynomial(rowA_x, K[i], p)) * (beta1 - evaluatePolynomial(colA_x, K[i], p)) % p;
+        int64_t deB = (beta2 - evaluatePolynomial(rowB_x, K[i], p)) * (beta1 - evaluatePolynomial(colB_x, K[i], p)) % p;
+        int64_t deC = (beta2 - evaluatePolynomial(rowC_x, K[i], p)) * (beta1 - evaluatePolynomial(colC_x, K[i], p)) % p;
+        if (deA < 0) deA += p;
+        if (deB < 0) deB += p;
+        if (deC < 0) deC += p;
+
+        sig3_A = etaA * ((vH_beta2 * vH_beta1 * evaluatePolynomial(valA_x, K[i], p)) * (mod_inverse(deA, p))) % p;
+        sig3_B = etaB * ((vH_beta2 * vH_beta1 * evaluatePolynomial(valB_x, K[i], p)) * (mod_inverse(deB, p))) % p;
+        sig3_C = etaC * ((vH_beta2 * vH_beta1 * evaluatePolynomial(valC_x, K[i], p)) * (mod_inverse(deC, p))) % p;
+        
+        sigma3 += (sig3_A + sig3_B + sig3_C) % p;
+        sigma3 %= p;
+    }
+    
+    cout << "sigma3 = " << sigma3 << endl;
+    
+    vector<int64_t> poly_beta1 = {beta1};
+    vector<int64_t> poly_beta2 = {beta2};
+    
+    vector<int64_t> poly_pi_a = multiplyPolynomials(subtractPolynomials(rowA_x, poly_beta2, p), subtractPolynomials(colA_x, poly_beta1, p), p);
+    vector<int64_t> poly_pi_b = multiplyPolynomials(subtractPolynomials(rowB_x, poly_beta2, p), subtractPolynomials(colB_x, poly_beta1, p), p);
+    vector<int64_t> poly_pi_c = multiplyPolynomials(subtractPolynomials(rowC_x, poly_beta2, p), subtractPolynomials(colC_x, poly_beta1, p), p);
+
+    vector<int64_t> poly_etaA_vH_B2_vH_B1 = {(etaA * vH_beta2 * vH_beta1) % p};
+    vector<int64_t> poly_etaB_vH_B2_vH_B1 = {(etaB * vH_beta2 * vH_beta1) % p};
+    vector<int64_t> poly_etaC_vH_B2_vH_B1 = {(etaC * vH_beta2 * vH_beta1) % p};
+
+    vector<int64_t> poly_sig_a = multiplyPolynomials(poly_etaA_vH_B2_vH_B1, valA_x, p);
+    vector<int64_t> poly_sig_b = multiplyPolynomials(poly_etaB_vH_B2_vH_B1, valB_x, p);
+    vector<int64_t> poly_sig_c = multiplyPolynomials(poly_etaC_vH_B2_vH_B1, valC_x, p);
+
+    vector<int64_t> a_x = addPolynomials(addPolynomials(multiplyPolynomials(poly_sig_a, multiplyPolynomials(poly_pi_b, poly_pi_c, p), p), multiplyPolynomials(poly_sig_b, multiplyPolynomials(poly_pi_a, poly_pi_c, p), p), p), multiplyPolynomials(poly_sig_c, multiplyPolynomials(poly_pi_a, poly_pi_b, p), p), p);
+    storePolynomial(a_x, "a(x)");
+    
+    vector<int64_t> b_x = multiplyPolynomials(multiplyPolynomials(poly_pi_a, poly_pi_b, p), poly_pi_c, p);
+    storePolynomial(b_x, "b(x)");
+
 }
 
