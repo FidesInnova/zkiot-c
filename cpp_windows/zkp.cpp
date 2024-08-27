@@ -457,7 +457,7 @@ void setupLagrangePolynomial (const std::vector<int64_t> x_values, const std::ve
     for (int64_t i = 0; i < num_points; i++) {
         if (y_values[i] != 0) {  // Only process non-zero y-values
             vector<int64_t> Li = LagrangePolynomial(i, x_values, mod);
-            // PrintPolynomial(Li, "L" + to_string(i + 1) + ": ");
+            PrintPolynomial(Li, "L" + to_string(i + 1) + ": ");
 
             // Multiply the L_i(x) by y_i and add to the final polynomial
             for (int64_t j = 0; j < Li.size(); j++) {
@@ -1421,6 +1421,15 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     
     vector<int64_t> b_x = multiplyPolynomials(multiplyPolynomials(poly_pi_a, poly_pi_b, p), poly_pi_c, p);
     storePolynomial(b_x, "b(x)");
+
+
+    
+    // vector<int64_t> h_3_x = dividePolynomials(addPolynomials(a_x, b_x, p), vH_x, p)[0];
+    // storePolynomial(h_3_x, "h3(x)");
+
+    // vector<int64_t> g_3_x = dividePolynomials(addPolynomials(a_x, b_x, p), vH_x, p)[1];
+    // g_3_x.erase(g_3_x.begin());
+    // storePolynomial(g_3_x, "g3(x)");
 
 }
 
