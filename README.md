@@ -21,4 +21,4 @@ This repository is a C++ library for the **function-hiding functional commitment
 ### 2- A proof of function relation (PFR)
 ### 3- An algebraic holographic proof (AHP)
 
-For more information, visit our [wiki](https://wiki.fidesinnova.io/zero-knowledge-proof-zkp-scheme).
+For more information, visit our [wiki](https://fidesinnova-1.gitbook.io/fidesinnova-docs/zero-knowledge-proof-zkp-scheme).
