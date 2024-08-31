@@ -11,8 +11,9 @@ int main() {
     std::vector<int64_t> pp;
 
     ZKP lib;
-    lib.setup(g, d, l, p, pp); 
+    lib.setup(g, d, l, p, pp);
 
+    std::cout << "pp: ";
     for (int64_t value : pp) {
         std::cout << value << " ";
     }
@@ -25,13 +26,13 @@ int main() {
 
         // Print the matrices
         auto printMatrix = [](const std::vector<std::vector<int64_t>>& matrix, const std::string& name) {
-            std::cout << "Matrix " << name << ":" << std::endl;
-            for (const auto& row : matrix) {
-                for (int64_t val : row) {
-                    std::cout << val << " ";
-                }
-                std::cout << std::endl;
-            }
+            // std::cout << "Matrix " << name << ":" << std::endl;
+            // for (const auto& row : matrix) {
+            //     for (int64_t val : row) {
+            //         std::cout << val << " ";
+            //     }
+            //     std::cout << std::endl;
+            // }
         };
 
         printMatrix(A, "A");
@@ -43,5 +44,7 @@ int main() {
         return 1;
     }
 
+    lib.AHPverify(p);
+    
     return 0;
 }

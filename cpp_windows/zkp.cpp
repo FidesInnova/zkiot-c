@@ -17,6 +17,15 @@
 #include <set>
 #include <algorithm>
 
+#include <openssl/sha.h>
+#include <iomanip>
+
+#include "json.hpp"
+// using json = nlohmann::json;
+using ordered_json = nlohmann::ordered_json;
+#include <regex>
+
+
 using namespace std;
 
 
@@ -36,7 +45,7 @@ int64_t power(int64_t base, int64_t exponent, int64_t mod) {
 // Function to calculate the modular inverse using Extended Euclidean Algorithm
 uint64_t mod_inverse(int64_t a, uint64_t mod) {
     int64_t t = 0, newt = 1;
-    int64_t r = mod, newr = a;
+    uint64_t r = mod, newr = a;
 
     while (newr != 0) {
         int64_t quotient = r / newr;
@@ -147,7 +156,7 @@ vector<vector<int64_t>> valMapping(const vector<int64_t>& K, const vector<int64_
 
 
 // Function to expand polynomials given the roots
-std::vector<int64_t> expandPolynomials(const std::vector<int64_t>& roots) {
+std::vector<int64_t> expandPolynomials(const std::vector<int64_t>& roots, int64_t mod) {
     std::vector<int64_t> result = {1}; // Start with the polynomial "1"
 
     for (int64_t root : roots) {
@@ -155,7 +164,9 @@ std::vector<int64_t> expandPolynomials(const std::vector<int64_t>& roots) {
         std::vector<int64_t> temp(result.size() + 1, 0);
         for (size_t i = 0; i < result.size(); i++) {
             temp[i] += result[i]; // x^n term
+            temp[i] %= mod;
             temp[i + 1] -= result[i] * root; // -root * x^(n-1) term
+            temp[i + 1] %= mod;
         }
         result = temp;
     }
@@ -226,11 +237,16 @@ std::vector<int64_t> addPolynomials(const std::vector<int64_t>& poly1, const std
 
 // Function to subtract one polynomial from another
 vector<int64_t> subtractPolynomials(const vector<int64_t>& poly1, const vector<int64_t>& poly2, int64_t mod) {
-    vector<int64_t> result = poly1;
-    for (size_t i = 0; i < poly2.size(); i++) {
-        result[i] = (result[i] - poly2[i]) % mod;
+    size_t maxSize = std::max(poly1.size(), poly2.size());
+    vector<int64_t> buf1(maxSize, 0);
+    vector<int64_t> buf2(maxSize, 0);
+    vector<int64_t> result(maxSize, 0);
+    buf1 = poly1;
+    buf2 = poly2;
+    for (size_t i = 0; i < maxSize; i++) {
+        result[i] = (buf1[i] - buf2[i]) % mod;
         if (result[i] < 0) {
-            result[i] += mod;
+            result[i] += mod;  // Handle negative results
         }
     }
     return result;
@@ -267,25 +283,30 @@ int64_t generateRandomNumber(const std::vector<int64_t>& H, int64_t mod) {
     return randomNumber;
 }
 
-
+// Function to convert int64_t to a byte array
+void int64ToByteArray(int64_t value, unsigned char* byteArray) {
+    for (size_t i = 0; i < sizeof(value); ++i) {
+        byteArray[i] = static_cast<unsigned char>(value >> (i * 8));
+    }
+}
 
 
 // Function to divide a polynomial by another polynomial
 vector<vector<int64_t>> dividePolynomials(const vector<int64_t>& dividend, const vector<int64_t>& divisor, int64_t mod) {
     vector<int64_t> quotient;
     vector<int64_t> remainder = dividend;
-    vector<vector<int64_t>> buff;
+    vector<vector<int64_t>> result;
 
     int64_t n = remainder.size();
     int64_t m = divisor.size();
 
+
     // If the divisor is larger than the dividend, the quotient is zero
     if (m > n) {
-        quotient.resize(1, 0);
-        
-        buff.push_back(quotient);
-        buff.push_back(remainder);
-        return buff;
+        quotient.push_back(0);
+        result.push_back(quotient);
+        result.push_back(remainder);
+        return result;
     }
 
     // Main loop for polynomial division
@@ -300,18 +321,21 @@ vector<vector<int64_t>> dividePolynomials(const vector<int64_t>& dividend, const
         vector<int64_t> termTimesDivisor = multiplyPolynomials(term, divisor, mod);
         termTimesDivisor.resize(remainder.size(), 0);
         remainder = subtractPolynomials(remainder, termTimesDivisor, mod);
+
+        // Remove leading zeros
         while (remainder.size() > 0 && remainder.back() == 0) {
             remainder.pop_back();
         }
     }
+    
 
     if (quotient.empty()) {
         quotient.push_back(0);
     }
     
-    buff.push_back(quotient);
-    buff.push_back(remainder);
-    return buff;
+    result.push_back(quotient);
+    result.push_back(remainder);
+    return result;
 }
 
 
@@ -913,9 +937,9 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
 
 
     // Example division: Dividing the product of zAzB_zC by vH_x
-    vector<int64_t> h0_x = dividePolynomials(zAzB_zC, vH_x, p)[0];
+    vector<int64_t> h_0_x = dividePolynomials(zAzB_zC, vH_x, p)[0];
 
-    storePolynomial(h0_x, "h0(x)");
+    storePolynomial(h_0_x, "h0(x)");
 
     // vector<int64_t> s_x = generateRandomPolynomial(n, (2*n)+b-1, p);
     vector<int64_t> s_x = {115, 3, 0, 0, 20, 1, 0, 17, 101, 0, 5};
@@ -964,7 +988,7 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     vector<int64_t> r_alpha_x = calculatePolynomial_r_alpha_x(alpha, n, p);
     storePolynomial(r_alpha_x, "r(alpha, x)");
 
-    vector<int64_t> r_Sum_x = multiplyPolynomials(r_alpha_x, Sum_M_eta_M_z_hat_M_x,p);
+    vector<int64_t> r_Sum_x = multiplyPolynomials(r_alpha_x, Sum_M_eta_M_z_hat_M_x, p);
     storePolynomial(r_Sum_x, "r(alpha, x)Sum_M_z_hatM(x)");
 
     vector<int64_t> w_hat_x = parsePolynomial(LagrangeOutput["w_hat(x)"]);
@@ -972,7 +996,7 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     
     vector<int64_t> v_H;
     v_H.assign(zero_to_t_for_H, zero_to_t_for_H + t);
-    v_H = expandPolynomials(v_H);
+    v_H = expandPolynomials(v_H, p);
     storePolynomial(v_H, "v_H");
     vector<int64_t> z_hat_x = addPolynomials(multiplyPolynomials(w_hat_x, v_H, p), polyX_HAT_H, p);
     storePolynomial(z_hat_x, "z_hat(x)");
@@ -1246,21 +1270,6 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     storePolynomial(g_2_x, "g2(x)");
 
 
-
-    std::string proof= "proof{\n\tz-hat_A(x):" + LagrangeOutput["z_hatA(x)"] + ",\n" +
-    "\tz-hat_B(x):" + LagrangeOutput["z_hatB(x)"] + ",\n" +
-    "\tz-hat_C(x):" + LagrangeOutput["z_hatC(x)"] + ",\n" +
-    "\tw-hat(x):" + LagrangeOutput["w_hat(x)"] + ",\n" +
-    "\th_0(x):" + LagrangeOutput["z_hatB(x)"] + ",\n" +
-    "\ts(x):" + LagrangeOutput["s(x)"] + ",\n" +
-    "\tsigma1:" + to_string(sigma1) + "\n" +
-    "\tsigma2:" + to_string(sigma2) + "\n" +
-    "\tg2(x):" + LagrangeOutput["g2(x)"] + ",\n" +
-    "\th2(x):" + LagrangeOutput["h2(x)"] + ",\n" +
-    "}";
-    cout << "\n\n" << proof << "\n\n" << endl;
-
-    
     // int64_t beta2 = generateRandomNumber(H, p);
     int64_t beta2 = 80;
     cout << "beta2 = " << beta2 << endl;
@@ -1378,6 +1387,36 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     vector<int64_t> colC_x = parsePolynomial(LagrangeOutput["colC(x)"]);
     vector<int64_t> valC_x = parsePolynomial(LagrangeOutput["valC(x)"]);
 
+    ordered_json commitment ;
+    commitment.clear();
+    commitment["m"] = m;
+    commitment["t"] = t;
+    commitment["n"] = n;
+    commitment["ComRowA"] = rowA_x;
+    commitment["ComColA"] = colA_x;
+    commitment["ComValA"] = valA_x;
+
+    commitment["ComRowB"] = rowB_x;
+    commitment["ComColB"] = colB_x;
+    commitment["ComValB"] = valB_x;
+
+    commitment["ComRowC"] = rowC_x;
+    commitment["ComColC"] = colC_x;
+    commitment["ComValC"] = valC_x;
+
+    // Serialize JSON object to a string
+    std::string commitmentString = commitment.dump();
+    // Write JSON object to a file
+    std::ofstream commitmentFile("commitment.json");
+    if (commitmentFile.is_open()) {
+        commitmentFile << commitmentString;
+        commitmentFile.close();
+        std::cout << "JSON data has been written to commitment.json\n";
+    } else {
+        std::cerr << "Error opening file for writing\n";
+    }
+
+    vector<int64_t> points_f_3 (K.size(), 0);
     int64_t sigma3 = 0;
     for (uint64_t i = 0; i < K.size(); i++) {
         int64_t sig3_A = 0;
@@ -1395,7 +1434,8 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
         sig3_B = etaB * ((vH_beta2 * vH_beta1 * evaluatePolynomial(valB_x, K[i], p)) * (mod_inverse(deB, p))) % p;
         sig3_C = etaC * ((vH_beta2 * vH_beta1 * evaluatePolynomial(valC_x, K[i], p)) * (mod_inverse(deC, p))) % p;
         
-        sigma3 += (sig3_A + sig3_B + sig3_C) % p;
+        points_f_3[i] = (sig3_A + sig3_B + sig3_C) % p;
+        sigma3 += points_f_3[i];
         sigma3 %= p;
     }
     
@@ -1423,13 +1463,187 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     storePolynomial(b_x, "b(x)");
 
 
+
+    vector<int64_t> vK_x = createLinearPolynomial(K[0]);
+    // Multiply (x - K) for all other K
+    for (size_t i = 1; i < K.size(); i++) {
+        vector<int64_t> nextPoly = createLinearPolynomial(K[i]);
+        vK_x = multiplyPolynomials(vK_x, nextPoly, p);
+    }
+    storePolynomial(vK_x, "vK(x)");
+
+    setupLagrangePolynomial(K, points_f_3, p, "poly_f_3(x)");
+    vector<int64_t> poly_f_3x = parsePolynomial(LagrangeOutput["poly_f_3(x)"]);
+
+    vector<int64_t> g_3_x = poly_f_3x;
+    g_3_x.erase(g_3_x.begin());
+    storePolynomial(g_3_x, "g3(x)");
     
-    // vector<int64_t> h_3_x = dividePolynomials(addPolynomials(a_x, b_x, p), vH_x, p)[0];
-    // storePolynomial(h_3_x, "h3(x)");
+    vector<int64_t> sigma_3_set_k;
+    sigma_3_set_k.push_back((sigma3 * mod_inverse(K.size(), p)) % p);
+    cout << "sigma_3_set_k: " << sigma_3_set_k[0] << endl;
+    
+    vector<int64_t> poly_f_3x_new = subtractPolynomials(poly_f_3x, sigma_3_set_k, p);
+    storePolynomial(poly_f_3x_new, "f3(x)new");
 
-    // vector<int64_t> g_3_x = dividePolynomials(addPolynomials(a_x, b_x, p), vH_x, p)[1];
-    // g_3_x.erase(g_3_x.begin());
-    // storePolynomial(g_3_x, "g3(x)");
+    vector<int64_t> h_3_x = dividePolynomials(subtractPolynomials(a_x, multiplyPolynomials(b_x, addPolynomials(poly_f_3x_new, sigma_3_set_k, p), p), p), vK_x, p)[0];
+    storePolynomial(h_3_x, "h3(x)");
 
+    ordered_json proof;
+    proof.clear();
+    proof["P1AHP"] = sigma1;
+    proof["P2AHP"] = w_hat_x;
+    proof["P3AHP"] = z_hatA;
+    proof["P4AHP"] = z_hatB;
+    proof["P5AHP"] = z_hatC;
+    proof["P6AHP"] = h_0_x;
+    proof["P7AHP"] = s_x;
+    proof["P8AHP"] = g_1_x;
+    proof["P9AHP"] = h_1_x;
+    proof["P10AHP"] = sigma2;
+    proof["P11AHP"] = g_2_x;
+    proof["P12AHP"] = h_2_x;
+    proof["P13AHP"] = sigma3;
+    proof["P14AHP"] = g_3_x;
+    proof["P15AHP"] = h_3_x;
+    proof["curve"] = "bn128";
+    proof["protocol"] = "fidesv1";
+
+    // Serialize JSON object to a string
+    std::string proofString = proof.dump();
+
+    // Use regex to format arrays correctly
+    // proofString = std::regex_replace(proofString, std::regex("\\[\n\\s*([^\\]]*)\\s*\n\\]"), "[$1]");
+
+    // Write JSON object to a file
+    std::ofstream proofFile("proof.json");
+    if (proofFile.is_open()) {
+        proofFile << proofString;
+        proofFile.close();
+        std::cout << "JSON data has been written to proof.json\n";
+    } else {
+        std::cerr << "Error opening file for writing\n";
+    }
+
+
+    int64_t beta_3 = 5;
+
+
+
+    // int64_t value = 1234567890123456789; // Example int64_t value
+
+    // // Convert int64_t to byte array
+    // unsigned char byteArray[sizeof(int64_t)];
+    // int64ToByteArray(value, byteArray);
+
+    // // Compute SHA256 hash
+    // unsigned char hash[SHA256_DIGEST_LENGTH];
+    // SHA256(byteArray, sizeof(byteArray), hash);
+
+    // // Print the hash in hexadecimal format
+    // std::cout << "SHA256 hash: ";
+    // for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
+    //     std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(hash[i]);
+    // }
+    // std::cout << std::endl;
+
+
+}
+
+void ZKP::AHPverify(int64_t mod) {
+    int64_t alpha = 10;
+    int64_t beta1 = 22;
+    int64_t beta2 = 80;
+    int64_t beta3 = 5;
+
+
+    // Create a JSON object
+    nlohmann::json jsonData;
+    // Open the JSON file for reading
+    std::ifstream proofFile("proof.json");
+    if (!proofFile.is_open()) {
+        std::cerr << "Could not open the file!" << std::endl;
+    }
+
+    // Parse the JSON data from the file
+    proofFile >> jsonData;
+    proofFile.close();
+
+    // Store the data in appropriate types
+    int64_t sigma1 = jsonData["P1AHP"].get<int64_t>();
+    vector<int64_t> w_hat_x = jsonData["P2AHP"].get<vector<int64_t>>();
+    vector<int64_t> z_hatA = jsonData["P3AHP"].get<vector<int64_t>>();
+    vector<int64_t> z_hatB = jsonData["P4AHP"].get<vector<int64_t>>();
+    vector<int64_t> z_hatC = jsonData["P5AHP"].get<vector<int64_t>>();
+    vector<int64_t> h_0_x = jsonData["P6AHP"].get<vector<int64_t>>();
+    vector<int64_t> s_x = jsonData["P7AHP"].get<vector<int64_t>>();
+    vector<int64_t> g_1_x = jsonData["P8AHP"].get<vector<int64_t>>();
+    vector<int64_t> h_1_x = jsonData["P9AHP"].get<vector<int64_t>>();
+    int64_t sigma2 = jsonData["P10AHP"].get<int64_t>();
+    vector<int64_t> g_2_x = jsonData["P11AHP"].get<vector<int64_t>>();
+    vector<int64_t> h_2_x = jsonData["P12AHP"].get<vector<int64_t>>();
+    int64_t sigma3 = jsonData["P13AHP"].get<int64_t>();
+    vector<int64_t> g_3_x = jsonData["P14AHP"].get<vector<int64_t>>();
+    vector<int64_t> h_3_x = jsonData["P15AHP"].get<vector<int64_t>>();
+    string curve = jsonData["curve"];
+    string protocol = jsonData["protocol"];
+
+
+    std::ifstream commitmentFile("commitment.json");
+    if (!commitmentFile.is_open()) {
+        std::cerr << "Could not open the file!" << std::endl;
+    }
+    commitmentFile >> jsonData;
+    commitmentFile.close();
+    int64_t m = jsonData["m"].get<int64_t>();
+    int64_t t = jsonData["t"].get<int64_t>();
+    int64_t n = jsonData["n"].get<int64_t>();
+    vector<int64_t> rowA_x = jsonData["ComRowA"].get<vector<int64_t>>();
+    vector<int64_t> colA_x = jsonData["ComColA"].get<vector<int64_t>>();
+    vector<int64_t> valA_x = jsonData["ComValA"].get<vector<int64_t>>();
+    vector<int64_t> rowB_x = jsonData["ComRowB"].get<vector<int64_t>>();
+    vector<int64_t> colB_x = jsonData["ComColB"].get<vector<int64_t>>();
+    vector<int64_t> valB_x = jsonData["ComValB"].get<vector<int64_t>>();
+    vector<int64_t> rowC_x = jsonData["ComRowC"].get<vector<int64_t>>();
+    vector<int64_t> colC_x = jsonData["ComColC"].get<vector<int64_t>>();
+    vector<int64_t> valC_x = jsonData["ComValC"].get<vector<int64_t>>();
+
+    vector<int64_t> vK_x = parsePolynomial(LagrangeOutput["vK(x)"]);
+    vector<int64_t> vH_x = parsePolynomial(LagrangeOutput["vH(x)"]);
+    vector<int64_t> a_x = parsePolynomial(LagrangeOutput["a(x)"]);
+    vector<int64_t> b_x = parsePolynomial(LagrangeOutput["b(x)"]);
+
+    // vector<int64_t> r_alpha_x = parsePolynomial(LagrangeOutput["r(alpha, x)"]);
+    vector<int64_t> r_alpha_x = calculatePolynomial_r_alpha_x(alpha, n, mod);
+
+    vector<int64_t> Sum_M_eta_M_z_hat_M_x = parsePolynomial(LagrangeOutput["Sum_M_z_hatM(x)"]);
+    vector<int64_t> z_hat_x = parsePolynomial(LagrangeOutput["z_hat(x)"]);
+
+
+    
+
+    bool verify = false;
+    int64_t eq11 = (evaluatePolynomial(h_3_x, beta3, mod) * evaluatePolynomial(vK_x, beta3, mod)) % mod; // 22780
+    int64_t eq12 = (evaluatePolynomial(a_x, beta3, mod) - ((evaluatePolynomial(b_x, beta3, mod) * (beta3 * evaluatePolynomial(g_3_x, beta3, mod) + (sigma3 * mod_inverse(m, mod))))) % mod); // 17 - 32 * (5*84 + 84/9)
+
+    int64_t eq21 = (evaluatePolynomial(r_alpha_x, beta2, mod) * sigma3) % mod;
+    int64_t eq22 = (evaluatePolynomial(h_2_x, beta2, mod) * evaluatePolynomial(vH_x, beta2, mod) + beta2 * evaluatePolynomial(g_2_x, beta2, mod) + sigma2 * mod_inverse(n, mod)) % mod;
+    if (eq12 < 0) eq12 += mod;
+    eq12 %= mod;
+
+    int64_t eq31 = (evaluatePolynomial(s_x, beta1, mod) + evaluatePolynomial(r_alpha_x, beta1, mod) * evaluatePolynomial(Sum_M_eta_M_z_hat_M_x, beta1, mod) - sigma2 * evaluatePolynomial(z_hat_x, beta1, mod));
+    int64_t eq32 = (evaluatePolynomial(h_1_x, beta1, mod) * evaluatePolynomial(vH_x, beta1, mod) + beta1 * evaluatePolynomial(g_1_x, beta1, mod) + sigma1 * mod_inverse(n, mod)) % mod;
+    if (eq31 < 0) eq31 += mod;
+    eq31 %= mod;
+
+    int64_t eq41 = (evaluatePolynomial(z_hatA, beta1, mod) * evaluatePolynomial(z_hatB, beta1, mod) - evaluatePolynomial(z_hatC, beta1, mod));
+    int64_t eq42 = (evaluatePolynomial(h_0_x, beta1, mod) * evaluatePolynomial(vH_x, beta1, mod)) % mod;
+    if (eq41 < 0) eq41 += mod;
+    eq41 %= mod;
+
+    if (eq11 == eq12 && eq21 == eq22 && eq31 == eq32 && eq41 == eq42) {
+        verify = true;
+    }
+    cout << "verify: " << verify << endl;
 }
 
