@@ -1,5 +1,6 @@
 #include "zkp.h"
 
+#include <stdint.h>
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -17,7 +18,7 @@
 #include <set>
 #include <algorithm>
 
-#include <openssl/sha.h>
+#include <openssl/evp.h>
 #include <iomanip>
 
 #include "json.hpp"
@@ -29,41 +30,79 @@ using ordered_json = nlohmann::ordered_json;
 using namespace std;
 
 
+// int64_t power(int64_t base, int64_t exponent, int64_t mod) {
+//     int64_t result = 1;
+//     base = base % mod;
+//     while (exponent > 0) {
+//         if (exponent % 2 == 1) {
+//             result = (result * base) % mod;
+//         }
+//         exponent = exponent >> 1;
+//         base = (base * base) % mod;
+//     }
+//     return result;
+// }
+
+
 int64_t power(int64_t base, int64_t exponent, int64_t mod) {
     int64_t result = 1;
-    base = base % mod;
+    base = base % mod;  // Handle base larger than mod
+
     while (exponent > 0) {
+        // If exponent is odd, multiply the result by base
         if (exponent % 2 == 1) {
             result = (result * base) % mod;
         }
-        exponent = exponent >> 1;
+        // Square the base and reduce exponent by half
         base = (base * base) % mod;
+        exponent /= 2;
+    }
+
+    return result;
+}
+
+
+// // Function to calculate the modular inverse using Extended Euclidean Algorithm
+// uint64_t modInverse(int64_t a, uint64_t mod) {
+//     int64_t t = 0, newt = 1;
+//     int64_t r = mod, newr = a;
+
+//     while (newr != 0) {
+//         int64_t quotient = r / newr;
+//         t = t - quotient * newt;
+//         std::swap(t, newt);
+//         r = r - quotient * newr;
+//         std::swap(r, newr);
+//     }
+
+//     if (r > 1) return 0; // a is not invertible
+//     if (t < 0) t += mod;
+//     return t;
+// }
+
+// Function to compute the modular exponentiation (a^b) % mod
+int64_t modExp(int64_t a, int64_t b, int64_t mod) {
+    int64_t result = 1;
+    a = a % mod;
+    while (b > 0) {
+        if (b % 2 == 1) {  // If b is odd, multiply a with the result
+            result = (result * a) % mod;
+        }
+        b = b >> 1;  // Divide b by 2
+        a = (a * a) % mod;  // Change a to a^2
     }
     return result;
 }
 
-// Function to calculate the modular inverse using Extended Euclidean Algorithm
-uint64_t mod_inverse(int64_t a, uint64_t mod) {
-    int64_t t = 0, newt = 1;
-    uint64_t r = mod, newr = a;
-
-    while (newr != 0) {
-        int64_t quotient = r / newr;
-        t = t - quotient * newt;
-        std::swap(t, newt);
-        r = r - quotient * newr;
-        std::swap(r, newr);
-    }
-
-    if (r > 1) return 0; // a is not invertible
-    if (t < 0) t += mod;
-    return t;
+// Function to compute the modular inverse using Fermat's Little Theorem
+int64_t modInverse(int64_t a, int64_t mod) {
+    return modExp(a, mod - 2, mod);
 }
 
 
 // Function to get the row indices of non-zero entries in matrix
 vector<vector<int64_t>> getNonZeroRows(const vector<vector<int64_t>>& matrix) {
-    uint64_t counter = 0;
+    int64_t counter = 0;
     for (int64_t i = 0; i < matrix.size(); i++) {
         for (int64_t j = 0; j < matrix[i].size(); j++) {
             if (matrix[i][j] != 0) {
@@ -85,10 +124,9 @@ vector<vector<int64_t>> getNonZeroRows(const vector<vector<int64_t>>& matrix) {
     return nonZeroRows;
 }
 
-
 // Function to get the col indices of non-zero entries in matrix
 vector<vector<int64_t>> getNonZeroCols(const vector<vector<int64_t>>& matrix) {
-    uint64_t counter = 0;
+    int64_t counter = 0;
     for (int64_t i = 0; i < matrix.size(); i++) {
         for (int64_t j = 0; j < matrix[i].size(); j++) {
             if (matrix[i][j] != 0) {
@@ -114,11 +152,11 @@ vector<vector<int64_t>> getNonZeroCols(const vector<vector<int64_t>>& matrix) {
 // Function to create the mapping
 vector<vector<int64_t>> createMapping(const vector<int64_t>& K, const vector<int64_t>& H, const vector<vector<int64_t>>& nonZero) {
     vector<vector<int64_t>> row(K.size());
-    for (uint64_t i = 0; i < nonZero.size(); i++) {
+    for (int64_t i = 0; i < nonZero.size(); i++) {
         row[i].push_back(K[i]);
         row[i].push_back(H[nonZero[i][0]]);
     }
-    for (uint64_t i = nonZero.size(); i < row.size(); i++) {
+    for (int64_t i = nonZero.size(); i < K.size(); i++) {
         row[i].push_back(K[i]);
         row[i].push_back(H[i%H.size()]);
     }
@@ -129,7 +167,7 @@ vector<vector<int64_t>> createMapping(const vector<int64_t>& K, const vector<int
 
 // Function to print the mapping
 void printMapping(vector<vector<int64_t>>& row, const string& name) {
-    for (uint64_t i = 0; i < row.size(); i++) {
+    for (int64_t i = 0; i < row.size(); i++) {
         cout << name << "(" << row[i][0] << ") = " << row[i][1] << endl;
     }
     cout << endl;
@@ -137,13 +175,13 @@ void printMapping(vector<vector<int64_t>>& row, const string& name) {
 
 
 // Function to create the val mapping
-vector<vector<int64_t>> valMapping(const vector<int64_t>& K, const vector<int64_t>& H, vector<vector<int64_t>>& nonZeroRows, vector<vector<int64_t>>& nonZeroCols, uint64_t mod) {
+vector<vector<int64_t>> valMapping(const vector<int64_t>& K, const vector<int64_t>& H, vector<vector<int64_t>>& nonZeroRows, vector<vector<int64_t>>& nonZeroCols, int64_t mod) {
     vector<vector<int64_t>> val(K.size());
 
-    for (uint64_t i = 0; i < K.size(); i++) {
+    for (int64_t i = 0; i < K.size(); i++) {
         if(i < nonZeroRows.size()) {
             val[i].push_back(K[i]);
-            val[i].push_back((nonZeroRows[i][1]*mod_inverse(((H.size()*power(H[nonZeroRows[i][0]], H.size()-1, mod))%mod) * ((H.size()*power(H[nonZeroCols[i][0]], H.size()-1, mod))%mod), mod))%mod);
+            val[i].push_back((nonZeroRows[i][1]*modInverse(((H.size()*power(H[nonZeroRows[i][0]], H.size()-1, mod))%mod) * ((H.size()*power(H[nonZeroCols[i][0]], H.size()-1, mod))%mod), mod))%mod);
         }
         else {
             val[i].push_back(K[i]);
@@ -167,6 +205,7 @@ std::vector<int64_t> expandPolynomials(const std::vector<int64_t>& roots, int64_
             temp[i] %= mod;
             temp[i + 1] -= result[i] * root; // -root * x^(n-1) term
             temp[i + 1] %= mod;
+            if(temp[i + 1] < 0) temp[i + 1] += mod;
         }
         result = temp;
     }
@@ -268,7 +307,57 @@ vector<int64_t> multiplyPolynomials(const vector<int64_t>& poly1, const vector<i
     return result;
 }
 
+// Function to compute the SHA-256 hash of an int64_t and return the lower 4 bytes as int64_t, applying a modulo operation
+int64_t hashAndExtractLower4Bytes(int64_t inputNumber, int64_t mod) {
+    // Convert int64_t to string
+    std::ostringstream oss;
+    oss << inputNumber;
+    std::string inputStr = oss.str();
 
+    // Create a context for the hash operation
+    EVP_MD_CTX* context = EVP_MD_CTX_new();
+    if (context == nullptr) {
+        std::cerr << "Failed to create context for hashing." << std::endl;
+        return -1;
+    }
+
+    // Initialize the context for SHA-256
+    if (EVP_DigestInit_ex(context, EVP_sha256(), nullptr) != 1) {
+        std::cerr << "Failed to initialize digest." << std::endl;
+        EVP_MD_CTX_free(context);
+        return -1;
+    }
+
+    // Update the context with the input data
+    if (EVP_DigestUpdate(context, inputStr.c_str(), inputStr.size()) != 1) {
+        std::cerr << "Failed to update digest." << std::endl;
+        EVP_MD_CTX_free(context);
+        return -1;
+    }
+
+    // Finalize the hash
+    unsigned char hash[EVP_MAX_MD_SIZE];
+    unsigned int lengthOfHash = 0;
+    if (EVP_DigestFinal_ex(context, hash, &lengthOfHash) != 1) {
+        std::cerr << "Failed to finalize digest." << std::endl;
+        EVP_MD_CTX_free(context);
+        return -1;
+    }
+
+    // Clean up the context
+    EVP_MD_CTX_free(context);
+
+    // Convert last 4 bytes of hash to int64_t
+    int64_t result = 0;
+    for (int i = lengthOfHash - 4; i < lengthOfHash; ++i) {
+        result = (result << 8) | hash[i];
+    }
+
+    // Apply modulo operation
+    result = result % mod;
+
+    return result;
+}
 
 
 int64_t generateRandomNumber(const std::vector<int64_t>& H, int64_t mod) {
@@ -313,7 +402,7 @@ vector<vector<int64_t>> dividePolynomials(const vector<int64_t>& dividend, const
     while (remainder.size() >= divisor.size()) {
         // Degree of the current term in the quotient
         int64_t degreeDiff = remainder.size() - divisor.size();
-        int64_t coef = remainder.back() * mod_inverse(divisor.back(), mod) % mod;
+        int64_t coef = remainder.back() * modInverse(divisor.back(), mod) % mod;
         vector<int64_t> term(degreeDiff + 1, 0);
         term[degreeDiff] = coef;
 
@@ -364,18 +453,13 @@ int64_t calculatePolynomial_r_alpha_k(int64_t alpha, int64_t k, int64_t n, int64
     if (buff < 0) {
         buff += mod;
     }
-    result *= mod_inverse(buff, mod);;
+    result *= modInverse(buff, mod);;
     result %= mod;
     return result;
 }
 
-
 // Function to generate a random polynomial
 vector<int64_t> generateRandomPolynomial(size_t numTerms, size_t maxDegree, int64_t mod) {
-    if (numTerms > maxDegree + 1) {
-        throw invalid_argument("Number of terms cannot be greater than the number of possible degrees.");
-    }
-
     vector<int64_t> polynomial(maxDegree + 1, 0); // Initialize polynomial with zeros
 
     // Generate random indices for the non-zero terms
@@ -414,14 +498,17 @@ vector<int64_t> LagrangePolynomial(int64_t i, const std::vector<int64_t>& x_valu
             vector<int64_t> term = {static_cast<int64_t>((mod - x_values[j]) % mod), 1};  // (x - x_j)
             int64_t denominator = (x_values[i] + mod - x_values[j]) % mod;
 
-            // Inverse of the denominator modulo mod
-            int64_t inv_denominator = 1;
-            for (int64_t d = 1; d < mod; d++) {
-                if ((denominator * d) % mod == 1) {
-                    inv_denominator = d;
-                    break;
-                }
-            }
+            // // Inverse of the denominator modulo mod
+            // int64_t inv_denominator = 1;
+            // for (int64_t d = 1; d < mod; d++) {
+            //     if ((denominator * d) % mod == 1) {
+            //         inv_denominator = d;
+            //         break;
+            //     }
+            // }
+
+            // Efficient calculation of the modular inverse
+            int64_t inv_denominator = modInverse(denominator, mod);
 
             // Multiply the result by (x - x_j) / (x_i - x_j)
             vector<int64_t> temp = multiplyPolynomials(result, term, mod);
@@ -553,7 +640,7 @@ int64_t sumOfEvaluations(const vector<int64_t>& poly, const vector<int64_t>& poi
 
 
 vector<int64_t> multiplyPolynomialByNumber(const vector<int64_t>& H, int64_t h, int64_t mod) {
-    vector<int64_t> result(H.size(), 1);  // Use long long to avoid overflow during multiplication
+    vector<int64_t> result(H.size(), 0);  // Use long long to avoid overflow during multiplication
 
     for (int64_t i = 0; i < H.size(); i++) {
         result [i] = (H[i] * h) % mod;
@@ -723,12 +810,10 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     int64_t w, g_n;
 
     H.push_back(1);
-    // H[0] = 1;
     g_n = ((p - 1) / n) % p;
     w = power(2, g_n, p);
     for (int64_t i = 1; i < n; i++)
     {
-        // H[i] = power(w, i, p);
         H.push_back(power(w, i, p));
     }
     cout << "H[n]: ";
@@ -796,54 +881,60 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     vector<int64_t> y_values;
 
     
-    int64_t zA0 [n+b];
-    int64_t zA1 [n+b];
+    vector<vector<int64_t>> zA(2);
     cout << "zA(x) is:" << endl;
     for (int64_t i = 0; i < n; i++) {
-        zA0[i] = H[i];
-        zA1[i] = Az[i][0];
-        cout << "zA(" << zA0[i] << ") = " << zA1[i] << endl;
+        zA[0].push_back(H[i]);
+        zA[1].push_back(Az[i][0]);
+        cout << "zA(" << zA[0][i] << ") = " << zA[1][i] << endl;
     }
-    zA0[5] = 150;
-    zA1[5] = 5;
-    zA0[6] = 80;
-    zA1[6] = 47;
-    x_values.assign(zA0, zA0 + n+b);
-    y_values.assign(zA1, zA1 + n+b);
-    setupLagrangePolynomial(x_values, y_values, p, "z_hatA(x)");
+    for(int64_t i = n; i < n+b; i++){
+        zA[0].push_back(generateRandomNumber(H, p-n));
+        zA[1].push_back(generateRandomNumber(H, p-n));
+        cout << "zA(" << zA[0][i] << ") = " << zA[1][i] << endl;
+    }
+    // zA[0].push_back(150);
+    // zA[1].push_back(5);
+    // zA[0].push_back(80);
+    // zA[1].push_back(47);
+    setupLagrangePolynomial(zA[0], zA[1], p, "z_hatA(x)");
 
-    int64_t zB0 [n+b];
-    int64_t zB1 [n+b];
+
+    vector<vector<int64_t>> zB(2);
     cout << "zB(x) is:" << endl;
     for (int64_t i = 0; i < n; i++) {
-        zB0[i] = H[i];
-        zB1[i] = Bz[i][0];
-        cout << "zB(" << zB0[i] << ") = " << zB1[i] << endl;
+        zB[0].push_back(H[i]);
+        zB[1].push_back(Bz[i][0]);
+        cout << "zB(" << zB[0][i] << ") = " << zB[1][i] << endl;
     }
-    zB0[5] = zA0[5];
-    zB1[5] = 15;
-    zB0[6] = zA0[6];
-    zB1[6] = 170;
-
-    x_values.assign(zB0, zB0 + n+b);
-    y_values.assign(zB1, zB1 + n+b);
-    setupLagrangePolynomial(x_values, y_values, p, "z_hatB(x)");
+    for(int64_t i = n; i < n+b; i++){
+        zB[0].push_back(zA[0][i]);
+        zB[1].push_back(generateRandomNumber(H, p-n));
+        cout << "zB(" << zB[0][i] << ") = " << zB[1][i] << endl;
+    }
+    // zB[0].push_back(150);
+    // zB[1].push_back(15);
+    // zB[0].push_back(80);
+    // zB[1].push_back(170);
+    setupLagrangePolynomial(zB[0], zB[1], p, "z_hatB(x)");
     
-    int64_t zC0 [n+b];
-    int64_t zC1 [n+b];
+    vector<vector<int64_t>> zC(2);
     cout << "zC(x) is:" << endl;
     for (int64_t i = 0; i < n; i++) {
-        zC0[i] = H[i];
-        zC1[i] = Cz[i][0];
-        cout << "zC(" << zC0[i] << ") = " << zC1[i] << endl;
+        zC[0].push_back(H[i]);
+        zC[1].push_back(Cz[i][0]);
+        cout << "zC(" << zC[0][i] << ") = " << zC[1][i] << endl;
     }
-    zC0[5] = zA0[5];
-    zC1[5] = 1;
-    zC0[6] = zA0[6];
-    zC1[6] = 100;
-    x_values.assign(zC0, zC0 + n+b);
-    y_values.assign(zC1, zC1 + n+b);
-    setupLagrangePolynomial(x_values, y_values, p, "z_hatC(x)");
+    for(int64_t i = n; i < n+b; i++){
+        zC[0].push_back(zA[0][i]);
+        zC[1].push_back(generateRandomNumber(H, p-n));
+        cout << "zC(" << zC[0][i] << ") = " << zC[1][i] << endl;
+    }
+    // zC[0].push_back(150);
+    // zC[1].push_back(1);
+    // zC[0].push_back(80);
+    // zC[1].push_back(100);
+    setupLagrangePolynomial(zC[0], zC[1], p, "z_hatC(x)");
     
     
     int64_t zero_to_t_for_H[t];
@@ -885,7 +976,7 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
                 w_bar_denominator[i] += p;
             }
         }
-        w_bar_denominator[i] = mod_inverse(w_bar_denominator[i], p);
+        w_bar_denominator[i] = modInverse(w_bar_denominator[i], p);
         w_bar[i] = (w_bar_numerator[i] * w_bar_denominator[i]) %p;
         
         if (w_bar[i] < 0) {
@@ -894,22 +985,20 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
         cout << "w_bar(" << t_to_n_for_H[i] << ") = " << w_bar[i] << endl;
     }
 
-    int64_t w_hat0[n-t+b];
-    int64_t w_hat1[n-t+b];
-
+    vector<vector<int64_t>> w_hat(2);
     for (int64_t i = 0; i < n-t; i++) {
-        w_hat0[i] = t_to_n_for_H[i];
-        w_hat1[i] = w_bar[i];
+        w_hat[0].push_back(t_to_n_for_H[i]);
+        w_hat[1].push_back(w_bar[i]);
     }
-
-    w_hat0[3] = 150;
-    w_hat1[3] = 42;
-    w_hat0[4] = 80;
-    w_hat1[4] = 180;
-
-    x_values.assign(w_hat0, w_hat0 + n-t+b);
-    y_values.assign(w_hat1, w_hat1 + n-t+b);
-    setupLagrangePolynomial(x_values, y_values, p, "w_hat(x)");
+    for(int64_t i = n; i < n+b; i++){
+        w_hat[0].push_back(zA[0][i]);
+        w_hat[1].push_back(generateRandomNumber(H, p));
+    }
+    // w_hat[0].push_back(150);
+    // w_hat[1].push_back(42);
+    // w_hat[0].push_back(80);
+    // w_hat[1].push_back(180);
+    setupLagrangePolynomial(w_hat[0], w_hat[1], p, "w_hat(x)");
 
     // Parse the polynomials
     vector<int64_t> z_hatA = parsePolynomial(LagrangeOutput["z_hatA(x)"]);
@@ -926,14 +1015,37 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
 
 
     // Start with the first polynomial (x - H)
-    vector<int64_t> vH_x = createLinearPolynomial(H[0]);
+    // vector<int64_t> vH_x = createLinearPolynomial(H[0]);
 
-    // Multiply (x - H) for all other H
-    for (size_t i = 1; i < n; i++) {
-        vector<int64_t> nextPoly = createLinearPolynomial(H[i]);
-        vH_x = multiplyPolynomials(vH_x, nextPoly, p);
+    // // Multiply (x - H) for all other H
+    // for (size_t i = 1; i < n; i++) {
+    //     vector<int64_t> nextPoly = createLinearPolynomial(H[i]);
+    //     vH_x = multiplyPolynomials(vH_x, nextPoly, p);
+    // }
+    vector<int64_t> vH_x(n + 1, 0);
+    vH_x[0] = (-1) % p;
+    if (vH_x[0] < 0) {
+        vH_x[0] += p;
     }
+    vH_x[n] = 1;
+    
+    vector<int64_t> vK_x(m + 1, 0);
+    vK_x[0] = (-1) % p;
+    if (vK_x[0] < 0) {
+        vK_x[0] += p;
+    }
+    vK_x[m] = 1;
     storePolynomial(vH_x, "vH(x)");
+
+    
+
+    // vector<int64_t> vK_x = createLinearPolynomial(K[0]);
+    // // Multiply (x - K) for all other K
+    // for (size_t i = 1; i < K.size(); i++) {
+    //     vector<int64_t> nextPoly = createLinearPolynomial(K[i]);
+    //     vK_x = multiplyPolynomials(vK_x, nextPoly, p);
+    // }
+    storePolynomial(vK_x, "vK(x)");
 
 
     // Example division: Dividing the product of zAzB_zC by vH_x
@@ -952,10 +1064,10 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
 
 
     // Create a random device and a Mersenne Twister random number generator
-    std::random_device rd;
-    std::mt19937_64 gen(rd());
-    // Define a uniform distribution for uint64_t numbers in the range [0, mod-1]
-    std::uniform_int_distribution<uint64_t> dis(0, p - 1);
+    // std::random_device rd;
+    // std::mt19937_64 gen(rd());
+    // // Define a uniform distribution for int64_t numbers in the range [0, mod-1]
+    // std::uniform_int_distribution<int64_t> dis(0, p - 1);
 
     // Generate random numbers with the modulus applied
     // int64_t alpha = dis(gen);
@@ -963,6 +1075,11 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     // int64_t etaB = dis(gen);
     // int64_t etaC = dis(gen);
 
+    // int64_t alpha = hashAndExtractLower4Bytes((s_x[0] + s_x[1] + 1), p);
+    // int64_t etaA = hashAndExtractLower4Bytes((s_x[2] + s_x[3] + 2), p);
+    // int64_t etaB = hashAndExtractLower4Bytes((s_x[4] + s_x[5] + 3), p);
+    // int64_t etaC = hashAndExtractLower4Bytes((s_x[6] + s_x[7] + 4), p);
+    
     int64_t alpha = 10;
     int64_t etaA = 2;
     int64_t etaB = 30;
@@ -974,14 +1091,10 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     cout << "etaB: " << etaB << endl;
     cout << "etaC: " << etaC << endl;
 
-    vector<int64_t> etaA_z_hatA_x(n+b);
-    vector<int64_t> etaB_z_hatB_x(n+b);
-    vector<int64_t> etaC_z_hatC_x(n+b);
+    vector<int64_t> etaA_z_hatA_x = multiplyPolynomialByNumber(z_hatA, etaA, p);
+    vector<int64_t> etaB_z_hatB_x = multiplyPolynomialByNumber(z_hatB, etaB, p);
+    vector<int64_t> etaC_z_hatC_x = multiplyPolynomialByNumber(z_hatC, etaC, p);
     
-    etaA_z_hatA_x = multiplyPolynomialByNumber(z_hatA, etaA, p);
-    etaB_z_hatB_x = multiplyPolynomialByNumber(z_hatB, etaB, p);
-    etaC_z_hatC_x = multiplyPolynomialByNumber(z_hatC, etaC, p);
-
     vector<int64_t> Sum_M_eta_M_z_hat_M_x = addPolynomials(addPolynomials(etaA_z_hatA_x, etaB_z_hatB_x, p), etaC_z_hatC_x, p);
     storePolynomial(Sum_M_eta_M_z_hat_M_x, "Sum_M_z_hatM(x)");
 
@@ -1006,36 +1119,46 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     // Get the non-zero rows from matrix A
     vector<vector<int64_t>> nonZeroRowsA = getNonZeroRows(A);
     // Create the rowA mapping
-    vector<vector<int64_t>> rowA;
-    rowA = createMapping(K, H, nonZeroRowsA);
+    vector<vector<int64_t>> rowA = createMapping(K, H, nonZeroRowsA);
     // Print the rowA mapping
-    rowA[3][1] = 1;
-    rowA[4][1] = 135;
-    rowA[5][1] = 125;
-    rowA[6][1] = 59;
-    rowA[7][1] = 42;
-    rowA[8][1] = 1;
+    // rowA[3][0] = 48;
+    // rowA[3][1] = 1;
+    // rowA[4][0] = 73;
+    // rowA[4][1] = 135;
+    // rowA[5][0] = 62;
+    // rowA[5][1] = 125;
+    // rowA[6][0] = 132;
+    // rowA[6][1] = 59;
+    // rowA[7][0] = 65;
+    // rowA[7][1] = 42;
+    // rowA[8][0] = 80;
+    // rowA[8][1] = 1;
     printMapping(rowA, "row_A");
 
     // Get the non-zero cols from matrix A
     vector<vector<int64_t>> nonZeroColsA = getNonZeroCols(A);
     // Create the colA mapping
-    vector<vector<int64_t>> colA;
-    colA = createMapping(K, H, nonZeroColsA);
+    vector<vector<int64_t>> colA = createMapping(K, H, nonZeroColsA);
     // Print the colA mapping
-    colA[3][1] = 42;
-    colA[4][1] = 1;
-    colA[5][1] = 135;
-    colA[6][1] = 125;
-    colA[7][1] = 59;
-    colA[8][1] = 42;
+    // colA[3][0] = 48;
+    // colA[3][1] = 42;
+    // colA[4][0] = 73;
+    // colA[4][1] = 1;
+    // colA[5][0] = 62;
+    // colA[5][1] = 135;
+    // colA[6][0] = 132;
+    // colA[6][1] = 125;
+    // colA[7][0] = 65;
+    // colA[7][1] = 59;
+    // colA[8][0] = 80;
+    // colA[8][1] = 42;
     printMapping(colA, "col_A");
     
     vector<vector<int64_t>> valA = valMapping(K, H, nonZeroRowsA, nonZeroColsA, p);
     printMapping(valA, "val_A");
 
     vector<int64_t> A_hat(H.size(), 0);
-    for (uint64_t i = 0; i < nonZeroRowsA.size(); i++) {
+    for (int64_t i = 0; i < nonZeroRowsA.size(); i++) {
         vector<int64_t> buff_n = calculatePolynomial_r_alpha_x(rowA[i][1], H.size(), p);
         int64_t eval = evaluatePolynomial(buff_n, rowA[i][1], p);
         vector<int64_t> buff = calculatePolynomial_r_alpha_x(colA[i][1], H.size(), p);
@@ -1058,30 +1181,38 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
 
 
     vector<vector<int64_t>> nonZeroRowsB = getNonZeroRows(B);
-    vector<vector<int64_t>> rowB;
-    rowB = createMapping(K, H, nonZeroRowsB);
-    rowB[4][1] = 59;
-    rowB[5][1] = 1;
-    rowB[6][1] = 42;
-    rowB[7][1] = 135;
-    rowB[8][1] = 59;
+    vector<vector<int64_t>> rowB = createMapping(K, H, nonZeroRowsB);
+    // rowB[4][0] = 73;
+    // rowB[4][1] = 59;
+    // rowB[5][0] = 62;
+    // rowB[5][1] = 1;
+    // rowB[6][0] = 132;
+    // rowB[6][1] = 42;
+    // rowB[7][0] = 65;
+    // rowB[7][1] = 135;
+    // rowB[8][0] = 80;
+    // rowB[8][1] = 59;
     printMapping(rowB, "row_B");
 
     vector<vector<int64_t>> nonZeroColsB = getNonZeroCols(B);
-    vector<vector<int64_t>> colB;
-    colB = createMapping(K, H, nonZeroColsB);
-    colB[4][1] = 59;
-    colB[5][1] = 42;
-    colB[6][1] = 125;
-    colB[7][1] = 1;
-    colB[8][1] = 135;
+    vector<vector<int64_t>> colB = createMapping(K, H, nonZeroColsB);
+    // colB[4][0] = 73;
+    // colB[4][1] = 59;
+    // colB[5][0] = 62;
+    // colB[5][1] = 42;
+    // colB[6][0] = 132;
+    // colB[6][1] = 125;
+    // colB[7][0] = 65;
+    // colB[7][1] = 1;
+    // colB[8][0] = 80;
+    // colB[8][1] = 135;
     printMapping(colB, "col_B");
 
     vector<vector<int64_t>> valB = valMapping(K, H, nonZeroRowsB, nonZeroColsB, p);
     printMapping(valB, "val_B");
 
     vector<int64_t> B_hat(H.size(), 0);
-    for (uint64_t i = 0; i < nonZeroRowsB.size(); i++) {
+    for (int64_t i = 0; i < nonZeroRowsB.size(); i++) {
         vector<int64_t> buff_n = calculatePolynomial_r_alpha_x(rowB[i][1], H.size(), p);
         int64_t eval = evaluatePolynomial(buff_n, rowB[i][1], p);
         vector<int64_t> buff = calculatePolynomial_r_alpha_x(colB[i][1], H.size(), p);
@@ -1101,36 +1232,43 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     }
     storePolynomial(B_hat, "B_hat");
 
-
-
-
     vector<vector<int64_t>> nonZeroRowsC = getNonZeroRows(C);
-    vector<vector<int64_t>> rowC;
-    rowC = createMapping(K, H, nonZeroRowsC);
-    rowC[3][1] = 1;
-    rowC[4][1] = 59;
-    rowC[5][1] = 125;
-    rowC[6][1] = 1;
-    rowC[7][1] = 135;
-    rowC[8][1] = 42;
+    vector<vector<int64_t>> rowC = createMapping(K, H, nonZeroRowsC);
+    // rowC[3][0] = 48;
+    // rowC[3][1] = 1;
+    // rowC[4][0] = 73;
+    // rowC[4][1] = 59;
+    // rowC[5][0] = 62;
+    // rowC[5][1] = 125;
+    // rowC[6][0] = 132;
+    // rowC[6][1] = 1;
+    // rowC[7][0] = 65;
+    // rowC[7][1] = 135;
+    // rowC[8][0] = 80;
+    // rowC[8][1] = 42;
     printMapping(rowC, "row_C");
 
     vector<vector<int64_t>> nonZeroColsC = getNonZeroCols(C);
-    vector<vector<int64_t>> colC;
-    colC = createMapping(K, H, nonZeroColsC);
-    colC[3][1] = 125;
-    colC[4][1] = 59;
-    colC[5][1] = 1;
-    colC[6][1] = 1;
-    colC[7][1] = 42;
-    colC[8][1] = 59;
+    vector<vector<int64_t>> colC = createMapping(K, H, nonZeroColsC);
+    // colC[3][0] = 48;
+    // colC[3][1] = 125;
+    // colC[4][0] = 73;
+    // colC[4][1] = 59;
+    // colC[5][0] = 62;
+    // colC[5][1] = 1;
+    // colC[6][0] = 132;
+    // colC[6][1] = 1;
+    // colC[7][0] = 65;
+    // colC[7][1] = 42;
+    // colC[8][0] = 80;
+    // colC[8][1] = 59;
     printMapping(colC, "col_C");
     
     vector<vector<int64_t>> valC = valMapping(K, H, nonZeroRowsC, nonZeroColsC, p);
     printMapping(valC, "val_C");
 
     vector<int64_t> C_hat(H.size(), 0);
-    for (uint64_t i = 0; i < nonZeroRowsC.size(); i++) {
+    for (int64_t i = 0; i < nonZeroRowsC.size(); i++) {
         vector<int64_t> buff_n = calculatePolynomial_r_alpha_x(rowC[i][1], H.size(), p);
         int64_t eval = evaluatePolynomial(buff_n, rowC[i][1], p);
         vector<int64_t> buff = calculatePolynomial_r_alpha_x(colC[i][1], H.size(), p);
@@ -1182,6 +1320,7 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
 
     // int64_t beta1 = generateRandomNumber(H, p);
     int64_t beta1 = 22;
+    // int64_t beta1 = hashAndExtractLower4Bytes(s_x[8], p);
     cout << "beta1 = " << beta1 << endl;
 
 
@@ -1194,7 +1333,7 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     vector<int64_t> A_hat_M_hat(H.size(), 0);
     vector<int64_t> B_hat_M_hat(H.size(), 0);
     vector<int64_t> C_hat_M_hat(H.size(), 0);
-    for (uint64_t i = 0; i < nonZeroRowsA.size(); i++) {
+    for (int64_t i = 0; i < nonZeroRowsA.size(); i++) {
         vector<int64_t> buff_nA = calculatePolynomial_r_alpha_x(colA[i][1], H.size(), p);
         int64_t evalA = evaluatePolynomial(buff_nA, beta1, p);
         vector<int64_t> buffA = calculatePolynomial_r_alpha_x(rowA[i][1], H.size(), p);
@@ -1211,7 +1350,7 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
             A_hat_M_hat = buffA;
         }
     }
-    for (uint64_t i = 0; i < nonZeroRowsB.size(); i++) {
+    for (int64_t i = 0; i < nonZeroRowsB.size(); i++) {
         vector<int64_t> buff_nB = calculatePolynomial_r_alpha_x(colB[i][1], H.size(), p);
         int64_t evalB = evaluatePolynomial(buff_nB, beta1, p);
         vector<int64_t> buffB = calculatePolynomial_r_alpha_x(rowB[i][1], H.size(), p);
@@ -1228,7 +1367,7 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
             B_hat_M_hat = buffB;
         }
     }
-    for (uint64_t i = 0; i < nonZeroRowsC.size(); i++) {
+    for (int64_t i = 0; i < nonZeroRowsC.size(); i++) {
         vector<int64_t> buff_nC = calculatePolynomial_r_alpha_x(colC[i][1], H.size(), p);
         int64_t evalC = evaluatePolynomial(buff_nC, beta1, p);
         vector<int64_t> buffC = calculatePolynomial_r_alpha_x(rowC[i][1], H.size(), p);
@@ -1272,6 +1411,7 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
 
     // int64_t beta2 = generateRandomNumber(H, p);
     int64_t beta2 = 80;
+    // int64_t beta2 = hashAndExtractLower4Bytes(s_x[9], p);
     cout << "beta2 = " << beta2 << endl;
 
 
@@ -1390,7 +1530,6 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     ordered_json commitment ;
     commitment.clear();
     commitment["m"] = m;
-    commitment["t"] = t;
     commitment["n"] = n;
     commitment["ComRowA"] = rowA_x;
     commitment["ComColA"] = colA_x;
@@ -1418,35 +1557,44 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
 
     vector<int64_t> points_f_3 (K.size(), 0);
     int64_t sigma3 = 0;
-    for (uint64_t i = 0; i < K.size(); i++) {
-        int64_t sig3_A = 0;
-        int64_t sig3_B = 0;
-        int64_t sig3_C = 0;
-
+    for (int64_t i = 0; i < K.size(); i++) {
         int64_t deA = (beta2 - evaluatePolynomial(rowA_x, K[i], p)) * (beta1 - evaluatePolynomial(colA_x, K[i], p)) % p;
-        int64_t deB = (beta2 - evaluatePolynomial(rowB_x, K[i], p)) * (beta1 - evaluatePolynomial(colB_x, K[i], p)) % p;
-        int64_t deC = (beta2 - evaluatePolynomial(rowC_x, K[i], p)) * (beta1 - evaluatePolynomial(colC_x, K[i], p)) % p;
         if (deA < 0) deA += p;
+
+        int64_t deB = (beta2 - evaluatePolynomial(rowB_x, K[i], p)) * (beta1 - evaluatePolynomial(colB_x, K[i], p)) % p;
         if (deB < 0) deB += p;
+
+        int64_t deC = (beta2 - evaluatePolynomial(rowC_x, K[i], p)) * (beta1 - evaluatePolynomial(colC_x, K[i], p)) % p;
         if (deC < 0) deC += p;
 
-        sig3_A = etaA * ((vH_beta2 * vH_beta1 * evaluatePolynomial(valA_x, K[i], p)) * (mod_inverse(deA, p))) % p;
-        sig3_B = etaB * ((vH_beta2 * vH_beta1 * evaluatePolynomial(valB_x, K[i], p)) * (mod_inverse(deB, p))) % p;
-        sig3_C = etaC * ((vH_beta2 * vH_beta1 * evaluatePolynomial(valC_x, K[i], p)) * (mod_inverse(deC, p))) % p;
+        int64_t sig3_A = (etaA * (vH_beta2 * vH_beta1 % p ) % p * evaluatePolynomial(valA_x, K[i], p) % p * modInverse(deA, p)) % p;
+        if (sig3_A < 0) sig3_A += p;
+
+        int64_t sig3_B = (etaB * (vH_beta2 * vH_beta1 % p ) % p * evaluatePolynomial(valB_x, K[i], p) % p * modInverse(deB, p)) % p;
+        if (sig3_B < 0) sig3_B += p;
+
+        int64_t sig3_C = (etaC * (vH_beta2 * vH_beta1 % p ) % p * evaluatePolynomial(valC_x, K[i], p) % p * modInverse(deC, p)) % p;
+        if (sig3_C < 0) sig3_C += p;
         
         points_f_3[i] = (sig3_A + sig3_B + sig3_C) % p;
         sigma3 += points_f_3[i];
         sigma3 %= p;
     }
+
+    
     
     cout << "sigma3 = " << sigma3 << endl;
-    
+
     vector<int64_t> poly_beta1 = {beta1};
     vector<int64_t> poly_beta2 = {beta2};
     
     vector<int64_t> poly_pi_a = multiplyPolynomials(subtractPolynomials(rowA_x, poly_beta2, p), subtractPolynomials(colA_x, poly_beta1, p), p);
     vector<int64_t> poly_pi_b = multiplyPolynomials(subtractPolynomials(rowB_x, poly_beta2, p), subtractPolynomials(colB_x, poly_beta1, p), p);
     vector<int64_t> poly_pi_c = multiplyPolynomials(subtractPolynomials(rowC_x, poly_beta2, p), subtractPolynomials(colC_x, poly_beta1, p), p);
+    storePolynomial(poly_pi_c, "poly_pi_a");
+    storePolynomial(poly_pi_b, "poly_pi_b");
+    storePolynomial(poly_pi_c, "poly_pi_c");
+
 
     vector<int64_t> poly_etaA_vH_B2_vH_B1 = {(etaA * vH_beta2 * vH_beta1) % p};
     vector<int64_t> poly_etaB_vH_B2_vH_B1 = {(etaB * vH_beta2 * vH_beta1) % p};
@@ -1464,14 +1612,6 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
 
 
 
-    vector<int64_t> vK_x = createLinearPolynomial(K[0]);
-    // Multiply (x - K) for all other K
-    for (size_t i = 1; i < K.size(); i++) {
-        vector<int64_t> nextPoly = createLinearPolynomial(K[i]);
-        vK_x = multiplyPolynomials(vK_x, nextPoly, p);
-    }
-    storePolynomial(vK_x, "vK(x)");
-
     setupLagrangePolynomial(K, points_f_3, p, "poly_f_3(x)");
     vector<int64_t> poly_f_3x = parsePolynomial(LagrangeOutput["poly_f_3(x)"]);
 
@@ -1480,7 +1620,7 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     storePolynomial(g_3_x, "g3(x)");
     
     vector<int64_t> sigma_3_set_k;
-    sigma_3_set_k.push_back((sigma3 * mod_inverse(K.size(), p)) % p);
+    sigma_3_set_k.push_back((sigma3 * modInverse(K.size(), p)) % p);
     cout << "sigma_3_set_k: " << sigma_3_set_k[0] << endl;
     
     vector<int64_t> poly_f_3x_new = subtractPolynomials(poly_f_3x, sigma_3_set_k, p);
@@ -1496,16 +1636,17 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
     proof["P3AHP"] = z_hatA;
     proof["P4AHP"] = z_hatB;
     proof["P5AHP"] = z_hatC;
-    proof["P6AHP"] = h_0_x;
-    proof["P7AHP"] = s_x;
-    proof["P8AHP"] = g_1_x;
-    proof["P9AHP"] = h_1_x;
-    proof["P10AHP"] = sigma2;
-    proof["P11AHP"] = g_2_x;
-    proof["P12AHP"] = h_2_x;
-    proof["P13AHP"] = sigma3;
-    proof["P14AHP"] = g_3_x;
-    proof["P15AHP"] = h_3_x;
+    proof["P6AHP"] = z_hat_x;
+    proof["P7AHP"] = h_0_x;
+    proof["P8AHP"] = s_x;
+    proof["P9AHP"] = g_1_x;
+    proof["P10AHP"] = h_1_x;
+    proof["P11AHP"] = sigma2;
+    proof["P12AHP"] = g_2_x;
+    proof["P13AHP"] = h_2_x;
+    proof["P14AHP"] = sigma3;
+    proof["P15AHP"] = g_3_x;
+    proof["P16AHP"] = h_3_x;
     proof["curve"] = "bn128";
     proof["protocol"] = "fidesv1";
 
@@ -1528,35 +1669,9 @@ void ZKP::createMat(const std::string& filename, std::vector<std::vector<int64_t
 
     int64_t beta_3 = 5;
 
-
-
-    // int64_t value = 1234567890123456789; // Example int64_t value
-
-    // // Convert int64_t to byte array
-    // unsigned char byteArray[sizeof(int64_t)];
-    // int64ToByteArray(value, byteArray);
-
-    // // Compute SHA256 hash
-    // unsigned char hash[SHA256_DIGEST_LENGTH];
-    // SHA256(byteArray, sizeof(byteArray), hash);
-
-    // // Print the hash in hexadecimal format
-    // std::cout << "SHA256 hash: ";
-    // for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
-    //     std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(hash[i]);
-    // }
-    // std::cout << std::endl;
-
-
 }
 
 void ZKP::AHPverify(int64_t mod) {
-    int64_t alpha = 10;
-    int64_t beta1 = 22;
-    int64_t beta2 = 80;
-    int64_t beta3 = 5;
-
-
     // Create a JSON object
     nlohmann::json jsonData;
     // Open the JSON file for reading
@@ -1575,19 +1690,41 @@ void ZKP::AHPverify(int64_t mod) {
     vector<int64_t> z_hatA = jsonData["P3AHP"].get<vector<int64_t>>();
     vector<int64_t> z_hatB = jsonData["P4AHP"].get<vector<int64_t>>();
     vector<int64_t> z_hatC = jsonData["P5AHP"].get<vector<int64_t>>();
-    vector<int64_t> h_0_x = jsonData["P6AHP"].get<vector<int64_t>>();
-    vector<int64_t> s_x = jsonData["P7AHP"].get<vector<int64_t>>();
-    vector<int64_t> g_1_x = jsonData["P8AHP"].get<vector<int64_t>>();
-    vector<int64_t> h_1_x = jsonData["P9AHP"].get<vector<int64_t>>();
-    int64_t sigma2 = jsonData["P10AHP"].get<int64_t>();
-    vector<int64_t> g_2_x = jsonData["P11AHP"].get<vector<int64_t>>();
-    vector<int64_t> h_2_x = jsonData["P12AHP"].get<vector<int64_t>>();
-    int64_t sigma3 = jsonData["P13AHP"].get<int64_t>();
-    vector<int64_t> g_3_x = jsonData["P14AHP"].get<vector<int64_t>>();
-    vector<int64_t> h_3_x = jsonData["P15AHP"].get<vector<int64_t>>();
+    vector<int64_t> z_hat_x = jsonData["P6AHP"].get<vector<int64_t>>();
+    vector<int64_t> h_0_x = jsonData["P7AHP"].get<vector<int64_t>>();
+    vector<int64_t> s_x = jsonData["P8AHP"].get<vector<int64_t>>();
+    vector<int64_t> g_1_x = jsonData["P9AHP"].get<vector<int64_t>>();
+    vector<int64_t> h_1_x = jsonData["P10AHP"].get<vector<int64_t>>();
+    int64_t sigma2 = jsonData["P11AHP"].get<int64_t>();
+    vector<int64_t> g_2_x = jsonData["P12AHP"].get<vector<int64_t>>();
+    vector<int64_t> h_2_x = jsonData["P13AHP"].get<vector<int64_t>>();
+    int64_t sigma3 = jsonData["P14AHP"].get<int64_t>();
+    vector<int64_t> g_3_x = jsonData["P15AHP"].get<vector<int64_t>>();
+    vector<int64_t> h_3_x = jsonData["P16AHP"].get<vector<int64_t>>();
     string curve = jsonData["curve"];
     string protocol = jsonData["protocol"];
 
+    // sigma3 = 865199376;
+
+    int64_t alpha = 10;
+    int64_t etaA = 2;
+    int64_t etaB = 30;
+    int64_t etaC = 100;
+    // int64_t alpha = hashAndExtractLower4Bytes((s_x[0] + s_x[1] + 1), mod);
+    // int64_t etaA = hashAndExtractLower4Bytes((s_x[2] + s_x[3] + 2), mod);
+    // int64_t etaB = hashAndExtractLower4Bytes((s_x[4] + s_x[5] + 3), mod);
+    // int64_t etaC = hashAndExtractLower4Bytes((s_x[6] + s_x[7] + 4), mod);
+
+    int64_t beta1 = 22;
+    int64_t beta2 = 80;
+    int64_t beta3 = 5;
+    // int64_t beta1 = hashAndExtractLower4Bytes(s_x[8], mod);
+    // int64_t beta2 = hashAndExtractLower4Bytes(s_x[9], mod);
+    // int64_t beta3 = generateRandomNumber({0}, mod);
+    cout << "alpha: " << alpha << endl;
+    cout << "etaA: " << etaA << endl;
+    cout << "etaB: " << etaB << endl;
+    cout << "etaC: " << etaC << endl;
 
     std::ifstream commitmentFile("commitment.json");
     if (!commitmentFile.is_open()) {
@@ -1596,7 +1733,6 @@ void ZKP::AHPverify(int64_t mod) {
     commitmentFile >> jsonData;
     commitmentFile.close();
     int64_t m = jsonData["m"].get<int64_t>();
-    int64_t t = jsonData["t"].get<int64_t>();
     int64_t n = jsonData["n"].get<int64_t>();
     vector<int64_t> rowA_x = jsonData["ComRowA"].get<vector<int64_t>>();
     vector<int64_t> colA_x = jsonData["ComColA"].get<vector<int64_t>>();
@@ -1608,42 +1744,101 @@ void ZKP::AHPverify(int64_t mod) {
     vector<int64_t> colC_x = jsonData["ComColC"].get<vector<int64_t>>();
     vector<int64_t> valC_x = jsonData["ComValC"].get<vector<int64_t>>();
 
-    vector<int64_t> vK_x = parsePolynomial(LagrangeOutput["vK(x)"]);
-    vector<int64_t> vH_x = parsePolynomial(LagrangeOutput["vH(x)"]);
-    vector<int64_t> a_x = parsePolynomial(LagrangeOutput["a(x)"]);
-    vector<int64_t> b_x = parsePolynomial(LagrangeOutput["b(x)"]);
 
-    // vector<int64_t> r_alpha_x = parsePolynomial(LagrangeOutput["r(alpha, x)"]);
     vector<int64_t> r_alpha_x = calculatePolynomial_r_alpha_x(alpha, n, mod);
-
-    vector<int64_t> Sum_M_eta_M_z_hat_M_x = parsePolynomial(LagrangeOutput["Sum_M_z_hatM(x)"]);
-    vector<int64_t> z_hat_x = parsePolynomial(LagrangeOutput["z_hat(x)"]);
-
+    
+    vector<int64_t> vH_x(n + 1, 0);
+    vH_x[0] = (-1) % mod;
+    if (vH_x[0] < 0) {
+        vH_x[0] += mod;
+    }
+    vH_x[n] = 1;
+    
+    vector<int64_t> vK_x(m + 1, 0);
+    vK_x[0] = (-1) % mod;
+    if (vK_x[0] < 0) {
+        vK_x[0] += mod;
+    }
+    vK_x[m] = 1;
+        storePolynomial(vK_x, "vK(x)");
 
     
+    // calculating a(x) and b(x)
+    vector<int64_t> poly_beta1 = {beta1};
+    vector<int64_t> poly_beta2 = {beta2};
+    vector<int64_t> poly_pi_a = multiplyPolynomials(subtractPolynomials(rowA_x, poly_beta2, mod), subtractPolynomials(colA_x, poly_beta1, mod), mod);
+    vector<int64_t> poly_pi_b = multiplyPolynomials(subtractPolynomials(rowB_x, poly_beta2, mod), subtractPolynomials(colB_x, poly_beta1, mod), mod);
+    vector<int64_t> poly_pi_c = multiplyPolynomials(subtractPolynomials(rowC_x, poly_beta2, mod), subtractPolynomials(colC_x, poly_beta1, mod), mod);
 
+    int64_t vH_beta1 = evaluatePolynomial(vH_x, beta1, mod);
+    int64_t vH_beta2 = evaluatePolynomial(vH_x, beta2, mod);
+    
+    vector<int64_t> etaA_z_hatA_x = multiplyPolynomialByNumber(z_hatA, etaA, mod);
+    vector<int64_t> etaB_z_hatB_x = multiplyPolynomialByNumber(z_hatB, etaB, mod);
+    vector<int64_t> etaC_z_hatC_x = multiplyPolynomialByNumber(z_hatC, etaC, mod);
+
+    vector<int64_t> Sum_M_eta_M_z_hat_M_x = addPolynomials(addPolynomials(etaA_z_hatA_x, etaB_z_hatB_x, mod), etaC_z_hatC_x, mod);
+
+
+    vector<int64_t> poly_etaA_vH_B2_vH_B1 = {(etaA * vH_beta2 * vH_beta1) % mod};
+    vector<int64_t> poly_etaB_vH_B2_vH_B1 = {(etaB * vH_beta2 * vH_beta1) % mod};
+    vector<int64_t> poly_etaC_vH_B2_vH_B1 = {(etaC * vH_beta2 * vH_beta1) % mod};
+    vector<int64_t> poly_sig_a = multiplyPolynomials(poly_etaA_vH_B2_vH_B1, valA_x, mod);
+    vector<int64_t> poly_sig_b = multiplyPolynomials(poly_etaB_vH_B2_vH_B1, valB_x, mod);
+    vector<int64_t> poly_sig_c = multiplyPolynomials(poly_etaC_vH_B2_vH_B1, valC_x, mod);
+    vector<int64_t> a_x = addPolynomials(addPolynomials(multiplyPolynomials(poly_sig_a, multiplyPolynomials(poly_pi_b, poly_pi_c, mod), mod), multiplyPolynomials(poly_sig_b, multiplyPolynomials(poly_pi_a, poly_pi_c, mod), mod), mod), multiplyPolynomials(poly_sig_c, multiplyPolynomials(poly_pi_a, poly_pi_b, mod), mod), mod);
+    vector<int64_t> b_x = multiplyPolynomials(multiplyPolynomials(poly_pi_a, poly_pi_b, mod), poly_pi_c, mod);
+    
     bool verify = false;
-    int64_t eq11 = (evaluatePolynomial(h_3_x, beta3, mod) * evaluatePolynomial(vK_x, beta3, mod)) % mod; // 22780
-    int64_t eq12 = (evaluatePolynomial(a_x, beta3, mod) - ((evaluatePolynomial(b_x, beta3, mod) * (beta3 * evaluatePolynomial(g_3_x, beta3, mod) + (sigma3 * mod_inverse(m, mod))))) % mod); // 17 - 32 * (5*84 + 84/9)
 
-    int64_t eq21 = (evaluatePolynomial(r_alpha_x, beta2, mod) * sigma3) % mod;
-    int64_t eq22 = (evaluatePolynomial(h_2_x, beta2, mod) * evaluatePolynomial(vH_x, beta2, mod) + beta2 * evaluatePolynomial(g_2_x, beta2, mod) + sigma2 * mod_inverse(n, mod)) % mod;
-    if (eq12 < 0) eq12 += mod;
+    int64_t eq11 = (evaluatePolynomial(h_3_x, beta3, mod) * evaluatePolynomial(vK_x, beta3, mod)) % mod;
+    // int64_t eq12 = (evaluatePolynomial(a_x, beta3, mod) - (((evaluatePolynomial(b_x, beta3, mod) * (beta3 * evaluatePolynomial(g_3_x, beta3, mod) % mod) + (sigma3 * modInverse(m, mod)) % mod))) % mod);
+    int64_t eq12 = (evaluatePolynomial(a_x, beta3, mod) - ((evaluatePolynomial(b_x, beta3, mod) * (beta3 * evaluatePolynomial(g_3_x, beta3, mod) + (sigma3 * modInverse(m, mod)))))) % mod; // 17 - 32 * (5*84 + 84/9)
+
+    cout << "eq12 one = " << eq12 << endl;    
+
     eq12 %= mod;
 
+    cout << "eq12 two = " << eq12 << endl;
+
+    if (eq12 < 0) eq12 += mod;
+
+    cout << "eq12 three = " << eq12 << endl;
+
+    int64_t eq21 = (evaluatePolynomial(r_alpha_x, beta2, mod) * sigma3) % mod;
+    int64_t eq22 = (evaluatePolynomial(h_2_x, beta2, mod) * evaluatePolynomial(vH_x, beta2, mod) + beta2 * evaluatePolynomial(g_2_x, beta2, mod) + sigma2 * modInverse(n, mod)) % mod;
+    eq12 %= mod;
+    if (eq12 < 0) eq12 += mod;
+
     int64_t eq31 = (evaluatePolynomial(s_x, beta1, mod) + evaluatePolynomial(r_alpha_x, beta1, mod) * evaluatePolynomial(Sum_M_eta_M_z_hat_M_x, beta1, mod) - sigma2 * evaluatePolynomial(z_hat_x, beta1, mod));
-    int64_t eq32 = (evaluatePolynomial(h_1_x, beta1, mod) * evaluatePolynomial(vH_x, beta1, mod) + beta1 * evaluatePolynomial(g_1_x, beta1, mod) + sigma1 * mod_inverse(n, mod)) % mod;
-    if (eq31 < 0) eq31 += mod;
+    int64_t eq32 = (evaluatePolynomial(h_1_x, beta1, mod) * evaluatePolynomial(vH_x, beta1, mod) + beta1 * evaluatePolynomial(g_1_x, beta1, mod) + sigma1 * modInverse(n, mod)) % mod;
     eq31 %= mod;
+    if (eq31 < 0) eq31 += mod;
 
     int64_t eq41 = (evaluatePolynomial(z_hatA, beta1, mod) * evaluatePolynomial(z_hatB, beta1, mod) - evaluatePolynomial(z_hatC, beta1, mod));
     int64_t eq42 = (evaluatePolynomial(h_0_x, beta1, mod) * evaluatePolynomial(vH_x, beta1, mod)) % mod;
-    if (eq41 < 0) eq41 += mod;
     eq41 %= mod;
+    if (eq41 < 0) eq41 += mod;
 
     if (eq11 == eq12 && eq21 == eq22 && eq31 == eq32 && eq41 == eq42) {
         verify = true;
     }
+
+    
+    cout << endl;
+    cout << "eq11: " << eq11 << endl;
+    cout << "eq12: " << eq12 << endl;
+    cout << endl;
+    cout << "eq21: " << eq21 << endl;
+    cout << "eq22: " << eq22 << endl;
+    cout << endl;
+    cout << "eq31: " << eq31 << endl;
+    cout << "eq32: " << eq32 << endl;
+    cout << endl;
+    cout << "eq41: " << eq41 << endl;
+    cout << "eq42: " << eq42 << endl;
+    cout << endl;
+
     cout << "verify: " << verify << endl;
 }
 

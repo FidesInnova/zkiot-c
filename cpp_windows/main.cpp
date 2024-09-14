@@ -3,7 +3,7 @@
 #include "zkp.h"
 
 int main() {
-    int64_t p = 181;
+    int64_t p = 181;// 18446744069414584321;// 2013265921; // 181;
     int64_t g = 2;
     int64_t d = 111213119;
     int64_t l = 8;
@@ -26,13 +26,13 @@ int main() {
 
         // Print the matrices
         auto printMatrix = [](const std::vector<std::vector<int64_t>>& matrix, const std::string& name) {
-            // std::cout << "Matrix " << name << ":" << std::endl;
-            // for (const auto& row : matrix) {
-            //     for (int64_t val : row) {
-            //         std::cout << val << " ";
-            //     }
-            //     std::cout << std::endl;
-            // }
+             std::cout << "Matrix " << name << ":" << std::endl;
+             for (const auto& row : matrix) {
+                 for (int64_t val : row) {
+                     std::cout << val << " ";
+                 }
+                 std::cout << std::endl;
+             }
         };
 
         printMatrix(A, "A");
