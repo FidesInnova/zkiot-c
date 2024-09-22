@@ -4,7 +4,6 @@
 
 
 
-
 # Zero-Knowledge Internet of Things (zk-IoT) in C++
 
 <a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
