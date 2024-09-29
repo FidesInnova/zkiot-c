@@ -982,7 +982,8 @@ void FidesInnova::Commitment(String path, int64_t g, int64_t b, int64_t mod) {
   // res = Polynomial::power(g, newPower, mod);
   // ck.push_back(res);
   for (int64_t i = 0; i < d_AHP; ++i) {
-    res = Polynomial::power(g, Polynomial::power(119, i, mod), mod);
+    // Note that alpha ^ i is in mod-1
+    res = Polynomial::power(g, Polynomial::power(119, i, mod-1), mod);
     // res = Polynomial::power(res, newPower, mod);
     ck.push_back(res);
   }
