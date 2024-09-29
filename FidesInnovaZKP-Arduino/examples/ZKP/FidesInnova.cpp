@@ -905,6 +905,53 @@ void FidesInnova::Commitment(String path, int64_t g, int64_t b, int64_t mod) {
   vector<int64_t> h_3_x = Polynomial::dividePolynomials(Polynomial::subtractPolynomials(a_x, Polynomial::multiplyPolynomials(b_x, Polynomial::addPolynomials(poly_f_3x_new, sigma_3_set_k, mod), mod), mod), vK_x, mod)[0];
   Polynomial::printPolynomial(h_3_x, "h3(x)");
 
+  Serial.print("O_AHP = {");
+  vector<int64_t> O_AHP;
+  vector<int64_t> row_hatA_i;
+  vector<int64_t> col_hatA_i;
+  vector<int64_t> val_hatA_i;
+
+  vector<int64_t> row_hatB_i;
+  vector<int64_t> col_hatB_i;
+  vector<int64_t> val_hatB_i;
+
+  vector<int64_t> row_hatC_i;
+  vector<int64_t> col_hatC_i;
+  vector<int64_t> val_hatC_i;
+  for (int64_t i = 0; i < m - 1; i++) {
+    row_hatA_i.push_back(Polynomial::evaluatePolynomial(rowA_x, i, mod));
+    col_hatA_i.push_back(Polynomial::evaluatePolynomial(colA_x, i, mod));
+    val_hatA_i.push_back(Polynomial::evaluatePolynomial(valA_x, i, mod));
+
+    row_hatB_i.push_back(Polynomial::evaluatePolynomial(rowB_x, i, mod));
+    col_hatB_i.push_back(Polynomial::evaluatePolynomial(colB_x, i, mod));
+    val_hatB_i.push_back(Polynomial::evaluatePolynomial(valB_x, i, mod));
+
+    row_hatC_i.push_back(Polynomial::evaluatePolynomial(rowC_x, i, mod));
+    col_hatC_i.push_back(Polynomial::evaluatePolynomial(colC_x, i, mod));
+    val_hatC_i.push_back(Polynomial::evaluatePolynomial(valC_x, i, mod));
+  }
+  O_AHP.insert(O_AHP.end(), row_hatA_i.begin(), row_hatA_i.end());
+  O_AHP.insert(O_AHP.end(), col_hatA_i.begin(), col_hatA_i.end());
+  O_AHP.insert(O_AHP.end(), val_hatA_i.begin(), val_hatA_i.end());
+
+  O_AHP.insert(O_AHP.end(), row_hatB_i.begin(), row_hatB_i.end());
+  O_AHP.insert(O_AHP.end(), col_hatB_i.begin(), col_hatB_i.end());
+  O_AHP.insert(O_AHP.end(), val_hatB_i.begin(), val_hatB_i.end());
+
+  O_AHP.insert(O_AHP.end(), row_hatC_i.begin(), row_hatC_i.end());
+  O_AHP.insert(O_AHP.end(), col_hatC_i.begin(), col_hatC_i.end());
+  O_AHP.insert(O_AHP.end(), val_hatC_i.begin(), val_hatC_i.end());
+
+
+  for (int64_t i = 0; i < O_AHP.size(); i++) {
+    Serial.print(O_AHP[i]);
+    if (i != O_AHP.size()-1) {
+      Serial.print(", ");
+    }
+  }
+  Serial.println("}");
+
 
 
   /*
@@ -914,7 +961,7 @@ void FidesInnova::Commitment(String path, int64_t g, int64_t b, int64_t mod) {
 
   // Calculate each expression
   int64_t exp1 = (m) % mod;
-  int64_t exp2 = (n-3 + b) % mod;
+  int64_t exp2 = (n - 3 + b) % mod;
   int64_t exp3 = (n + b) % mod;
   int64_t exp4 = (n + 2 * b - 1) % mod;
   int64_t exp5 = (2 * n + b - 1) % mod;
@@ -922,7 +969,7 @@ void FidesInnova::Commitment(String path, int64_t g, int64_t b, int64_t mod) {
   int64_t exp7 = (n - 1) % mod;
   int64_t exp8 = (m - 1) % mod;
   int64_t exp9 = (6 * m - 6) % mod;
-  
+
   // Find the maximum value
   int64_t d_AHP = max(exp1, max(exp2, max(exp3, max(exp4, max(exp5, max(exp6, max(exp7, max(exp8, exp9))))))));
 
