@@ -117,28 +117,28 @@ vector<vector<int64_t>> valMapping(const vector<int64_t>& K, const vector<int64_
 
 
 
-void FidesInnova::Setup(int64_t g, int64_t d, int64_t l, int64_t mod) {
-  vector<int64_t> pp;
-  int64_t modMinusOne = mod - 1;
-  int64_t current_exponent = 1;
-  int64_t newPower = d % modMinusOne;
-  int64_t res = 0;
+// void FidesInnova::Setup(int64_t g, int64_t d, int64_t l, int64_t mod) {
+//   vector<int64_t> pp;
+//   int64_t modMinusOne = mod - 1;
+//   int64_t current_exponent = 1;
+//   int64_t newPower = d % modMinusOne;
+//   int64_t res = 0;
 
-  res = Polynomial::power(g, newPower, mod);
-  pp.push_back(res);
-  for (int64_t i = 1; i < l; ++i) {
-    res = Polynomial::power(res, newPower, mod);
-    pp.push_back(res);
-  }
-  Serial.print("pp = {");
-  for (int64_t i = 0; i < pp.size(); i++) {
-    Serial.print(String(pp[i]));
-    if (pp.size() - i > 1) {
-      Serial.print(", ");
-    }
-  }
-  Serial.println("}");
-}
+//   res = Polynomial::power(g, newPower, mod);
+//   pp.push_back(res);
+//   for (int64_t i = 1; i < l; ++i) {
+//     res = Polynomial::power(res, newPower, mod);
+//     pp.push_back(res);
+//   }
+//   Serial.print("pp = {");
+//   for (int64_t i = 0; i < pp.size(); i++) {
+//     Serial.print(String(pp[i]));
+//     if (pp.size() - i > 1) {
+//       Serial.print(", ");
+//     }
+//   }
+//   Serial.println("}");
+// }
 
 
 void FidesInnova::Commitment(String path, int64_t g, int64_t b, int64_t mod) {
@@ -905,6 +905,56 @@ void FidesInnova::Commitment(String path, int64_t g, int64_t b, int64_t mod) {
   vector<int64_t> h_3_x = Polynomial::dividePolynomials(Polynomial::subtractPolynomials(a_x, Polynomial::multiplyPolynomials(b_x, Polynomial::addPolynomials(poly_f_3x_new, sigma_3_set_k, mod), mod), mod), vK_x, mod)[0];
   Polynomial::printPolynomial(h_3_x, "h3(x)");
 
+
+
+  /*
+  * Setup
+  */
+  vector<int64_t> ck;
+
+  // Calculate each expression
+  int64_t exp1 = (m) % mod;
+  int64_t exp2 = (n-3 + b) % mod;
+  int64_t exp3 = (n + b) % mod;
+  int64_t exp4 = (n + 2 * b - 1) % mod;
+  int64_t exp5 = (2 * n + b - 1) % mod;
+  int64_t exp6 = (n + b - 1) % mod;
+  int64_t exp7 = (n - 1) % mod;
+  int64_t exp8 = (m - 1) % mod;
+  int64_t exp9 = (6 * m - 6) % mod;
+  
+  // Find the maximum value
+  int64_t d_AHP = max(exp1, max(exp2, max(exp3, max(exp4, max(exp5, max(exp6, max(exp7, max(exp8, exp9))))))));
+
+
+  int64_t modMinusOne = mod - 1;
+  int64_t current_exponent = 1;
+  int64_t newPower = d_AHP % modMinusOne;
+  int64_t res = 0;
+
+  // res = Polynomial::power(g, newPower, mod);
+  // ck.push_back(res);
+  for (int64_t i = 0; i < d_AHP; ++i) {
+    res = Polynomial::power(g, Polynomial::power(119, i, mod), mod);
+    // res = Polynomial::power(res, newPower, mod);
+    ck.push_back(res);
+  }
+  Serial.print("ck = {");
+  for (int64_t i = 0; i < ck.size(); i++) {
+    Serial.print(String(ck[i]));
+    if (ck.size() - i > 1) {
+      Serial.print(", ");
+    }
+  }
+  Serial.println("}");
+
+
+  int64_t vk = Polynomial::power(g, 119, mod);
+  Serial.print("vk = ");
+  Serial.println(vk);
+  /*
+  * Setup
+  */
 
 
 
