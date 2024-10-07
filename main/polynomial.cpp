@@ -476,7 +476,7 @@ int64_t Polynomial::log_mod(int64_t a, int64_t b, int64_t mod) {
 }
 
 // Function to calculate e_func in mod
-int64_t e_func(int64_t a, int64_t b, int64_t g, int64_t mod) {
+int64_t Polynomial::e_func(int64_t a, int64_t b, int64_t g, int64_t mod) {
   int64_t buf1 = Polynomial::log_mod(g, a, mod);
   int64_t buf2 = Polynomial::log_mod(g, b, mod);
   Serial.print("buf1 = ");

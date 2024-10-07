@@ -393,7 +393,7 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
     vH_x[0] += mod;
   }
   vH_x[n] = 1;
-  Polynomial::printPolynomial(vH_x, "vH(x)");
+  Polynomial::printPolynomial(vH_x, "KvH(x)");
 
 
   vector<int64_t> vK_x = Polynomial::createLinearPolynomial(K[0]);
@@ -994,6 +994,10 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
   jsonArray = doc.createNestedArray("P17AHP");
   jsonArray.add(p_17_AHP);
 
+  jsonArray = doc.createNestedArray("P18AHP");
+  for (int64_t value : z) {
+    jsonArray.add(value);
+  }
   String output;
   serializeJson(doc, output);
   removeFile("/proof.json");
