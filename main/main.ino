@@ -26,7 +26,7 @@ void setup() {
   lib.Setup(g, tau, mod);
   lib.Commitment("instruction.txt", g, b, mod);
   lib.Proof("instruction.txt", g, b, mod);
-  lib.Verify(mod);
+  lib.Verify(g, mod);
 
 
   // Read the registers

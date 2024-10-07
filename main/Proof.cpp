@@ -934,6 +934,7 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
 
 
   DynamicJsonDocument doc(2048);
+  JsonArray jsonArray;
   jsonArray = doc.createNestedArray("P1AHP");
   jsonArray.add(sigma1);
   jsonArray = doc.createNestedArray("P2AHP");
@@ -991,9 +992,7 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
   jsonArray = doc.createNestedArray("P16AHP");
   jsonArray.add(y_prime);
   jsonArray = doc.createNestedArray("P17AHP");
-  for (int64_t value : p_17_AHP) {
-    jsonArray.add(value);
-  }
+  jsonArray.add(p_17_AHP);
 
   String output;
   serializeJson(doc, output);
