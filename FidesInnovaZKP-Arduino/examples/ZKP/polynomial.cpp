@@ -348,3 +348,141 @@ void Polynomial::printPolynomial(const vector<int64_t>& coefficients, const Stri
   }
   Serial.println("");
 }
+
+// Utility functions for trimming and removing commas
+String Polynomial::trim(const String& str) {
+  int64_t start = 0;
+  while (start < str.length() && isspace(str[start])) start++;
+  int64_t end = str.length() - 1;
+  while (end >= 0 && isspace(str[end])) end--;
+  return str.substring(start, end + 1);
+}
+
+String Polynomial::removeCommas(const String& str) {
+  String result = str;
+  result.replace(",", "");
+  return result;
+}
+
+void Polynomial::printMatrix(vector<vector<int64_t>>& matrix, const String& name) {
+  Serial.print("Matrix ");
+  Serial.print(name);
+  Serial.println(":");
+  for (const auto& row : matrix) {
+    for (int64_t val : row) {
+      Serial.print(val);
+      Serial.print(" ");
+    }
+    Serial.println("");
+  }
+}
+
+
+// Function to get the row indices of non-zero entries in matrix
+vector<vector<int64_t>> Polynomial::getNonZeroRows(const vector<vector<int64_t>>& matrix) {
+  vector<vector<int64_t>> nonZeroRows(2);
+  for (int64_t i = 0; i < matrix.size(); i++) {
+    for (int64_t j = 0; j < matrix[i].size(); j++) {
+      if (matrix[i][j] != 0) {
+        nonZeroRows[0].push_back(i);  // Storing row index
+        nonZeroRows[1].push_back(matrix[i][j]);
+      }
+    }
+  }
+  return nonZeroRows;
+}
+
+// Function to get the col indices of non-zero entries in matrix
+vector<vector<int64_t>> Polynomial::getNonZeroCols(const vector<vector<int64_t>>& matrix) {
+  vector<vector<int64_t>> nonZeroCols(2);
+  for (int64_t i = 0; i < matrix.size(); i++) {
+    for (int64_t j = 0; j < matrix[i].size(); j++) {
+      if (matrix[i][j] != 0) {
+        nonZeroCols[0].push_back(j);  // Storing col index
+        nonZeroCols[1].push_back(matrix[i][j]);
+      }
+    }
+  }
+  return nonZeroCols;
+}
+
+
+// Function to create the mapping
+vector<vector<int64_t>> Polynomial::createMapping(const vector<int64_t>& K, const vector<int64_t>& H, const vector<vector<int64_t>>& nonZero) {
+  vector<vector<int64_t>> row(2);
+  for (int64_t i = 0; i < nonZero[0].size(); i++) {
+    row[0].push_back(K[i]);
+    row[1].push_back(H[nonZero[0][i]]);
+  }
+  for (int64_t i = nonZero[0].size(); i < K.size(); i++) {
+    row[0].push_back(K[i]);
+    // row[1].push_back(H[i % H.size()]);
+  }
+
+  return row;
+}
+
+// Function to print the mapping
+void Polynomial::printMapping(vector<vector<int64_t>>& row, const String& name) {
+  for (int64_t i = 0; i < row[0].size(); i++) {
+    Serial.print(name);
+    Serial.print("(");
+    Serial.print(row[0][i]);
+    Serial.print(") = ");
+    Serial.println(row[1][i]);
+  }
+  Serial.println("");
+}
+
+// Function to create the val mapping
+vector<vector<int64_t>> Polynomial::valMapping(const vector<int64_t>& K, const vector<int64_t>& H, vector<vector<int64_t>>& nonZeroRows, vector<vector<int64_t>>& nonZeroCols, int64_t mod) {
+  vector<vector<int64_t>> val(2);
+
+  for (int64_t i = 0; i < K.size(); i++) {
+    if (i < nonZeroRows[0].size()) {
+      val[0].push_back(K[i]);
+      val[1].push_back((nonZeroRows[1][i] * Polynomial::modInverse(((H.size() * Polynomial::power(H[nonZeroRows[0][i]], H.size() - 1, mod)) % mod) * ((H.size() * Polynomial::power(H[nonZeroCols[0][i]], H.size() - 1, mod)) % mod), mod)) % mod);
+    } else {
+      val[0].push_back(K[i]);
+      val[1].push_back(0);
+    }
+  }
+
+  return val;
+}
+
+// Function to calculate log in mod
+int64_t Polynomial::log_mod(int64_t a, int64_t b, int64_t mod) {
+  int64_t m = static_cast<int64_t>(ceil(sqrt(static_cast<double>(mod - 1))));
+
+  // Precompute a^i (mod P) for i = 0..m and store in a map
+  std::unordered_map<int64_t, int64_t> tbl;
+  for (int64_t i = 0; i < m; ++i) {
+    tbl[Polynomial::modExp(a, i, mod)] = i;
+  }
+
+  int64_t c = Polynomial::modExp(a, m * (mod - 2), mod);  // c = a^(-m) mod P
+
+  // Check if we can find the solution in the baby-step giant-step manner
+  for (int64_t j = 0; j < m; ++j) {
+    int64_t y = (b * Polynomial::modExp(c, j, mod)) % mod;
+    if (tbl.find(y) != tbl.end()) {
+      int64_t num = tbl[y];
+      return j * m + num;
+    }
+  }
+
+  return 0;  // Return 0 if no solution is found
+}
+
+// Function to calculate e_func in mod
+int64_t e_func(int64_t a, int64_t b, int64_t g, int64_t mod) {
+  int64_t buf1 = Polynomial::log_mod(g, a, mod);
+  int64_t buf2 = Polynomial::log_mod(g, b, mod);
+  Serial.print("buf1 = ");
+  Serial.println(buf1);
+  Serial.print("buf2 = ");
+  Serial.println(buf2);
+  return (Polynomial::power(3, (buf1 * buf2), mod));
+}
+

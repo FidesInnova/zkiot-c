@@ -8,15 +8,20 @@
 #include <Preferences.h>
 #include <vector>
 #include "polynomial.h"
+#include <ArduinoJson.h>
+
+String readFile(String fileName);
+bool writeFile(String fileName, String payload);
+void removeFile(String fileName);
 
 using namespace std;
 
 class FidesInnova {
 public:
-  // void Setup(int64_t g, int64_t d, int64_t l, int64_t mod);
+  void Setup(int64_t g, int64_t tau, int64_t mod);
   void Commitment(String path, int64_t g, int64_t b, int64_t mod);
-  void Proof();
-  void Verify();
+  void Proof(String path, int64_t g, int64_t b, int64_t mod);
+  void Verify(int64_t mod);
 
 private:
 };

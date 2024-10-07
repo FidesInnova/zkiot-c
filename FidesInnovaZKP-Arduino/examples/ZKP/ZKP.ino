@@ -1,22 +1,32 @@
 #include "FidesInnova.h"
 #include "RegisterReader.h"
+#include "SPIFFS.h"
 
 FidesInnova lib;
 
 void setup() {
   Serial.begin(115200);
+
+  if (!SPIFFS.begin(true)) {
+    Serial.println("SPIFFS Mount Failed");
+    return;
+  }
+
   delay(2000);
   while (!Serial) {
     delay(10);
   }
 
-  uint64_t mod = 181;      // Initialize the static member 18446744069414584321 | 2013265921 | 181
-  uint64_t g = 2;          // Initialize g 33 | 2
-  uint64_t n = 5;          // Initialize m
-  uint64_t b = 2;          // Initialize b
+  uint64_t mod = 181;  // Initialize the static member 18446744069414584321 | 2013265921 | 181
+  uint64_t g = 2;      // Initialize g 33 | 2
+  uint64_t n = 5;      // Initialize m
+  uint64_t b = 2;      // Initialize b
+  uint64_t tau = 119;  // Initialize tau
 
-  // lib.Setup(g, d, l, mod);
+  lib.Setup(g, tau, mod);
   lib.Commitment("instruction.txt", g, b, mod);
+  lib.Proof("instruction.txt", g, b, mod);
+  lib.Verify(mod);
 
 
   // Read the registers

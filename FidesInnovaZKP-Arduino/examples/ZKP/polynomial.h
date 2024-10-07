@@ -63,6 +63,36 @@ public:
 
   // Function to print polynomial in serial
   static void printPolynomial(const vector<int64_t>& coefficients, const String& name);
+
+  // Utility functions for trimming
+  static String trim(const String& str);
+
+  // Utility functions for removing commas
+  static String removeCommas(const String& str);
+
+  // Utility functions to print a Matrix
+  static void printMatrix(vector<vector<int64_t>>& matrix, const String& name);
+
+  // Function to get the row indices of non-zero entries in matrix
+  static vector<vector<int64_t>> getNonZeroRows(const vector<vector<int64_t>>& matrix);
+
+  // Function to get the col indices of non-zero entries in matrix
+  static vector<vector<int64_t>> getNonZeroCols(const vector<vector<int64_t>>& matrix);
+
+  // Function to create the mapping
+  static vector<vector<int64_t>> createMapping(const vector<int64_t>& K, const vector<int64_t>& H, const vector<vector<int64_t>>& nonZero);
+
+  // Function to print the mapping
+  static void printMapping(vector<vector<int64_t>>& row, const String& name);
+
+  // Function to create the val mapping
+  static vector<vector<int64_t>> valMapping(const vector<int64_t>& K, const vector<int64_t>& H, vector<vector<int64_t>>& nonZeroRows, vector<vector<int64_t>>& nonZeroCols, int64_t mod);
+
+  // Function to calculate log in mod
+  static int64_t log_mod(int64_t a, int64_t b, int64_t mod);
+
+  // Function to calculate e_func in mod
+  static int64_t e_func(int64_t a, int64_t b, int64_t g, int64_t mod);
 };
 
 #endif  // POLYNOMIAL_H
