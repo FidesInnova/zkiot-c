@@ -183,9 +183,9 @@ void FidesInnova::Verify(int64_t mod) {
   int64_t eq51Buf = (ComP_AHP_x * Polynomial::modInverse(Polynomial::power(g, y_prime, mod), mod)) % mod;
   Serial.print("ef1 = ");
   Serial.println(eq51Buf);
-  int64_t eq51 = e_func(eq51Buf, g, g, mod);
+  int64_t eq51 = Polynomial::e_func(eq51Buf, g, g, mod);
   int64_t eq52BufP2 = (vk * Polynomial::modInverse(Polynomial::power(g, z_random, mod), mod)) % mod;
-  int64_t eq52 = e_func(p_17_AHP, eq52BufP2, g, mod);
+  int64_t eq52 = Polynomial::e_func(p_17_AHP, eq52BufP2, g, mod);
   // vector<int64_t> eq52BufP1;
   // eq52BufP1.push_back(p_17_AHP);
   // int64_t eq52 = (Polynomial::LagrangePolynomial(eq52BufP1, g, mod) * Polynomial::LagrangePolynomial(eq52BufP2, g, mod)) % mod;
