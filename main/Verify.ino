@@ -1,6 +1,7 @@
 #include "FidesInnova.h"
 
 void FidesInnova::Verify(int64_t g, int64_t mod) {
+  int64_t n_i = 1;
   JsonArray array;
   bool verify = false;
   int64_t beta3 = 5;  // Must be a random number
@@ -73,7 +74,7 @@ void FidesInnova::Verify(int64_t g, int64_t mod) {
   for (JsonVariant v : array) {
     rowB_x.push_back(v.as<int64_t>());
   }
-  
+
   array = jsonCommitment["ColB"];
   vector<int64_t> colB_x;
   for (JsonVariant v : array) {
@@ -256,7 +257,7 @@ void FidesInnova::Verify(int64_t g, int64_t mod) {
   vector<int64_t> etaC_z_hatC_x = Polynomial::multiplyPolynomialByNumber(z_hatC, etaC, mod);
   vector<int64_t> Sum_M_eta_M_z_hat_M_x = Polynomial::addPolynomials(Polynomial::addPolynomials(etaA_z_hatA_x, etaB_z_hatB_x, mod), etaC_z_hatC_x, mod);
 
-  int64_t t = 2;
+  int64_t t = n_i + 1;
   // // Calculate the known value from n^2 - n
   // int64_t n_val = (n * n - n) / 2;
   // // Calculate the value of (t^2 - t) / 2 mod
@@ -300,11 +301,8 @@ void FidesInnova::Verify(int64_t g, int64_t mod) {
       mod);
   // int64_t ComP_AHP_x = (Polynomial::power(Com1_AHP_x, eta_w_hat, mod) * (Polynomial::power(Com2_AHP_x, eta_z_hatA, mod) * (Polynomial::power(Com3_AHP_x, eta_z_hatB, mod) * (Polynomial::power(Com4_AHP_x, eta_z_hatC, mod) * (Polynomial::power(Com5_AHP_x, eta_h_0_x, mod) * (Polynomial::power(Com6_AHP_x, eta_s_x, mod) * (Polynomial::power(Com7_AHP_x, eta_g_1_x, mod) * (Polynomial::power(Com8_AHP_x, eta_h_1_x, mod) * (Polynomial::power(Com9_AHP_x, eta_g_2_x, mod) * (Polynomial::power(Com10_AHP_x, eta_h_2_x, mod) * (Polynomial::power(Com11_AHP_x, eta_g_3_x, mod) * Polynomial::power(Com12_AHP_x, eta_h_3_x, mod)) % mod) % mod) % mod) % mod) % mod) % mod) % mod) % mod) % mod) % mod);
 
-  int64_t ComP_AHP_x = 1;
-  for (int64_t i = 0; i < p_x.size(); i++) {
-    ComP_AHP_x *= Polynomial::power(ck[i], p_x[i], mod);
-    ComP_AHP_x %= mod;
-  }
+  int64_t ComP_AHP_x = Polynomial::KZG_Commitment(ck, p_x, mod);
+
   Polynomial::printPolynomial(a_x, "a_x");
   Polynomial::printPolynomial(b_x, "b_x");
   Polynomial::printPolynomial(g_3_x, "g_3_x");
@@ -345,21 +343,24 @@ void FidesInnova::Verify(int64_t g, int64_t mod) {
   Serial.print(" = ");
   Serial.println(eq42);
 
-  int64_t eq51Buf = (ComP_AHP_x * Polynomial::modInverse(Polynomial::power(g, y_prime, mod), mod)) % mod;
-  Serial.print("ef1 = ");
-  Serial.println(eq51Buf);
+  int64_t eq51Buf = (ComP_AHP_x - (g * y_prime));
+  eq51Buf %= mod;
+  if (eq51Buf < 0) {
+    eq51Buf += mod;
+  }
   int64_t eq51 = Polynomial::e_func(eq51Buf, g, g, mod);
-  int64_t eq52BufP2 = (vk * Polynomial::modInverse(Polynomial::power(g, z_random, mod), mod)) % mod;
+
+  int64_t eq52BufP2 = (vk - (g * z_random)) % mod;
+  if (eq52BufP2 < 0) {
+    eq52BufP2 += mod;
+  }
   int64_t eq52 = Polynomial::e_func(p_17_AHP, eq52BufP2, g, mod);
-  // vector<int64_t> eq52BufP1;
-  // eq52BufP1.push_back(p_17_AHP);
-  // int64_t eq52 = (Polynomial::LagrangePolynomial(eq52BufP1, g, mod) * Polynomial::LagrangePolynomial(eq52BufP2, g, mod)) % mod;
   Serial.print("eq51 = ");
   Serial.println(eq51);
   Serial.print("eq52 = ");
   Serial.println(eq52);
 
-  if (eq11 == eq12 && eq21 == eq22 && eq31 == eq32 && eq41 == eq42) {
+  if (eq11 == eq12 && eq21 == eq22 && eq31 == eq32 && eq41 == eq42 && eq51 == eq52) {
     verify = true;
   }
 

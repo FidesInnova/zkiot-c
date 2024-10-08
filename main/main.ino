@@ -1,3 +1,15 @@
+/*
+*   Arduino IDE 2.3.2
+*   ESP32 by Espressif Systems
+*   ESP32 Verion: 3.1.0-RC1
+*   Microcontroller: ESP32-C6
+*   Flash Size: 8MB
+*   Partition Scheme: 8M with SPIFFS (3MB App/1.5MB SPIFFS)
+*/
+
+
+
+
 #include "FidesInnova.h"
 #include "RegisterReader.h"
 #include "SPIFFS.h"
@@ -24,7 +36,7 @@ void setup() {
   uint64_t tau = 119;  // Initialize tau
 
   lib.Setup(g, tau, mod);
-  lib.Commitment("instruction.txt", g, b, mod);
+  lib.Commitment("instruction.txt", g, mod);
   lib.Proof("instruction.txt", g, b, mod);
   lib.Verify(g, mod);
 

@@ -1,6 +1,6 @@
 #include "FidesInnova.h"
 
-void FidesInnova::Commitment(String path, int64_t g, int64_t b, int64_t mod) {
+void FidesInnova::Commitment(String path, int64_t g, int64_t mod) {
   String setup = readFile("/setup.json");
   DynamicJsonDocument jsonSetup(2048);  // Create a DynamicJsonDocument with a buffer size
   deserializeJson(jsonSetup, setup);
@@ -308,19 +308,19 @@ void FidesInnova::Commitment(String path, int64_t g, int64_t b, int64_t mod) {
   }
   Serial.println("}");
 
-  int64_t Com0_AHP = 1, Com1_AHP = 1, Com2_AHP = 1, Com3_AHP = 1, Com4_AHP = 1, Com5_AHP = 1, Com6_AHP = 1, Com7_AHP = 1, Com8_AHP = 1;
+  int64_t Com0_AHP = 0, Com1_AHP = 0, Com2_AHP = 0, Com3_AHP = 0, Com4_AHP = 0, Com5_AHP = 0, Com6_AHP = 0, Com7_AHP = 0, Com8_AHP = 0;
   for (int64_t i = 0; i < rowA_x.size(); i++) {
-    Com0_AHP *= Polynomial::power(ck[i], rowA_x[i], mod);
-    Com1_AHP *= Polynomial::power(ck[i], colA_x[i], mod);
-    Com2_AHP *= Polynomial::power(ck[i], valA_x[i], mod);
-
-    Com3_AHP *= Polynomial::power(ck[i], rowB_x[i], mod);
-    Com4_AHP *= Polynomial::power(ck[i], colB_x[i], mod);
-    Com5_AHP *= Polynomial::power(ck[i], valB_x[i], mod);
-
-    Com6_AHP *= Polynomial::power(ck[i], rowC_x[i], mod);
-    Com7_AHP *= Polynomial::power(ck[i], colC_x[i], mod);
-    Com8_AHP *= Polynomial::power(ck[i], valC_x[i], mod);
+    Com0_AHP += (ck[i] * rowA_x[i]) % mod;
+    Com1_AHP += (ck[i] * colA_x[i]) % mod;
+    Com2_AHP += (ck[i] * valA_x[i]) % mod;
+    
+    Com3_AHP += (ck[i] * rowB_x[i]) % mod;
+    Com4_AHP += (ck[i] * colB_x[i]) % mod;
+    Com5_AHP += (ck[i] * valB_x[i]) % mod;
+    
+    Com6_AHP += (ck[i] * rowC_x[i]) % mod;
+    Com7_AHP += (ck[i] * colC_x[i]) % mod;
+    Com8_AHP += (ck[i] * valC_x[i]) % mod;
 
     Com0_AHP %= mod;
     Com1_AHP %= mod;

@@ -26,14 +26,15 @@ void FidesInnova::Setup(int64_t g, int64_t tau, int64_t mod) {
   int64_t modMinusOne = mod - 1;
   int64_t current_exponent = 1;
   int64_t newPower = d_AHP % modMinusOne;
-  int64_t res = 0;
+  int64_t tmp = 0;
 
+  tau %= mod - 1;
+  tmp = g;
   for (int64_t i = 0; i < d_AHP; i++) {
-    // Note that tau ^ i is in mod-1
-    res = Polynomial::power(g, Polynomial::power(tau, i, mod - 1), mod);
-    // res = Polynomial::power(res, newPower, mod);
-    ck.push_back(res);
+    ck.push_back(tmp);
+    tmp = (tmp * tau) % mod;
   }
+
   Serial.print("ck = {");
   for (int64_t i = 0; i < ck.size(); i++) {
     Serial.print(String(ck[i]));
@@ -42,8 +43,8 @@ void FidesInnova::Setup(int64_t g, int64_t tau, int64_t mod) {
     }
   }
   Serial.println("}");
-  int64_t vk = Polynomial::power(g, tau, mod);
-  Serial.print("ck = ");
+  int64_t vk = ck[1];
+  Serial.print("vk = ");
   Serial.println(String(vk));
 
   DynamicJsonDocument doc(2048);

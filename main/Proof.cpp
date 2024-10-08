@@ -804,14 +804,8 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
 
   int64_t z_random = 2;
   int64_t y_prime = Polynomial::evaluatePolynomial(p_x, z_random, mod);
-  // int64_t y_prime = 0;
-  // for (size_t i = 0; i < p_x.size(); i++) {
-  //   int64_t termValue = p_x[i] * Polynomial::power(z_random, i, 281474976710656);
-  //   y_prime += termValue;
-  // }
   Serial.print("y_prime = ");
   Serial.println(y_prime);
-
 
   // p(x) - y'  =>  p(x)  !!!!!!!
   vector<int64_t> q_xBuf;
@@ -822,113 +816,49 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
   vector<int64_t> q_x = Polynomial::dividePolynomials(p_x, q_xBuf, mod)[0];
   Polynomial::printPolynomial(q_x, "q(x)");
 
-  int64_t p_17_AHP = 1;
-  //  Polynomial::power(g, Polynomial::evaluatePolynomial(q_x, 119, mod), mod);
-  for (int64_t i = 0; i < q_x.size(); i++) {
-    p_17_AHP *= Polynomial::power(ck[i], q_x[i], mod);
-    p_17_AHP %= mod;
-  }
+  int64_t p_17_AHP = Polynomial::KZG_Commitment(ck, q_x, mod);
   Serial.print("p_17_AHP = ");
   Serial.println(p_17_AHP);
 
 
-  int64_t Com1_AHP_x = 1, Com2_AHP_x = 1, Com3_AHP_x = 1, Com4_AHP_x = 1, Com5_AHP_x = 1, Com6_AHP_x = 1, Com7_AHP_x = 1, Com8_AHP_x = 1, Com9_AHP_x = 1, Com10_AHP_x = 1, Com11_AHP_x = 1, Com12_AHP_x = 1;
-  for (int64_t i = 0; i < w_hat_x.size(); i++) {
-    Com1_AHP_x *= Polynomial::power(ck[i], w_hat_x[i], mod);
-    Com1_AHP_x %= mod;
-  }
+  int64_t Com1_AHP_x = Polynomial::KZG_Commitment(ck, w_hat_x, mod);
+  int64_t Com2_AHP_x = Polynomial::KZG_Commitment(ck, z_hatA, mod);
+  int64_t Com3_AHP_x = Polynomial::KZG_Commitment(ck, z_hatB, mod);
+  int64_t Com4_AHP_x = Polynomial::KZG_Commitment(ck, z_hatC, mod);
+  int64_t Com5_AHP_x = Polynomial::KZG_Commitment(ck, h_0_x, mod);
+  int64_t Com6_AHP_x = Polynomial::KZG_Commitment(ck, s_x, mod);
+  int64_t Com7_AHP_x = Polynomial::KZG_Commitment(ck, g_1_x, mod);
+  int64_t Com8_AHP_x = Polynomial::KZG_Commitment(ck, h_1_x, mod);
+  int64_t Com9_AHP_x = Polynomial::KZG_Commitment(ck, g_2_x, mod);
+  int64_t Com10_AHP_x = Polynomial::KZG_Commitment(ck, h_2_x, mod);
+  int64_t Com11_AHP_x = Polynomial::KZG_Commitment(ck, g_3_x, mod);
+  int64_t Com12_AHP_x = Polynomial::KZG_Commitment(ck, h_3_x, mod);
   Serial.print("Com1_AHP_x = ");
   Serial.println(Com1_AHP_x);
-
-  for (int64_t i = 0; i < z_hatA.size(); i++) {
-    Com2_AHP_x *= Polynomial::power(ck[i], z_hatA[i], mod);
-    Com2_AHP_x %= mod;
-  }
   Serial.print("Com2_AHP_x = ");
   Serial.println(Com2_AHP_x);
-
-  for (int64_t i = 0; i < z_hatB.size(); i++) {
-    Com3_AHP_x *= Polynomial::power(ck[i], z_hatB[i], mod);
-    Com3_AHP_x %= mod;
-  }
   Serial.print("Com3_AHP_x = ");
   Serial.println(Com3_AHP_x);
-
-  for (int64_t i = 0; i < z_hatC.size(); i++) {
-    Com4_AHP_x *= Polynomial::power(ck[i], z_hatC[i], mod);
-    Com4_AHP_x %= mod;
-  }
   Serial.print("Com4_AHP_x = ");
   Serial.println(Com4_AHP_x);
-
-  for (int64_t i = 0; i < h_0_x.size(); i++) {
-    Com5_AHP_x *= Polynomial::power(ck[i], h_0_x[i], mod);
-    Com5_AHP_x %= mod;
-  }
   Serial.print("Com5_AHP_x = ");
   Serial.println(Com5_AHP_x);
-
-  for (int64_t i = 0; i < s_x.size(); i++) {
-    Com6_AHP_x *= Polynomial::power(ck[i], s_x[i], mod);
-    Com6_AHP_x %= mod;
-  }
   Serial.print("Com6_AHP_x = ");
   Serial.println(Com6_AHP_x);
-
-  for (int64_t i = 0; i < g_1_x.size(); i++) {
-    Com7_AHP_x *= Polynomial::power(ck[i], g_1_x[i], mod);
-    Com7_AHP_x %= mod;
-  }
   Serial.print("Com7_AHP_x = ");
   Serial.println(Com7_AHP_x);
-
-  for (int64_t i = 0; i < h_1_x.size(); i++) {
-    Com8_AHP_x *= Polynomial::power(ck[i], h_1_x[i], mod);
-    Com8_AHP_x %= mod;
-  }
   Serial.print("Com8_AHP_x = ");
   Serial.println(Com8_AHP_x);
-
-  for (int64_t i = 0; i < g_2_x.size(); i++) {
-    Com9_AHP_x *= Polynomial::power(ck[i], g_2_x[i], mod);
-    Com9_AHP_x %= mod;
-    Serial.print(ck[i]);
-    Serial.print("^");
-    Serial.print(g_2_x[i]);
-    Serial.print(" ");
-  }
-  Serial.println("");
   Serial.print("Com9_AHP_x = ");
   Serial.println(Com9_AHP_x);
-
-  for (int64_t i = 0; i < h_2_x.size(); i++) {
-    Com10_AHP_x *= Polynomial::power(ck[i], h_2_x[i], mod);
-    Com10_AHP_x %= mod;
-  }
   Serial.print("Com10_AHP_x = ");
   Serial.println(Com10_AHP_x);
-
-  for (int64_t i = 0; i < g_3_x.size(); i++) {
-    Com11_AHP_x *= Polynomial::power(ck[i], g_3_x[i], mod);
-    Com11_AHP_x %= mod;
-  }
   Serial.print("Com11_AHP_x = ");
   Serial.println(Com11_AHP_x);
-
-  for (int64_t i = 0; i < h_3_x.size(); i++) {
-    Com12_AHP_x *= Polynomial::power(ck[i], h_3_x[i], mod);
-    Com12_AHP_x %= mod;
-  }
   Serial.print("Com12_AHP_x = ");
   Serial.println(Com12_AHP_x);
 
-  // int64_t ComP_AHP_x = (Polynomial::power(Com1_AHP_x, eta_w_hat, mod) * (Polynomial::power(Com2_AHP_x, eta_z_hatA, mod) * (Polynomial::power(Com3_AHP_x, eta_z_hatB, mod) * (Polynomial::power(Com4_AHP_x, eta_z_hatC, mod) * (Polynomial::power(Com5_AHP_x, eta_h_0_x, mod) * (Polynomial::power(Com6_AHP_x, eta_s_x, mod) * (Polynomial::power(Com7_AHP_x, eta_g_1_x, mod) * (Polynomial::power(Com8_AHP_x, eta_h_1_x, mod) * (Polynomial::power(Com9_AHP_x, eta_g_2_x, mod) * (Polynomial::power(Com10_AHP_x, eta_h_2_x, mod) * (Polynomial::power(Com11_AHP_x, eta_g_3_x, mod) * Polynomial::power(Com12_AHP_x, eta_h_3_x, mod)) % mod) % mod) % mod) % mod) % mod) % mod) % mod) % mod) % mod) % mod);
-
-  int64_t ComP_AHP_x = 1;
-  for (int64_t i = 0; i < p_x.size(); i++) {
-    ComP_AHP_x *= Polynomial::power(ck[i], p_x[i], mod);
-    ComP_AHP_x %= mod;
-  }
+  int64_t ComP_AHP_x = Polynomial::KZG_Commitment(ck, p_x, mod);
   Serial.print("ComP_AHP = ");
   Serial.println(ComP_AHP_x);
 
@@ -998,6 +928,9 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
   for (int64_t value : z) {
     jsonArray.add(value);
   }
+  jsonArray = doc.createNestedArray("ComP_AHP_x");
+  jsonArray.add(ComP_AHP_x);
+
   String output;
   serializeJson(doc, output);
   removeFile("/proof.json");

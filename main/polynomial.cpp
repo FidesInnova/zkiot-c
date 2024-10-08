@@ -471,18 +471,22 @@ int64_t Polynomial::log_mod(int64_t a, int64_t b, int64_t mod) {
       return j * m + num;
     }
   }
-
   return 0;  // Return 0 if no solution is found
 }
 
 // Function to calculate e_func in mod
 int64_t Polynomial::e_func(int64_t a, int64_t b, int64_t g, int64_t mod) {
-  int64_t buf1 = Polynomial::log_mod(g, a, mod);
-  int64_t buf2 = Polynomial::log_mod(g, b, mod);
-  Serial.print("buf1 = ");
-  Serial.println(buf1);
-  Serial.print("buf2 = ");
-  Serial.println(buf2);
-  return (Polynomial::power(3, (buf1 * buf2), mod));
+  int64_t buf1 = (a * Polynomial::modInverse(g, mod)) % mod;
+  int64_t buf2 = (b * Polynomial::modInverse(g, mod)) % mod;
+  return (3 * (buf1 * buf2)) % mod;
 }
 
+  // Function to calculate KZG in mod
+int64_t Polynomial::KZG_Commitment(vector<int64_t> a, vector<int64_t> b, int64_t mod) {
+  int64_t res = 0;
+  for (int64_t i = 0; i < b.size(); i++) {
+    res += (a[i] * b[i]) % mod;
+    res %= mod;
+  }
+  return res;
+}

@@ -93,6 +93,9 @@ public:
 
   // Function to calculate e_func in mod
   static int64_t e_func(int64_t a, int64_t b, int64_t g, int64_t mod);
+
+  // Function to calculate KZG in mod
+  static int64_t KZG_Commitment(vector<int64_t> a, vector<int64_t> b, int64_t mod);
 };
 
 #endif  // POLYNOMIAL_H
