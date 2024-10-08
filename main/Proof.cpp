@@ -10,7 +10,7 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
   for (JsonVariant v : array) {
     ck.push_back(v.as<int64_t>());
   }
-  int64_t vk = jsonSetup["vk"];
+  int64_t vk = jsonSetup["vk"][0].as<int64_t>();
 
   const char* defaultInstructions =
     "li R1, 4\n"

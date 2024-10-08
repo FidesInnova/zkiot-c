@@ -29,63 +29,72 @@ void FidesInnova::Verify(int64_t g, int64_t mod) {
 
   /*********************************  Read Setup  *********************************/
   String setup = readFile("/setup.json");
-  DynamicJsonDocument jsonSetup(2048);  // Create a DynamicJsonDocument with a buffer size
-  deserializeJson(jsonSetup, setup);
+  DynamicJsonDocument jsonSetup(4096);  // Create a DynamicJsonDocument with a buffer size
+  DeserializationError error = deserializeJson(jsonSetup, setup);
+
+  if (error) {
+    Serial.println("Failed to parse JSON");
+    return;
+  }
+
   vector<int64_t> ck;
   array = jsonSetup["ck"];
   for (JsonVariant v : array) {
     ck.push_back(v.as<int64_t>());
   }
-  int64_t vk = jsonSetup["vk"];
+  int64_t vk = jsonSetup["vk"][0].as<int64_t>();
   /*********************************  Read Setup  *********************************/
 
   /*******************************  Read Commitment  ******************************/
   String commitment = readFile("/commitment.json");
-  DynamicJsonDocument jsonCommitment(2048);  // Create a DynamicJsonDocument with a buffer size
+  DynamicJsonDocument jsonCommitment(4096);  // Create a DynamicJsonDocument with a buffer size
   deserializeJson(jsonCommitment, commitment);
-  int64_t m = jsonCommitment["m"];
-  int64_t n = jsonCommitment["n"];
-  array = jsonSetup["RowA"];
+  int64_t m = jsonCommitment["m"][0].as<int64_t>();
+  int64_t n = jsonCommitment["n"][0].as<int64_t>();
+  array = jsonCommitment["RowA"];
   vector<int64_t> rowA_x;
   for (JsonVariant v : array) {
     rowA_x.push_back(v.as<int64_t>());
   }
-  array = jsonSetup["ColA"];
+  Polynomial::printPolynomial(rowA_x, "rowA_x");
+
+  array = jsonCommitment["ColA"];
   vector<int64_t> colA_x;
   for (JsonVariant v : array) {
     colA_x.push_back(v.as<int64_t>());
   }
-  array = jsonSetup["ValA"];
+  array = jsonCommitment["ValA"];
   vector<int64_t> valA_x;
   for (JsonVariant v : array) {
     valA_x.push_back(v.as<int64_t>());
   }
-  array = jsonSetup["RowB"];
+  array = jsonCommitment["RowB"];
   vector<int64_t> rowB_x;
   for (JsonVariant v : array) {
     rowB_x.push_back(v.as<int64_t>());
   }
-  array = jsonSetup["ColB"];
+  
+  array = jsonCommitment["ColB"];
   vector<int64_t> colB_x;
   for (JsonVariant v : array) {
     colB_x.push_back(v.as<int64_t>());
   }
-  array = jsonSetup["ValB"];
+  array = jsonCommitment["ValB"];
   vector<int64_t> valB_x;
   for (JsonVariant v : array) {
     valB_x.push_back(v.as<int64_t>());
   }
-  array = jsonSetup["RowC"];
+  array = jsonCommitment["RowC"];
   vector<int64_t> rowC_x;
   for (JsonVariant v : array) {
     rowC_x.push_back(v.as<int64_t>());
   }
-  array = jsonSetup["ColC"];
+  array = jsonCommitment["ColC"];
   vector<int64_t> colC_x;
   for (JsonVariant v : array) {
     colC_x.push_back(v.as<int64_t>());
   }
-  array = jsonSetup["ValC"];
+  array = jsonCommitment["ValC"];
   vector<int64_t> valC_x;
   for (JsonVariant v : array) {
     valC_x.push_back(v.as<int64_t>());
@@ -97,79 +106,85 @@ void FidesInnova::Verify(int64_t g, int64_t mod) {
   DynamicJsonDocument jsonProof(2048);  // Create a DynamicJsonDocument with a buffer size
   deserializeJson(jsonProof, proof);
 
-  int64_t sigma1 = jsonProof["P1AHP"];
-  array = jsonSetup["P2AHP"];
+  int64_t sigma1 = jsonProof["P1AHP"][0].as<int64_t>();
+  array = jsonProof["P2AHP"];
   vector<int64_t> w_hat_x;
   for (JsonVariant v : array) {
     w_hat_x.push_back(v.as<int64_t>());
   }
-  array = jsonSetup["P3AHP"];
+  array = jsonProof["P3AHP"];
   vector<int64_t> z_hatA;
   for (JsonVariant v : array) {
     z_hatA.push_back(v.as<int64_t>());
   }
-  array = jsonSetup["P4AHP"];
+  array = jsonProof["P4AHP"];
   vector<int64_t> z_hatB;
   for (JsonVariant v : array) {
     z_hatB.push_back(v.as<int64_t>());
   }
-  array = jsonSetup["P5AHP"];
+  array = jsonProof["P5AHP"];
   vector<int64_t> z_hatC;
   for (JsonVariant v : array) {
     z_hatC.push_back(v.as<int64_t>());
   }
-  array = jsonSetup["P6AHP"];
+  array = jsonProof["P6AHP"];
   vector<int64_t> h_0_x;
   for (JsonVariant v : array) {
     h_0_x.push_back(v.as<int64_t>());
   }
-  array = jsonSetup["P7AHP"];
+  array = jsonProof["P7AHP"];
   vector<int64_t> s_x;
   for (JsonVariant v : array) {
     s_x.push_back(v.as<int64_t>());
   }
-  array = jsonSetup["P8AHP"];
+  array = jsonProof["P8AHP"];
   vector<int64_t> g_1_x;
   for (JsonVariant v : array) {
     g_1_x.push_back(v.as<int64_t>());
   }
-  array = jsonSetup["P9AHP"];
+  array = jsonProof["P9AHP"];
   vector<int64_t> h_1_x;
   for (JsonVariant v : array) {
     h_1_x.push_back(v.as<int64_t>());
   }
-  int64_t sigma2 = jsonProof["P10AHP"];
-
-  array = jsonSetup["P11AHP"];
+  int64_t sigma2 = jsonProof["P10AHP"][0].as<int64_t>();
+  array = jsonProof["P11AHP"];
   vector<int64_t> g_2_x;
   for (JsonVariant v : array) {
     g_2_x.push_back(v.as<int64_t>());
   }
-  array = jsonSetup["P12AHP"];
+  array = jsonProof["P12AHP"];
   vector<int64_t> h_2_x;
   for (JsonVariant v : array) {
     h_2_x.push_back(v.as<int64_t>());
   }
-  int64_t sigma3 = jsonProof["P13AHP"];
-  array = jsonSetup["P14AHP"];
+  int64_t sigma3 = jsonProof["P13AHP"][0].as<int64_t>();
+  array = jsonProof["P14AHP"];
   vector<int64_t> g_3_x;
   for (JsonVariant v : array) {
     g_3_x.push_back(v.as<int64_t>());
   }
-  array = jsonSetup["P15AHP"];
+  array = jsonProof["P15AHP"];
   vector<int64_t> h_3_x;
   for (JsonVariant v : array) {
     h_3_x.push_back(v.as<int64_t>());
   }
-  int64_t y_prime = jsonProof["P16AHP"];
-  int64_t p_17_AHP = jsonProof["P17AHP"];
+  int64_t y_prime = jsonProof["P16AHP"][0].as<int64_t>();
+  int64_t p_17_AHP = jsonProof["P17AHP"][0].as<int64_t>();
 
-  array = jsonSetup["P18AHP"];
+  array = jsonProof["P18AHP"];
   vector<int64_t> z;
   for (JsonVariant v : array) {
     z.push_back(v.as<int64_t>());
   }
   /*********************************  Read Proof  *********************************/
+  Serial.print("n: ");
+  Serial.println(n);
+  Serial.print("m: ");
+  Serial.println(m);
+  Serial.print("g: ");
+  Serial.println(g);
+
   int64_t y, g_m;
   vector<int64_t> K;
   K.push_back(1);
@@ -217,9 +232,9 @@ void FidesInnova::Verify(int64_t g, int64_t mod) {
   vector<int64_t> poly_pi_a = Polynomial::multiplyPolynomials(Polynomial::subtractPolynomials(rowA_x, poly_beta2, mod), Polynomial::subtractPolynomials(colA_x, poly_beta1, mod), mod);
   vector<int64_t> poly_pi_b = Polynomial::multiplyPolynomials(Polynomial::subtractPolynomials(rowB_x, poly_beta2, mod), Polynomial::subtractPolynomials(colB_x, poly_beta1, mod), mod);
   vector<int64_t> poly_pi_c = Polynomial::multiplyPolynomials(Polynomial::subtractPolynomials(rowC_x, poly_beta2, mod), Polynomial::subtractPolynomials(colC_x, poly_beta1, mod), mod);
-  Polynomial::printPolynomial(poly_pi_c, "poly_pi_a");
-  Polynomial::printPolynomial(poly_pi_b, "poly_pi_b");
-  Polynomial::printPolynomial(poly_pi_c, "poly_pi_c");
+  Polynomial::printPolynomial(poly_pi_a, "poly_pi_a(x)");
+  Polynomial::printPolynomial(poly_pi_b, "poly_pi_b(x)");
+  Polynomial::printPolynomial(poly_pi_c, "poly_pi_c(x)");
 
   vector<int64_t> poly_etaA_vH_B2_vH_B1 = { (etaA * vH_beta2 * vH_beta1) % mod };
   vector<int64_t> poly_etaB_vH_B2_vH_B1 = { (etaB * vH_beta2 * vH_beta1) % mod };
@@ -228,6 +243,9 @@ void FidesInnova::Verify(int64_t g, int64_t mod) {
   vector<int64_t> poly_sig_a = Polynomial::multiplyPolynomials(poly_etaA_vH_B2_vH_B1, valA_x, mod);
   vector<int64_t> poly_sig_b = Polynomial::multiplyPolynomials(poly_etaB_vH_B2_vH_B1, valB_x, mod);
   vector<int64_t> poly_sig_c = Polynomial::multiplyPolynomials(poly_etaC_vH_B2_vH_B1, valC_x, mod);
+  Polynomial::printPolynomial(poly_sig_a, "poly_sig_a(x)");
+  Polynomial::printPolynomial(poly_sig_b, "poly_sig_b(x)");
+  Polynomial::printPolynomial(poly_sig_c, "poly_sig_c(x)");
 
   vector<int64_t> a_x = Polynomial::addPolynomials(Polynomial::addPolynomials(Polynomial::multiplyPolynomials(poly_sig_a, Polynomial::multiplyPolynomials(poly_pi_b, poly_pi_c, mod), mod), Polynomial::multiplyPolynomials(poly_sig_b, Polynomial::multiplyPolynomials(poly_pi_a, poly_pi_c, mod), mod), mod), Polynomial::multiplyPolynomials(poly_sig_c, Polynomial::multiplyPolynomials(poly_pi_a, poly_pi_b, mod), mod), mod);
 
@@ -262,10 +280,6 @@ void FidesInnova::Verify(int64_t g, int64_t mod) {
     zero_to_t_for_H.push_back(H[i]);
     zero_to_t_for_z.push_back(z[i]);
   }
-  Polynomial::printPolynomial(zero_to_t_for_H, "zero_to_t_for_H");
-  Polynomial::printPolynomial(zero_to_t_for_z, "zero_to_t_for_z");
-
-
 
   vector<int64_t> polyX_HAT_H = Polynomial::setupLagrangePolynomial(zero_to_t_for_H, zero_to_t_for_z, mod, "x_hat(h)");
 
@@ -291,8 +305,13 @@ void FidesInnova::Verify(int64_t g, int64_t mod) {
     ComP_AHP_x *= Polynomial::power(ck[i], p_x[i], mod);
     ComP_AHP_x %= mod;
   }
-
-
+  Polynomial::printPolynomial(a_x, "a_x");
+  Polynomial::printPolynomial(b_x, "b_x");
+  Polynomial::printPolynomial(g_3_x, "g_3_x");
+  Serial.print("beta3 = ");
+  Serial.println(beta3);
+  Serial.print("sigma3 = ");
+  Serial.println(sigma3);
 
   int64_t eq11 = (Polynomial::evaluatePolynomial(h_3_x, beta3, mod) * Polynomial::evaluatePolynomial(vK_x, beta3, mod)) % mod;
   int64_t eq12 = (Polynomial::evaluatePolynomial(a_x, beta3, mod) - ((Polynomial::evaluatePolynomial(b_x, beta3, mod) * (beta3 * Polynomial::evaluatePolynomial(g_3_x, beta3, mod) + (sigma3 * Polynomial::modInverse(m, mod)) % mod)))) % mod;

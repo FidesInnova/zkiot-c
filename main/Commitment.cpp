@@ -4,12 +4,13 @@ void FidesInnova::Commitment(String path, int64_t g, int64_t b, int64_t mod) {
   String setup = readFile("/setup.json");
   DynamicJsonDocument jsonSetup(2048);  // Create a DynamicJsonDocument with a buffer size
   deserializeJson(jsonSetup, setup);
+
   vector<int64_t> ck;
   JsonArray array = jsonSetup["ck"];
   for (JsonVariant v : array) {
     ck.push_back(v.as<int64_t>());
   }
-  int64_t vk = jsonSetup["vk"];
+  int64_t vk = jsonSetup["vk"][0].as<int64_t>();
 
   const char* defaultInstructions =
     "li R1, 4\n"
@@ -381,7 +382,7 @@ void FidesInnova::Commitment(String path, int64_t g, int64_t b, int64_t mod) {
   }
 
   jsonArray = doc.createNestedArray("RowB");
-  for (int64_t value : rowA_x) {
+  for (int64_t value : rowB_x) {
     jsonArray.add(value);
   }
   jsonArray = doc.createNestedArray("ColB");
