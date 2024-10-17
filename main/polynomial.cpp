@@ -18,6 +18,8 @@ int64_t Polynomial::power(int64_t base, int64_t exponent, int64_t mod) {
   return result;
 }
 
+//These two functions Polynomial::power and Polynomial::modExp are the same, should delete one to be clear
+
 // Function to compute the modular exponentiation (a^b) % mod
 int64_t Polynomial::modExp(int64_t a, int64_t b, int64_t mod) {
   int64_t result = 1;
@@ -56,6 +58,12 @@ int64_t Polynomial::generateRandomNumber(const vector<int64_t>& H, int64_t mod) 
 
 // Add two polynomials with modular arithmetic
 vector<int64_t> Polynomial::addPolynomials(const vector<int64_t>& poly1, const vector<int64_t>& poly2, int64_t mod) {
+  // // I add this to check if mod is positive for clarity usability of the function
+  //   if (mod <= 0) {
+  //       Serial.println("Error: Modulus must be a positive integer.");
+  //       return {};  // Return an empty vector to indicate an error
+  //   }
+
   // Determine the size of the result polynomial (the max size of the two input polynomials)
   size_t maxSize = max(poly1.size(), poly2.size());
   vector<int64_t> result(maxSize, 0);
@@ -73,7 +81,6 @@ vector<int64_t> Polynomial::addPolynomials(const vector<int64_t>& poly1, const v
       result[i] += mod;
     }
   }
-
   return result;
 }
 
@@ -113,6 +120,7 @@ vector<int64_t> Polynomial::multiplyPolynomials(const vector<int64_t>& poly1, co
   return result;
 }
 
+//didn't test yet
 // Function to divide two polynomials
 vector<vector<int64_t>> Polynomial::dividePolynomials(const vector<int64_t>& dividend, const vector<int64_t>& divisor, int64_t mod) {
   vector<int64_t> quotient(dividend.size(), 0);  // Initialize with size equal to dividend size

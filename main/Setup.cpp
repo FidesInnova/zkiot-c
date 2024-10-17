@@ -50,6 +50,7 @@ void FidesInnova::Setup(int64_t g, int64_t tau, int64_t mod) {
   for (int64_t i = 0; i < d_AHP; i++) {
     ck.push_back(tmp);
     tmp = (tmp * tau) % mod;
+
   }
 
   Serial.print("ck = {");
@@ -98,4 +99,7 @@ void FidesInnova::Setup(int64_t g, int64_t tau, int64_t mod) {
   // Store setup(ck, vk) in setup.json
   removeFile("/setup.json");
   writeFile("/setup.json", output);
+
 }
+
+
