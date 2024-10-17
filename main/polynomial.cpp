@@ -241,12 +241,16 @@ vector<int64_t> Polynomial::setupLagrangePolynomial(const vector<int64_t> x_valu
 
 // Function to parse the polynomial string and evaluate it
 int64_t Polynomial::evaluatePolynomial(const vector<int64_t>& polynomial, int64_t x, int64_t mod) {
+  //add this to check if the mod is 0, if it is return 0 which save unnecessary computation
+  // if (mod == 1) return 0;  // Early exit if mod is 1
+
   int64_t result = 0;
 
   for (size_t i = 0; i < polynomial.size(); i++) {
 
     int64_t termValue = polynomial[i] * power(x, i, mod) % mod;
 
+    //handle when the number is negative
     if (termValue < 0) {
       termValue += mod;
     }
@@ -261,6 +265,11 @@ int64_t Polynomial::evaluatePolynomial(const vector<int64_t>& polynomial, int64_
 
 // Function to compute the sum of polynomial evaluations at multiple points
 int64_t Polynomial::sumOfEvaluations(const vector<int64_t>& poly, const vector<int64_t>& points, int64_t mod) {
+  //I add these lines of code to check if there is no elements in points
+  // if (points.empty()) {
+  //   Serial.println("Error: No points to evaluate");
+  //   return 0;
+  // }
   int64_t totalSum = 0;
 
   for (int64_t point : points) {
@@ -293,7 +302,7 @@ vector<int64_t> Polynomial::calculatePolynomial_r_alpha_x(int64_t alpha, int64_t
   return P;
 }
 
-// Function to calculate Polynomial r(α,x) = (alpha^n - x^n) / (alpha - x)
+// This function calculates the value of the polynomial at a specific point 𝑘 rather than returning the coefficients.
 int64_t Polynomial::calculatePolynomial_r_alpha_k(int64_t alpha, int64_t k, int64_t n, int64_t mod) {
   int64_t result = 1;
   result = (power(alpha, n, mod) - power(k, n, mod)) % mod;
