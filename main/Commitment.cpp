@@ -2,6 +2,13 @@
 
 void FidesInnova::Commitment(String path, int64_t g, int64_t mod) {
   String setup = readFile("/setup.json");
+
+  // //I add this to check if read file is successfully read and if the file is missing or the content is corrupted
+  // if (setup.isEmpty()) {
+  //   Serial.println("Error: setup.json is empty or not found");
+  //   return;
+  // }
+
   DynamicJsonDocument jsonSetup(2048);  // Create a DynamicJsonDocument with a buffer size
   deserializeJson(jsonSetup, setup);
 
@@ -42,19 +49,43 @@ void FidesInnova::Commitment(String path, int64_t g, int64_t mod) {
   for (const auto& inst : instructions) {
     // Tokenize the instruction manually
     int64_t firstSpace = inst.indexOf(' ');
+
+    //I add this for error handling for if there is no ''
+    // if (firstSpace == -1) {
+    //   Serial.println("Error: Invalid instruction format");
+    //   return;  // Exit if format is wrong
+    // }
+
     String operation = inst.substring(0, firstSpace);   // Extract the operation
     String remainder = inst.substring(firstSpace + 1);  // Extract the remainder (registers and values)
+    
+    // //add .trim() to achieve a better format of input
+    // String remainder = inst.substring(firstSpace + 1).trim();  // Extract the remainder (registers and values)
 
     int64_t secondSpace = remainder.indexOf(' ');
     String rStr = remainder.substring(0, secondSpace);   // Extract first register or value
     String rest = remainder.substring(secondSpace + 1);  // The rest of the instruction
+
+    //String rest = remainder.substring(secondSpace + 1).trim();
 
     if (operation == "li") {
       n_i++;
       String xStr = rest;  // Only one value left for li
 
       int64_t R = rStr.substring(1).toInt();  // Get the register number
+
+      //I add this to chekch if it has been successfully converted to int, if not, R = 0;
+      // if (R == 0 && rStr.substring(1) != "0") {
+      //   Serial.println("Error: Invalid register number");
+      //   return;
+      // }
+
       int64_t X = xStr.toInt();               // Get the immediate value
+
+      // if (X == 0 && xStr != "0") {
+      //   Serial.println("Error: Invalid immediate value");
+      //   return;
+      // }
 
       inputs[R] = X;  // Store the immediate value in the corresponding register
     } else {
