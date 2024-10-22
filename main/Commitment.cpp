@@ -1,6 +1,7 @@
 #include "FidesInnova.h"
 
 void FidesInnova::Commitment(String path, int64_t g, int64_t mod) {
+  //read /setup.json file to initialize the cryptographic environment
   String setup = readFile("/setup.json");
 
   // //I add this to check if read file is successfully read and if the file is missing or the content is corrupted
@@ -104,8 +105,6 @@ void FidesInnova::Commitment(String path, int64_t g, int64_t mod) {
   Serial.print("Number of general instructions (n_g): ");
   Serial.println(n_g);
 
-
-
   // Matrix order
   int64_t n = n_g + n_i + 1;
   int64_t m, t;
@@ -152,6 +151,7 @@ void FidesInnova::Commitment(String path, int64_t g, int64_t mod) {
 
     int64_t X, Y;
 
+    //constrct A,B,C Matrix
     if (operation == "li") {
       X = xStr.toInt();
       z[i + 1] = X % mod;
@@ -202,6 +202,7 @@ void FidesInnova::Commitment(String path, int64_t g, int64_t mod) {
   Polynomial::printMatrix(B, "B");
   Polynomial::printMatrix(C, "C");
 
+  // Vector H to store powers of w
   vector<int64_t> H;
   int64_t w, g_n;
 
@@ -220,6 +221,7 @@ void FidesInnova::Commitment(String path, int64_t g, int64_t mod) {
 
   int64_t y, g_m;
 
+  // Vector K to store powers of y
   vector<int64_t> K;
   K.push_back(1);
   g_m = ((mod - 1) * Polynomial::modInverse(m, mod)) % mod;
@@ -233,7 +235,8 @@ void FidesInnova::Commitment(String path, int64_t g, int64_t mod) {
     Serial.print(" ");
   }
   Serial.println("");
-
+  
+  // Create a polynomial vector vH_x of size (n + 1) initialized to 0
   vector<int64_t> vH_x(n + 1, 0);
   vH_x[0] = (-1) % mod;
   if (vH_x[0] < 0) {
@@ -242,6 +245,7 @@ void FidesInnova::Commitment(String path, int64_t g, int64_t mod) {
   vH_x[n] = 1;
   Polynomial::printPolynomial(vH_x, "vH(x)");
 
+ // Create a mapping for the non-zero rows using parameters K and H
   vector<vector<int64_t>> nonZeroRowsA = Polynomial::getNonZeroRows(A);
   vector<vector<int64_t>> rowA = Polynomial::createMapping(K, H, nonZeroRowsA);
   rowA[1].push_back(1);
@@ -340,6 +344,9 @@ void FidesInnova::Commitment(String path, int64_t g, int64_t mod) {
   Serial.println("}");
 
   int64_t Com0_AHP = 0, Com1_AHP = 0, Com2_AHP = 0, Com3_AHP = 0, Com4_AHP = 0, Com5_AHP = 0, Com6_AHP = 0, Com7_AHP = 0, Com8_AHP = 0;
+  // Ensure ck and *_x vectors are of the same size before iterating
+  // size_t minSize = std::min(rowA_x.size(), ck.size()); // **Changed: Added minSize for safer iteration**
+  // for (int64_t i = 0; i < minSize; i++) { // **Changed: Use minSize in loop condition**
   for (int64_t i = 0; i < rowA_x.size(); i++) {
     Com0_AHP += (ck[i] * rowA_x[i]) % mod;
     Com1_AHP += (ck[i] * colA_x[i]) % mod;

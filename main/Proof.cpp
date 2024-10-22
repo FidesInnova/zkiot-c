@@ -2,6 +2,7 @@
 #include "FidesInnova.h"
 
 void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
+  //It's duplicate codes as the commitment
   String setup = readFile("/setup.json");
   DynamicJsonDocument jsonSetup(2048);  // Create a DynamicJsonDocument with a buffer size
   deserializeJson(jsonSetup, setup);
@@ -390,7 +391,7 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
   vector<int64_t> vH_x(n + 1, 0);
   vH_x[0] = (-1) % mod;
   if (vH_x[0] < 0) {
-    vH_x[0] += mod;
+    vH_x[0] += mod; //Handling negative values properly
   }
   vH_x[n] = 1;
   Polynomial::printPolynomial(vH_x, "KvH(x)");
