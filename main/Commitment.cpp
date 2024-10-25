@@ -4,12 +4,6 @@ void FidesInnova::Commitment(String path, int64_t g, int64_t mod) {
   //read /setup.json file to initialize the cryptographic environment
   String setup = readFile("/setup.json");
 
-  // //I add this to check if read file is successfully read and if the file is missing or the content is corrupted
-  // if (setup.isEmpty()) {
-  //   Serial.println("Error: setup.json is empty or not found");
-  //   return;
-  // }
-
   DynamicJsonDocument jsonSetup(2048);  // Create a DynamicJsonDocument with a buffer size
   deserializeJson(jsonSetup, setup);
 
