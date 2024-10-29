@@ -101,6 +101,16 @@ void fidesinnova::setup(int64_t g, int64_t tau, int64_t mod) {
   String output;
   serializeJson(doc, output);
 
+  /*
+  setup.json
+  {
+    "Class":  32-bit Integer,
+    "ck": 64-bit Integer Array,
+    "vk": 64-bit Integer
+  }
+  */
+
+  
   // Store setup(ck, vk) in setup.json
   removeFile("/setup.json");
   writeFile("/setup.json", output);
