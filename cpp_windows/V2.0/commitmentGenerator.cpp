@@ -1,6 +1,6 @@
 /*
   Read the directory that containing program.s, device_config.json, and setup.json
-    
+
   program.s
     .file "program.cpp"
     .option nopic

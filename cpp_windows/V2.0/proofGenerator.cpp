@@ -1,3 +1,15 @@
+/*
+  Read the setup.json from flash of the RISC-V microcontroller
+
+  setup.json
+  {
+    "Class":  32-bit Integer,
+    "ck": 64-bit Integer Array,
+    "vk": 64-bit Integer
+  }
+
+*/
+
 #include "fidesinnova.h"
 
 void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod) {
@@ -899,7 +911,7 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
     "IoT_Device_Name": String,
     "Device_Hardware_Version": float,
     "Firmware_Version": float,
-    "Lines": = 64-bit Array,
+    "Lines": 64-bit Array,
   */
 
 

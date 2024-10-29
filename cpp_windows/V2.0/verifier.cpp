@@ -71,7 +71,7 @@
   proof.json
   {
     "CommitmentID": 64-bit,
-    "DeviceEncodedID":   
+    "DeviceEncodedID": String,
     "Input": String,
     "Output": String,
     "P1AHP": 64-bit Integer,
