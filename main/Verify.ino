@@ -237,16 +237,16 @@ void FidesInnova::Verify(int64_t g, int64_t mod) {
   Polynomial::printPolynomial(poly_pi_b, "poly_pi_b(x)");
   Polynomial::printPolynomial(poly_pi_c, "poly_pi_c(x)");
 
-  vector<int64_t> poly_etaA_vH_B2_vH_B1 = { (etaA * vH_beta2 * vH_beta1) % mod };
-  vector<int64_t> poly_etaB_vH_B2_vH_B1 = { (etaB * vH_beta2 * vH_beta1) % mod };
-  vector<int64_t> poly_etaC_vH_B2_vH_B1 = { (etaC * vH_beta2 * vH_beta1) % mod };
+  int64_t poly_etaA_vH_B2_vH_B1 = (etaA * vH_beta2 * vH_beta1) % mod;
+  int64_t poly_etaB_vH_B2_vH_B1 = (etaB * vH_beta2 * vH_beta1) % mod;
+  int64_t poly_etaC_vH_B2_vH_B1 = (etaC * vH_beta2 * vH_beta1) % mod;
 
-  vector<int64_t> poly_sig_a = Polynomial::multiplyPolynomials(poly_etaA_vH_B2_vH_B1, valA_x, mod);
-  vector<int64_t> poly_sig_b = Polynomial::multiplyPolynomials(poly_etaB_vH_B2_vH_B1, valB_x, mod);
-  vector<int64_t> poly_sig_c = Polynomial::multiplyPolynomials(poly_etaC_vH_B2_vH_B1, valC_x, mod);
-  Polynomial::printPolynomial(poly_sig_a, "poly_sig_a(x)");
-  Polynomial::printPolynomial(poly_sig_b, "poly_sig_b(x)");
-  Polynomial::printPolynomial(poly_sig_c, "poly_sig_c(x)");
+  vector<int64_t> poly_sig_a = Polynomial::multiplyPolynomialByNumber(valA_x, poly_etaA_vH_B2_vH_B1, mod);
+  vector<int64_t> poly_sig_b = Polynomial::multiplyPolynomialByNumber(valB_x, poly_etaB_vH_B2_vH_B1, mod);
+  vector<int64_t> poly_sig_c = Polynomial::multiplyPolynomialByNumber(valC_x, poly_etaC_vH_B2_vH_B1, mod);
+  Polynomial::printPolynomial(poly_sig_a, "poly_sig_a");
+  Polynomial::printPolynomial(poly_sig_b, "poly_sig_b");
+  Polynomial::printPolynomial(poly_sig_c, "poly_sig_c");
 
   vector<int64_t> a_x = Polynomial::addPolynomials(Polynomial::addPolynomials(Polynomial::multiplyPolynomials(poly_sig_a, Polynomial::multiplyPolynomials(poly_pi_b, poly_pi_c, mod), mod), Polynomial::multiplyPolynomials(poly_sig_b, Polynomial::multiplyPolynomials(poly_pi_a, poly_pi_c, mod), mod), mod), Polynomial::multiplyPolynomials(poly_sig_c, Polynomial::multiplyPolynomials(poly_pi_a, poly_pi_b, mod), mod), mod);
 
@@ -315,6 +315,8 @@ void FidesInnova::Verify(int64_t g, int64_t mod) {
   int64_t eq12 = (Polynomial::evaluatePolynomial(a_x, beta3, mod) - ((Polynomial::evaluatePolynomial(b_x, beta3, mod) * (beta3 * Polynomial::evaluatePolynomial(g_3_x, beta3, mod) + (sigma3 * Polynomial::modInverse(m, mod)) % mod)))) % mod;
   eq12 %= mod;
   if (eq12 < 0) eq12 += mod;
+  Serial.println("");
+  Serial.print("eq1: ");
   Serial.print(eq11);
   Serial.print(" = ");
   Serial.println(eq12);
@@ -323,6 +325,7 @@ void FidesInnova::Verify(int64_t g, int64_t mod) {
   int64_t eq22 = ((Polynomial::evaluatePolynomial(h_2_x, beta2, mod) * Polynomial::evaluatePolynomial(vH_x, beta2, mod)) % mod + (beta2 * Polynomial::evaluatePolynomial(g_2_x, beta2, mod)) % mod + (sigma2 * Polynomial::modInverse(n, mod)) % mod) % mod;
   eq12 %= mod;
   if (eq12 < 0) eq12 += mod;
+  Serial.print("eq2: ");
   Serial.print(eq21);
   Serial.print(" = ");
   Serial.println(eq22);
@@ -331,6 +334,7 @@ void FidesInnova::Verify(int64_t g, int64_t mod) {
   int64_t eq32 = (Polynomial::evaluatePolynomial(h_1_x, beta1, mod) * Polynomial::evaluatePolynomial(vH_x, beta1, mod) + beta1 * Polynomial::evaluatePolynomial(g_1_x, beta1, mod) + sigma1 * Polynomial::modInverse(n, mod)) % mod;
   eq31 %= mod;
   if (eq31 < 0) eq31 += mod;
+  Serial.print("eq3: ");
   Serial.print(eq31);
   Serial.print(" = ");
   Serial.println(eq32);
@@ -339,6 +343,7 @@ void FidesInnova::Verify(int64_t g, int64_t mod) {
   int64_t eq42 = (Polynomial::evaluatePolynomial(h_0_x, beta1, mod) * Polynomial::evaluatePolynomial(vH_x, beta1, mod)) % mod;
   eq41 %= mod;
   if (eq41 < 0) eq41 += mod;
+  Serial.print("eq4: ");
   Serial.print(eq41);
   Serial.print(" = ");
   Serial.println(eq42);
@@ -355,9 +360,9 @@ void FidesInnova::Verify(int64_t g, int64_t mod) {
     eq52BufP2 += mod;
   }
   int64_t eq52 = Polynomial::e_func(p_17_AHP, eq52BufP2, g, mod);
-  Serial.print("eq51 = ");
-  Serial.println(eq51);
-  Serial.print("eq52 = ");
+  Serial.print("eq5: ");
+  Serial.print(eq51);
+  Serial.print(" = ");
   Serial.println(eq52);
 
   if (eq11 == eq12 && eq21 == eq22 && eq31 == eq32 && eq41 == eq42 && eq51 == eq52) {

@@ -18,7 +18,12 @@ void FidesInnova::Commitment(String path, int64_t g, int64_t mod) {
     "li R1, 4\n"
     "mul R1, R1, 5\n"
     "addi R1, R1, 11\n"
-    "mul R1, R1, 26\n";
+    "mul R1, R1, 26\n"
+    "addi R1, R1, 0\n"
+    "addi R1, R1, 0\n"
+    "addi R1, R1, 0\n"
+    "addi R1, R1, 0\n"
+    "addi R1, R1, 0\n";
 
   vector<String> instructions;
   // Convert the raw instructions into separate lines
@@ -242,61 +247,61 @@ void FidesInnova::Commitment(String path, int64_t g, int64_t mod) {
  // Create a mapping for the non-zero rows using parameters K and H
   vector<vector<int64_t>> nonZeroRowsA = Polynomial::getNonZeroRows(A);
   vector<vector<int64_t>> rowA = Polynomial::createMapping(K, H, nonZeroRowsA);
-  rowA[1].push_back(1);
-  rowA[1].push_back(135);
-  rowA[1].push_back(125);
-  rowA[1].push_back(59);
-  rowA[1].push_back(42);
-  rowA[1].push_back(1);
+  // rowA[1].push_back(1);
+  // rowA[1].push_back(135);
+  // rowA[1].push_back(125);
+  // rowA[1].push_back(59);
+  // rowA[1].push_back(42);
+  // rowA[1].push_back(1);
   Polynomial::printMapping(rowA, "row_A");
   vector<vector<int64_t>> nonZeroColsA = Polynomial::getNonZeroCols(A);
   vector<vector<int64_t>> colA = Polynomial::createMapping(K, H, nonZeroColsA);
-  colA[1].push_back(42);
-  colA[1].push_back(1);
-  colA[1].push_back(135);
-  colA[1].push_back(125);
-  colA[1].push_back(59);
-  colA[1].push_back(42);
+  // colA[1].push_back(42);
+  // colA[1].push_back(1);
+  // colA[1].push_back(135);
+  // colA[1].push_back(125);
+  // colA[1].push_back(59);
+  // colA[1].push_back(42);
   Polynomial::printMapping(colA, "col_A");
   vector<vector<int64_t>> valA = Polynomial::valMapping(K, H, nonZeroRowsA, nonZeroColsA, mod);
   Polynomial::printMapping(valA, "val_A");
 
   vector<vector<int64_t>> nonZeroRowsB = Polynomial::getNonZeroRows(B);
   vector<vector<int64_t>> rowB = Polynomial::createMapping(K, H, nonZeroRowsB);
-  rowB[1].push_back(59);
-  rowB[1].push_back(1);
-  rowB[1].push_back(42);
-  rowB[1].push_back(135);
-  rowB[1].push_back(59);
+  // rowB[1].push_back(59);
+  // rowB[1].push_back(1);
+  // rowB[1].push_back(42);
+  // rowB[1].push_back(135);
+  // rowB[1].push_back(59);
   Polynomial::printMapping(rowB, "row_B");
   vector<vector<int64_t>> nonZeroColsB = Polynomial::getNonZeroCols(B);
   vector<vector<int64_t>> colB = Polynomial::createMapping(K, H, nonZeroColsB);
-  colB[1].push_back(59);
-  colB[1].push_back(42);
-  colB[1].push_back(125);
-  colB[1].push_back(1);
-  colB[1].push_back(135);
+  // colB[1].push_back(59);
+  // colB[1].push_back(42);
+  // colB[1].push_back(125);
+  // colB[1].push_back(1);
+  // colB[1].push_back(135);
   Polynomial::printMapping(colB, "col_B");
   vector<vector<int64_t>> valB = Polynomial::valMapping(K, H, nonZeroRowsB, nonZeroColsB, mod);
   Polynomial::printMapping(valB, "val_B");
 
   vector<vector<int64_t>> nonZeroRowsC = Polynomial::getNonZeroRows(C);
   vector<vector<int64_t>> rowC = Polynomial::createMapping(K, H, nonZeroRowsC);
-  rowC[1].push_back(1);
-  rowC[1].push_back(59);
-  rowC[1].push_back(125);
-  rowC[1].push_back(1);
-  rowC[1].push_back(135);
-  rowC[1].push_back(42);
+  // rowC[1].push_back(1);
+  // rowC[1].push_back(59);
+  // rowC[1].push_back(125);
+  // rowC[1].push_back(1);
+  // rowC[1].push_back(135);
+  // rowC[1].push_back(42);
   Polynomial::printMapping(rowC, "row_C");
   vector<vector<int64_t>> nonZeroColsC = Polynomial::getNonZeroCols(C);
   vector<vector<int64_t>> colC = Polynomial::createMapping(K, H, nonZeroColsC);
-  colC[1].push_back(125);
-  colC[1].push_back(59);
-  colC[1].push_back(1);
-  colC[1].push_back(1);
-  colC[1].push_back(42);
-  colC[1].push_back(59);
+  // colC[1].push_back(125);
+  // colC[1].push_back(59);
+  // colC[1].push_back(1);
+  // colC[1].push_back(1);
+  // colC[1].push_back(42);
+  // colC[1].push_back(59);
   Polynomial::printMapping(colC, "col_C");
   vector<vector<int64_t>> valC = Polynomial::valMapping(K, H, nonZeroRowsC, nonZeroColsC, mod);
   Polynomial::printMapping(valC, "val_C");

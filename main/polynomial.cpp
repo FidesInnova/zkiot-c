@@ -176,14 +176,18 @@ vector<vector<int64_t>> Polynomial::dividePolynomials(const vector<int64_t>& div
 // Function to multiply a polynomial by a number
 vector<int64_t> Polynomial::multiplyPolynomialByNumber(const vector<int64_t>& H, int64_t h, int64_t mod) {
   vector<int64_t> result(H.size(), 0);  // Use long long to avoid overflow during multiplication
+  vector<uint64_t> unsignedVec(H.size(), 0);
 
   for (int64_t i = 0; i < H.size(); i++) {
-    result[i] = (H[i] * h) % mod;
+    unsignedVec[i] = (H[i] * h) % mod;
 
     // // If result becomes negative, convert it to a positive equivalent under modulo
-    if (result[i] < 0) {
-      result[i] += mod;
+    if (unsignedVec[i] < 0) {
+      unsignedVec[i] += mod;
     }
+  }
+  for (uint64_t num : unsignedVec) {
+    result.push_back(static_cast<int64_t>(num));
   }
   return result;
 }
@@ -223,7 +227,7 @@ vector<int64_t> Polynomial::setupLagrangePolynomial(const vector<int64_t> x_valu
   for (int64_t i = 0; i < num_points; i++) {
     if (y_values[i] != 0) {  // Only process non-zero y-values
       vector<int64_t> Li = LagrangePolynomial(i, x_values, mod);
-      printPolynomial(Li, "L" + String(i + 1));
+      // printPolynomial(Li, "L" + String(i + 1));
 
       // Multiply the L_i(x) by y_i and add to the final polynomial
       for (int64_t j = 0; j < Li.size(); j++) {
@@ -433,7 +437,7 @@ vector<vector<int64_t>> Polynomial::createMapping(const vector<int64_t>& K, cons
   }
   for (int64_t i = nonZero[0].size(); i < K.size(); i++) {
     row[0].push_back(K[i]);
-    // row[1].push_back(H[i % H.size()]);
+    row[1].push_back(H[i % H.size()]);
   }
 
   return row;
@@ -498,7 +502,7 @@ int64_t Polynomial::e_func(int64_t a, int64_t b, int64_t g, int64_t mod) {
   return (3 * (buf1 * buf2)) % mod;
 }
 
-  // Function to calculate KZG in mod
+// Function to calculate KZG in mod
 int64_t Polynomial::KZG_Commitment(vector<int64_t> a, vector<int64_t> b, int64_t mod) {
   int64_t res = 0;
   for (int64_t i = 0; i < b.size(); i++) {

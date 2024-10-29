@@ -31,7 +31,7 @@ void FidesInnova::Setup(int64_t g, int64_t tau, int64_t mod) {
   int64_t d_AHP = max(exp1, max(exp2, max(exp3, max(exp4, max(exp5, max(exp6, max(exp7, max(exp8, exp9))))))));
   */
   // Use a predefined max
-  int64_t d_AHP = 100;
+  int64_t d_AHP = 500;
 
   int64_t modMinusOne = mod - 1;
   int64_t current_exponent = 1;

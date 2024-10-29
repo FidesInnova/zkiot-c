@@ -1,3 +1,101 @@
+/*
+  Read the setup.json, commitment.json, and proof.json and use them to verify the code execution 
+  
+
+  setup.json
+  {
+    "Class":  32-bit Integer,
+    "ck": 64-bit Integer Array,
+    "vk": 64-bit Integer
+  }
+
+
+  commitment.json
+  {
+    "CommitmentID":  64-bit,
+    "Class": 32-bit Integer,
+    "IoT_Manufacturer_Name": String,
+    "IoT_Device_Name": String,
+    "Device_Hardware_Version": float,
+    "Firmware_Version": float,
+    "Lines": 64-bit Array,
+    
+    "m": 64-bit Integer,
+    "n": 64-bit Integer,
+    
+    // PFR Commitment   
+    "ComRowA": 64-bit Integer,
+    "ComColA": 64-bit Integer,
+    "ComValA": 64-bit Integer,
+    "ComRowB": 64-bit Integer,
+    "ComColB": 64-bit Integer,
+    "ComValB": 64-bit Integer,
+    "ComRowC": 64-bit Integer,
+    "ComColC": 64-bit Integer,
+    "ComValC": 64-bit Integer,
+    "RowA": 64-bit Integer,
+    "ColA": 64-bit Integer,
+    "ValA": 64-bit Integer,
+    "RowB": 64-bit Integer,
+    "ColB": 64-bit Integer,
+    "ValB": 64-bit Integer,
+    "RowC": 64-bit Integer,
+    "ColC": 64-bit Integer,
+    "ValC": 64-bit Integer,
+
+    // AHP Commitment
+    "ComRow'A": 64-bit Integer,
+    "ComCol'A": 64-bit Integer,
+    "ComVal'A": 64-bit Integer,
+    "ComRow'B": 64-bit Integer,
+    "ComCol'B": 64-bit Integer,
+    "ComVal'B": 64-bit Integer,
+    "ComRow'C": 64-bit Integer,
+    "ComCol'C": 64-bit Integer,
+    "ComVal'C": 64-bit Integer,
+    "Row'A": 64-bit Integer,
+    "Col'A": 64-bit Integer,
+    "Val'A": 64-bit Integer,
+    "Row'B": 64-bit Integer,
+    "Col'B": 64-bit Integer,
+    "Val'B": 64-bit Integer,
+    "Row'C": 64-bit Integer,
+    "Col'C": 64-bit Integer,
+    "Val'C": 64-bit Integer,
+    
+    "Curve": String,
+    "PolynomialCommitment": String
+  }
+
+
+  proof.json
+  {
+    "CommitmentID": 64-bit,
+    "DeviceEncodedID":   
+    "Input": String,
+    "Output": String,
+    "P1AHP": 64-bit Integer,
+    "P2AHP": 64-bit Array,
+    "P3AHP": 64-bit Array,
+    "P4AHP": 64-bit Array,
+    "P5AHP": 64-bit Array,
+    "P6AHP": 64-bit Array,
+    "P7AHP": 64-bit Array,
+    "P8AHP": 64-bit Array,
+    "P9AHP": 64-bit Array],
+    "P10AHP": 64-bit Integer,
+    "P11AHP": 64-bit Array,
+    "P12AHP": 64-bit Array,
+    "P13AHP": 64-bit Integer,
+    "P14AHP": 64-bit Array,
+    "P15AHP": 64-bit Array,
+    "P16AHP": 64-bit Array,    
+    "Protocol": String
+  }
+
+
+*/
+
 #include "fidesinnova.h"
 
 void fidesinnova::verifier(int64_t g, int64_t mod) {

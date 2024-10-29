@@ -17,7 +17,12 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
     "li R1, 4\n"
     "mul R1, R1, 5\n"
     "addi R1, R1, 11\n"
-    "mul R1, R1, 26\n";
+    "mul R1, R1, 26\n"
+    "addi R1, R1, 0\n"
+    "addi R1, R1, 0\n"
+    "addi R1, R1, 0\n"
+    "addi R1, R1, 0\n"
+    "addi R1, R1, 0\n";
 
   vector<String> instructions;
   // Convert the raw instructions into separate lines
@@ -247,8 +252,8 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
 
   vector<vector<int64_t>> zA(2);
   Serial.println("zA(x):");
-  // for (int64_t i = 0; i < n + b; i++) {
-  for (int64_t i = 0; i < n; i++) {
+  for (int64_t i = 0; i < n + b; i++) {
+  // for (int64_t i = 0; i < n; i++) {
     if (i < n) {
       zA[0].push_back(H[i]);
       zA[1].push_back(Az[i][0]);
@@ -261,18 +266,18 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
     Serial.print(")= ");
     Serial.println(zA[1][i]);
   }
-  zA[0].push_back(150);
-  zA[1].push_back(5);
-  zA[0].push_back(80);
-  zA[1].push_back(47);
+  // zA[0].push_back(150);
+  // zA[1].push_back(5);
+  // zA[0].push_back(80);
+  // zA[1].push_back(47);
 
   vector<int64_t> z_hatA = Polynomial::setupLagrangePolynomial(zA[0], zA[1], mod, "z_hatA(x)");
 
 
   vector<vector<int64_t>> zB(2);
   Serial.println("zB(x):");
-  // for (int64_t i = 0; i < n + b; i++) {
-  for (int64_t i = 0; i < n; i++) {
+  for (int64_t i = 0; i < n + b; i++) {
+  // for (int64_t i = 0; i < n; i++) {
     if (i < n) {
       zB[0].push_back(H[i]);
       zB[1].push_back(Bz[i][0]);
@@ -285,16 +290,16 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
     Serial.print(")= ");
     Serial.println(zB[1][i]);
   }
-  zB[0].push_back(150);
-  zB[1].push_back(15);
-  zB[0].push_back(80);
-  zB[1].push_back(170);
+  // zB[0].push_back(150);
+  // zB[1].push_back(15);
+  // zB[0].push_back(80);
+  // zB[1].push_back(170);
   vector<int64_t> z_hatB = Polynomial::setupLagrangePolynomial(zB[0], zB[1], mod, "z_hatB(x)");
 
   vector<vector<int64_t>> zC(2);
   Serial.println("zC(x):");
-  // for (int64_t i = 0; i < n + b; i++) {
-  for (int64_t i = 0; i < n; i++) {
+  for (int64_t i = 0; i < n + b; i++) {
+  // for (int64_t i = 0; i < n; i++) {
     if (i < n) {
       zC[0].push_back(H[i]);
       zC[1].push_back(Cz[i][0]);
@@ -307,10 +312,10 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
     Serial.print(")= ");
     Serial.println(zC[1][i]);
   }
-  zC[0].push_back(150);
-  zC[1].push_back(1);
-  zC[0].push_back(80);
-  zC[1].push_back(100);
+  // zC[0].push_back(150);
+  // zC[1].push_back(1);
+  // zC[0].push_back(80);
+  // zC[1].push_back(100);
   vector<int64_t> z_hatC = Polynomial::setupLagrangePolynomial(zC[0], zC[1], mod, "z_hatC(x)");
 
 
@@ -367,10 +372,10 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
     Serial.print(")= ");
     Serial.println(w_hat[1][i]);
   }
-  w_hat[0].push_back(150);
-  w_hat[1].push_back(42);
-  w_hat[0].push_back(80);
-  w_hat[1].push_back(180);
+  // w_hat[0].push_back(150);
+  // w_hat[1].push_back(42);
+  // w_hat[0].push_back(80);
+  // w_hat[1].push_back(180);
   for (int64_t i = n; i < n + b; i++) {
     // w_hat[0].push_back(zA[0][i]);
     // w_hat[1].push_back(Polynomial::generateRandomNumber(H, mod));
@@ -392,7 +397,7 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
     vH_x[0] += mod; //Handling negative values properly
   }
   vH_x[n] = 1;
-  Polynomial::printPolynomial(vH_x, "KvH(x)");
+  Polynomial::printPolynomial(vH_x, "vH(x)");
 
 
   vector<int64_t> vK_x = Polynomial::createLinearPolynomial(K[0]);
@@ -459,21 +464,21 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
 
   vector<vector<int64_t>> nonZeroRowsA = Polynomial::getNonZeroRows(A);
   vector<vector<int64_t>> rowA = Polynomial::createMapping(K, H, nonZeroRowsA);
-  rowA[1].push_back(1);
-  rowA[1].push_back(135);
-  rowA[1].push_back(125);
-  rowA[1].push_back(59);
-  rowA[1].push_back(42);
-  rowA[1].push_back(1);
+  // rowA[1].push_back(1);
+  // rowA[1].push_back(135);
+  // rowA[1].push_back(125);
+  // rowA[1].push_back(59);
+  // rowA[1].push_back(42);
+  // rowA[1].push_back(1);
   Polynomial::printMapping(rowA, "row_A");
   vector<vector<int64_t>> nonZeroColsA = Polynomial::getNonZeroCols(A);
   vector<vector<int64_t>> colA = Polynomial::createMapping(K, H, nonZeroColsA);
-  colA[1].push_back(42);
-  colA[1].push_back(1);
-  colA[1].push_back(135);
-  colA[1].push_back(125);
-  colA[1].push_back(59);
-  colA[1].push_back(42);
+  // colA[1].push_back(42);
+  // colA[1].push_back(1);
+  // colA[1].push_back(135);
+  // colA[1].push_back(125);
+  // colA[1].push_back(59);
+  // colA[1].push_back(42);
   Polynomial::printMapping(colA, "col_A");
   vector<vector<int64_t>> valA = Polynomial::valMapping(K, H, nonZeroRowsA, nonZeroColsA, mod);
   Polynomial::printMapping(valA, "val_A");
@@ -500,19 +505,19 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
 
   vector<vector<int64_t>> nonZeroRowsB = Polynomial::getNonZeroRows(B);
   vector<vector<int64_t>> rowB = Polynomial::createMapping(K, H, nonZeroRowsB);
-  rowB[1].push_back(59);
-  rowB[1].push_back(1);
-  rowB[1].push_back(42);
-  rowB[1].push_back(135);
-  rowB[1].push_back(59);
+  // rowB[1].push_back(59);
+  // rowB[1].push_back(1);
+  // rowB[1].push_back(42);
+  // rowB[1].push_back(135);
+  // rowB[1].push_back(59);
   Polynomial::printMapping(rowB, "row_B");
   vector<vector<int64_t>> nonZeroColsB = Polynomial::getNonZeroCols(B);
   vector<vector<int64_t>> colB = Polynomial::createMapping(K, H, nonZeroColsB);
-  colB[1].push_back(59);
-  colB[1].push_back(42);
-  colB[1].push_back(125);
-  colB[1].push_back(1);
-  colB[1].push_back(135);
+  // colB[1].push_back(59);
+  // colB[1].push_back(42);
+  // colB[1].push_back(125);
+  // colB[1].push_back(1);
+  // colB[1].push_back(135);
   Polynomial::printMapping(colB, "col_B");
   vector<vector<int64_t>> valB = Polynomial::valMapping(K, H, nonZeroRowsB, nonZeroColsB, mod);
   Polynomial::printMapping(valB, "val_B");
@@ -540,21 +545,21 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
 
   vector<vector<int64_t>> nonZeroRowsC = Polynomial::getNonZeroRows(C);
   vector<vector<int64_t>> rowC = Polynomial::createMapping(K, H, nonZeroRowsC);
-  rowC[1].push_back(1);
-  rowC[1].push_back(59);
-  rowC[1].push_back(125);
-  rowC[1].push_back(1);
-  rowC[1].push_back(135);
-  rowC[1].push_back(42);
+  // rowC[1].push_back(1);
+  // rowC[1].push_back(59);
+  // rowC[1].push_back(125);
+  // rowC[1].push_back(1);
+  // rowC[1].push_back(135);
+  // rowC[1].push_back(42);
   Polynomial::printMapping(rowC, "row_C");
   vector<vector<int64_t>> nonZeroColsC = Polynomial::getNonZeroCols(C);
   vector<vector<int64_t>> colC = Polynomial::createMapping(K, H, nonZeroColsC);
-  colC[1].push_back(125);
-  colC[1].push_back(59);
-  colC[1].push_back(1);
-  colC[1].push_back(1);
-  colC[1].push_back(42);
-  colC[1].push_back(59);
+  // colC[1].push_back(125);
+  // colC[1].push_back(59);
+  // colC[1].push_back(1);
+  // colC[1].push_back(1);
+  // colC[1].push_back(42);
+  // colC[1].push_back(59);
   Polynomial::printMapping(colC, "col_C");
   vector<vector<int64_t>> valC = Polynomial::valMapping(K, H, nonZeroRowsC, nonZeroColsC, mod);
   Polynomial::printMapping(valC, "val_C");
@@ -758,10 +763,11 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
   vector<int64_t> poly_pi_a = Polynomial::multiplyPolynomials(Polynomial::subtractPolynomials(rowA_x, poly_beta2, mod), Polynomial::subtractPolynomials(colA_x, poly_beta1, mod), mod);
   vector<int64_t> poly_pi_b = Polynomial::multiplyPolynomials(Polynomial::subtractPolynomials(rowB_x, poly_beta2, mod), Polynomial::subtractPolynomials(colB_x, poly_beta1, mod), mod);
   vector<int64_t> poly_pi_c = Polynomial::multiplyPolynomials(Polynomial::subtractPolynomials(rowC_x, poly_beta2, mod), Polynomial::subtractPolynomials(colC_x, poly_beta1, mod), mod);
-  Polynomial::printPolynomial(poly_pi_c, "poly_pi_a");
+  Polynomial::printPolynomial(poly_pi_a, "poly_pi_a");
   Polynomial::printPolynomial(poly_pi_b, "poly_pi_b");
   Polynomial::printPolynomial(poly_pi_c, "poly_pi_c");
 
+<<<<<<< Updated upstream
   // Compute polynomials for signature multipliers
   vector<int64_t> poly_etaA_vH_B2_vH_B1 = { (etaA * vH_beta2 * vH_beta1) % mod };
   vector<int64_t> poly_etaB_vH_B2_vH_B1 = { (etaB * vH_beta2 * vH_beta1) % mod };
@@ -771,6 +777,19 @@ void FidesInnova::Proof(String path, int64_t g, int64_t b, int64_t mod) {
   vector<int64_t> poly_sig_a = Polynomial::multiplyPolynomials(poly_etaA_vH_B2_vH_B1, valA_x, mod);
   vector<int64_t> poly_sig_b = Polynomial::multiplyPolynomials(poly_etaB_vH_B2_vH_B1, valB_x, mod);
   vector<int64_t> poly_sig_c = Polynomial::multiplyPolynomials(poly_etaC_vH_B2_vH_B1, valC_x, mod);
+=======
+
+  int64_t poly_etaA_vH_B2_vH_B1 = (etaA * vH_beta2 * vH_beta1) % mod;
+  int64_t poly_etaB_vH_B2_vH_B1 = (etaB * vH_beta2 * vH_beta1) % mod;
+  int64_t poly_etaC_vH_B2_vH_B1 = (etaC * vH_beta2 * vH_beta1) % mod;
+
+  vector<int64_t> poly_sig_a = Polynomial::multiplyPolynomialByNumber(valA_x, poly_etaA_vH_B2_vH_B1, mod);
+  vector<int64_t> poly_sig_b = Polynomial::multiplyPolynomialByNumber(valB_x, poly_etaB_vH_B2_vH_B1, mod);
+  vector<int64_t> poly_sig_c = Polynomial::multiplyPolynomialByNumber(valC_x, poly_etaC_vH_B2_vH_B1, mod);
+  Polynomial::printPolynomial(poly_sig_a, "poly_sig_a");
+  Polynomial::printPolynomial(poly_sig_b, "poly_sig_b");
+  Polynomial::printPolynomial(poly_sig_c, "poly_sig_c");
+>>>>>>> Stashed changes
 
   vector<int64_t> a_x = Polynomial::addPolynomials(Polynomial::addPolynomials(Polynomial::multiplyPolynomials(poly_sig_a, Polynomial::multiplyPolynomials(poly_pi_b, poly_pi_c, mod), mod), Polynomial::multiplyPolynomials(poly_sig_b, Polynomial::multiplyPolynomials(poly_pi_a, poly_pi_c, mod), mod), mod), Polynomial::multiplyPolynomials(poly_sig_c, Polynomial::multiplyPolynomials(poly_pi_a, poly_pi_b, mod), mod), mod);
   Polynomial::printPolynomial(a_x, "a(x)");
