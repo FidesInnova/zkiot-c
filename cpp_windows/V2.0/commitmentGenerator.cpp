@@ -466,16 +466,23 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t mod) {
   Serial.println(Com8_AHP);
 
 
-  // TODO: Add req params to the proof.json
+  // TODO: Add from device_config.json to the proof.json
   /*
+  device_config.jso
+  {
     "CommitmentID":  64-bit,
     "Class": 32-bit Integer,
     "IoT_Manufacturer_Name": String,
     "IoT_Device_Name": String,
     "Device_Hardware_Version": float,
     "Firmware_Version": float,
-    "Lines": = 64-bit Array,
+    "Lines": 64-bit Array
+  }
+  
   */
+
+
+
 
   DynamicJsonDocument doc(2048);
   JsonArray jsonArray;

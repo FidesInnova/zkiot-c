@@ -1,11 +1,19 @@
 /*
-  Read the setup.json from flash of the RISC-V microcontroller
+  Read the setup.json and program_param.json from flash of the RISC-V microcontroller
 
   setup.json
   {
     "Class":  32-bit Integer,
     "ck": 64-bit Integer Array,
     "vk": 64-bit Integer
+  }
+
+  
+  program_param.json
+  {
+    "Class":  32-bit Integer,
+    "A": 64-bit Integer Array,
+    "B": 64-bit Integer Array<64-bit Integer Array>
   }
 
 */
