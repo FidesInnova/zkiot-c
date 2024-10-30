@@ -17,6 +17,7 @@ void fidesinnova::setup(int64_t g, int64_t tau, int64_t mod) {
 
   // TheArch->TheSol: Test and uncomment the following section.
   // b<n_g, the number of elements in c_k < 12*n_g, if verificaion returns true and double-check confirms that the number of non-zero elements in matrix B is 2.
+  // TheArch->TheSol: MAke sure b <n_g in the proof generation phase.
   // TheArch->Kath: Generate 12 setup.json with the maximum of c_k elements of 12*n_g for each class. 
   // Class defenition is here: https://app.gitbook.com/o/viOQScpcYEhrVQAFsW8c/s/6jhloRdZDsdxHkgxETHg/zero-knowledge-proof-zkp-scheme/1-setup-phase
   // class.json format is here:
