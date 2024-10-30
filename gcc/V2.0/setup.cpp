@@ -22,7 +22,6 @@ void fidesinnova::setup(int64_t g, int64_t tau, int64_t mod) {
   // Class defenition is here: https://app.gitbook.com/o/viOQScpcYEhrVQAFsW8c/s/6jhloRdZDsdxHkgxETHg/zero-knowledge-proof-zkp-scheme/1-setup-phase
   // class.json format is here:
   // {
-  //  "p": 32-bit Integer,
   //  "Class":  32-bit Integer,
   //  "ck": 64-bit Integer Array,
   //  "vk": 64-bit Integer
