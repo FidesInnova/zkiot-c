@@ -5,6 +5,7 @@
 void fidesinnova::setup(int64_t g, int64_t tau, int64_t mod) {
   vector<int64_t> ck;
 
+  // TheArch->TheSol: Test and uncomment the following section.
   /*
   // //I add this to ensure the value of mod is valid, or it will show overflow error
   // if (mod > 1) { 
@@ -14,7 +15,18 @@ void fidesinnova::setup(int64_t g, int64_t tau, int64_t mod) {
   //   return;
   // } */
 
-
+  // TheArch->TheSol: Test and uncomment the following section.
+  // b<n_g, the number of elements in c_k < 12*n_g, if verificaion returns true and double-check confirms that the number of non-zero elements in matrix B is 2.
+  // TheArch->Kath: Generate 12 setup.json with the maximum of c_k elements of 12*n_g for each class. 
+  // Class defenition is here: https://app.gitbook.com/o/viOQScpcYEhrVQAFsW8c/s/6jhloRdZDsdxHkgxETHg/zero-knowledge-proof-zkp-scheme/1-setup-phase
+  // class.json format is here:
+  // {
+  //  "p": 32-bit Integer,
+  //  "Class":  32-bit Integer,
+  //  "ck": 64-bit Integer Array,
+  //  "vk": 64-bit Integer
+  // }
+  
   /*
   // Calculate each expression
   int64_t exp1 = m;
@@ -101,18 +113,10 @@ void fidesinnova::setup(int64_t g, int64_t tau, int64_t mod) {
   String output;
   serializeJson(doc, output);
 
-  /*
-  setup.json
-  {
-    "Class":  32-bit Integer,
-    "ck": 64-bit Integer Array,
-    "vk": 64-bit Integer
-  }
-  */
 
-  
-  // Store setup(ck, vk) in setup.json
+  // TheArch->Kath: Generate 12 setup.json with the maximum of c_k elements of 12*n_g for each class. 
+  // setup1.json, setup2.json, setup3.json, ..., setup18.json
+  // Store setup(p, class, ck, vk) in setup.json
   removeFile("/setup.json");
   writeFile("/setup.json", output);
-
 }
