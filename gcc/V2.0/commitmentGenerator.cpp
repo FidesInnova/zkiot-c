@@ -466,7 +466,7 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t p) {
   Serial.println(Com8_AHP);
 
 
-  // TODO: Add from device_config.json to the proof.json
+  // TODO: Add from device_config.json to the program_commitment.json
   /*
   device_config.jso
   {
