@@ -556,7 +556,7 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t p) {
 /*
 Read program.s and insert assembly of store register based on the line provided by device_config.json
 
-Add proofGenerator function in assembly at the end of the lines and store it in program_new.s.
+Add ProofGen function in assembly at the end of the last instuction and store it in program_new.s.
 */
 
 
