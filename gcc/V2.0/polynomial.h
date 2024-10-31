@@ -1,10 +1,10 @@
 #ifndef POLYNOMIAL_H
 #define POLYNOMIAL_H
 
-#include <Arduino.h>
 #include <vector>
 #include <cstdint>
 #include <algorithm>
+#include <string>
 
 using namespace std;
 
@@ -41,7 +41,7 @@ public:
   static vector<int64_t> LagrangePolynomial(int64_t i, const vector<int64_t>& x_values, int64_t p);
 
   // Function to compute Lagrange polynomial(x, y)
-  static vector<int64_t> setupLagrangePolynomial(const vector<int64_t> x_values, const vector<int64_t> y_values, int64_t p, const String& name);
+  static vector<int64_t> setupLagrangePolynomial(const vector<int64_t> x_values, const vector<int64_t> y_values, int64_t p, const std::string& name);
 
   // Function to parse the polynomial string and evaluate it
   static int64_t evaluatePolynomial(const vector<int64_t>& polynomial, int64_t x, int64_t p);
@@ -62,16 +62,16 @@ public:
   static vector<int64_t> expandPolynomials(const vector<int64_t>& roots, int64_t p);
 
   // Function to print polynomial in serial
-  static void printPolynomial(const vector<int64_t>& coefficients, const String& name);
+  static void printPolynomial(const vector<int64_t>& coefficients, const std::string& name);
 
   // Utility functions for trimming
-  static String trim(const String& str);
+  static std::string trim(const std::string& str);
 
   // Utility functions for removing commas
-  static String removeCommas(const String& str);
+  static std::string removeCommas(const std::string& str);
 
   // Utility functions to print a Matrix
-  static void printMatrix(vector<vector<int64_t>>& matrix, const String& name);
+  static void printMatrix(vector<vector<int64_t>>& matrix, const std::string& name);
 
   // Function to get the row indices of non-zero entries in matrix
   static vector<vector<int64_t>> getNonZeroRows(const vector<vector<int64_t>>& matrix);
@@ -83,7 +83,7 @@ public:
   static vector<vector<int64_t>> createMapping(const vector<int64_t>& K, const vector<int64_t>& H, const vector<vector<int64_t>>& nonZero);
 
   // Function to print the mapping
-  static void printMapping(vector<vector<int64_t>>& row, const String& name);
+  static void printMapping(vector<vector<int64_t>>& row, const std::string& name);
 
   // Function to create the val mapping
   static vector<vector<int64_t>> valMapping(const vector<int64_t>& K, const vector<int64_t>& H, vector<vector<int64_t>>& nonZeroRows, vector<vector<int64_t>>& nonZeroCols, int64_t p);

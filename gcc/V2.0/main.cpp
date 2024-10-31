@@ -1,21 +1,8 @@
 #include "fidesinnova.h"
-#include "RegisterReader.h"
 
 fidesinnova lib;
 
-void setup() {
-  Serial.begin(115200);
-
-  if (!SPIFFS.begin(true)) {
-    Serial.println("SPIFFS Mount Failed");
-    return;
-  }
-
-  delay(2000);
-  while (!Serial) {
-    delay(10);
-  }
-
+int main() {
   uint64_t p = 181;  // Initialize the static member 18446744069414584321 | 2013265921 | 181
   uint64_t g = 2;      // Initialize g 33 | 2
   uint64_t n = 5;      // Initialize m
@@ -23,26 +10,7 @@ void setup() {
   uint64_t tau = 119;  // Initialize tau
 
   lib.setup(g, tau, p);
-  lib.commitmentGenerator("instruction.txt", g, p);
-  lib.proofGenerator("instruction.txt", g, b, p);
-  lib.verifier(g, p);
-
-
-  // Read the registers
-  Registers registers = readRegisters();
-  // Print the ISA value
-  Serial.printf("ISA: 0x%08x (%s)\n", registers.misa, registers.readableISA.c_str());
-  // Print the values of the registers
-  for (int i = 0; i < 32; i++) {
-    Serial.printf("X%d: 0x%08x\n", i, registers.reg_x[i]);
-  }
-  Serial.println("");
-  // Print the values of the registers
-  for (int i = 0; i < 32; i++) {
-    Serial.printf("X%d: 0x%08x\n", i, registers.reg_y[i]);
-  }
-}
-
-void loop() {
-  // put your main code here, to run repeatedly:
+  // lib.commitmentGenerator("instruction.txt", g, p);
+  // lib.proofGenerator("instruction.txt", g, b, p);
+  // lib.verifier(g, p);
 }

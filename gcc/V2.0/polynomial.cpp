@@ -60,7 +60,7 @@ int64_t Polynomial::generateRandomNumber(const vector<int64_t>& H, int64_t p) {
 vector<int64_t> Polynomial::addPolynomials(const vector<int64_t>& poly1, const vector<int64_t>& poly2, int64_t p) {
   // // I add this to check if p is positive for clarity usability of the function
   //   if (p <= 0) {
-  //       Serial.println("Error: pulus must be a positive integer.");
+  //       cout << "Error: pulus must be a positive integer." << endl;
   //       return {};  // Return an empty vector to indicate an error
   //   }
 
@@ -213,7 +213,7 @@ vector<int64_t> Polynomial::LagrangePolynomial(int64_t i, const vector<int64_t>&
 }
 
 // Function to compute Lagrange polynomial(x, y)
-vector<int64_t> Polynomial::setupLagrangePolynomial(const vector<int64_t> x_values, const vector<int64_t> y_values, int64_t p, const String& name) {
+vector<int64_t> Polynomial::setupLagrangePolynomial(const vector<int64_t> x_values, const vector<int64_t> y_values, int64_t p, const std::string& name) {
   // Automatically detect number of points
   int64_t num_points = x_values.size();
 
@@ -223,7 +223,7 @@ vector<int64_t> Polynomial::setupLagrangePolynomial(const vector<int64_t> x_valu
   for (int64_t i = 0; i < num_points; i++) {
     if (y_values[i] != 0) {  // Only process non-zero y-values
       vector<int64_t> Li = LagrangePolynomial(i, x_values, p);
-      printPolynomial(Li, "L" + String(i + 1));
+      printPolynomial(Li, "L" + std::string(i + 1));
 
       // Multiply the L_i(x) by y_i and add to the final polynomial
       for (int64_t j = 0; j < Li.size(); j++) {
@@ -267,7 +267,7 @@ int64_t Polynomial::evaluatePolynomial(const vector<int64_t>& polynomial, int64_
 int64_t Polynomial::sumOfEvaluations(const vector<int64_t>& poly, const vector<int64_t>& points, int64_t p) {
   //I add these lines of code to check if there is no elements in points
   // if (points.empty()) {
-  //   Serial.println("Error: No points to evaluate");
+  //   cout << "Error: No points to evaluate" << endl;
   //   return 0;
   // }
   int64_t totalSum = 0;
@@ -337,10 +337,9 @@ vector<int64_t> Polynomial::expandPolynomials(const vector<int64_t>& roots, int6
 }
 
 // Function to print polynomial in serial
-void Polynomial::printPolynomial(const vector<int64_t>& coefficients, const String& name) {
+void Polynomial::printPolynomial(const vector<int64_t>& coefficients, const std::string& name) {
   // Iterate through the coefficients and print each term of the polynomial
-  Serial.print(name);
-  Serial.print(" = ");
+  cout << name  << " = ";
   bool first = true;
   for (int64_t i = coefficients.size() - 1; i >= 0; i--) {
     if (coefficients[i] == 0) continue;  // Skip zero coefficients
@@ -348,49 +347,48 @@ void Polynomial::printPolynomial(const vector<int64_t>& coefficients, const Stri
     // Print the sign for all terms except the first
     if (!first) {
       if (coefficients[i] > 0) {
-        Serial.print(" + ");
+        cout << " + ";
       } else {
-        Serial.print(" - ");
+        cout << " - ";
       }
     } else {
       first = false;
     }
 
     // Print the absolute value of the coefficient
-    Serial.print(abs(coefficients[i]));
+    cout << abs(coefficients[i]);
 
     // Print the variable and the exponent
-    Serial.print("x^");
-    Serial.print(i);
+    cout << "x^" << i;
   }
-  Serial.println("");
+  cout << endl;
 }
 
 // Utility functions for trimming and removing commas
-String Polynomial::trim(const String& str) {
-  int64_t start = 0;
-  while (start < str.length() && isspace(str[start])) start++;
-  int64_t end = str.length() - 1;
-  while (end >= 0 && isspace(str[end])) end--;
-  return str.substring(start, end + 1);
+std::string trim(const std::string& str) {
+    size_t first = str.find_first_not_of(' ');
+    if (first == std::string::npos)
+        return "";
+    size_t last = str.find_last_not_of(' ');
+    return str.substr(first, last - first + 1);
 }
 
-String Polynomial::removeCommas(const String& str) {
-  String result = str;
-  result.replace(",", "");
-  return result;
+// Helper function to Remove commas from a string
+std::string removeCommas(const std::string& str) {
+    size_t first = str.find_first_not_of(',');
+    if (first == std::string::npos)
+        return "";
+    size_t last = str.find_last_not_of(',');
+    return str.substr(first, last - first + 1);
 }
 
-void Polynomial::printMatrix(vector<vector<int64_t>>& matrix, const String& name) {
-  Serial.print("Matrix ");
-  Serial.print(name);
-  Serial.println(":");
+void Polynomial::printMatrix(vector<vector<int64_t>>& matrix, const std::string& name) {
+  cout << "Matrix " << name << ":";
   for (const auto& row : matrix) {
     for (int64_t val : row) {
-      Serial.print(val);
-      Serial.print(" ");
+      cout << val << " ";
     }
-    Serial.println("");
+    cout << endl;
   }
 }
 
@@ -440,15 +438,11 @@ vector<vector<int64_t>> Polynomial::createMapping(const vector<int64_t>& K, cons
 }
 
 // Function to print the mapping
-void Polynomial::printMapping(vector<vector<int64_t>>& row, const String& name) {
+void Polynomial::printMapping(vector<vector<int64_t>>& row, const std::string& name) {
   for (int64_t i = 0; i < row[0].size(); i++) {
-    Serial.print(name);
-    Serial.print("(");
-    Serial.print(row[0][i]);
-    Serial.print(") = ");
-    Serial.println(row[1][i]);
+    cout << name << "(" << row[0][i] << ") = " << row[1][i];
   }
-  Serial.println("");
+  cout << endl;
 }
 
 // Function to create the val mapping

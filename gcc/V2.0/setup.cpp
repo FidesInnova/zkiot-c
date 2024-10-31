@@ -1,9 +1,17 @@
 #include "fidesinnova.h"
 #include <stdint.h>
 
+#include "json.hpp"
+using ordered_json = nlohmann::ordered_json;
+
+#include <regex>
+
+#include <iostream>
+using namespace std;
 
 void fidesinnova::setup(int64_t g, int64_t tau, int64_t p) {
   vector<int64_t> ck;
+  int64_t vk;
 
   // TheArch->TheSol: Test and uncomment the following section.
   /*
@@ -11,7 +19,7 @@ void fidesinnova::setup(int64_t g, int64_t tau, int64_t p) {
   // if (p > 1) { 
   //   tau %= p - 1;
   // } else {
-  //   Serial.println("Invalid pulus value");
+  //   cout << "Invalid pulus value" << endl;
   //   return;
   // } */
 
@@ -20,28 +28,16 @@ void fidesinnova::setup(int64_t g, int64_t tau, int64_t p) {
   // TheArch->TheSol: MAke sure b <n_g in the proof generation phase.
   // TheArch->Kath: Generate 12 setup.json with the maximum of c_k elements of 12*n_g for each class. 
   // Class defenition is here: https://app.gitbook.com/o/viOQScpcYEhrVQAFsW8c/s/6jhloRdZDsdxHkgxETHg/zero-knowledge-proof-zkp-scheme/1-setup-phase
-  // class.json format is here:
+  // setupX.json format is here:
   // {
   //  "Class":  32-bit Integer,
   //  "ck": 64-bit Integer Array,
   //  "vk": 64-bit Integer
   // }
   
-  /*
-  // Calculate each expression
-  int64_t exp1 = m;
-  int64_t exp2 = n_g - n_i + b;
-  int64_t exp3 = n + b;
-  int64_t exp4 = n + 2 * b - 1;
-  int64_t exp5 = 2 * n + b - 1;
-  int64_t exp6 = n + b - 1;
-  int64_t exp7 = n - 1;
-  int64_t exp8 = m - 1;
-  int64_t exp9 = 6 * m - 6;
-
   // Find the maximum value
-  int64_t d_AHP = max(exp1, max(exp2, max(exp3, max(exp4, max(exp5, max(exp6, max(exp7, max(exp8, exp9))))))));
-  */
+  int64_t d_AHP = 12 * n_g;
+  
   // Use a predefined max
   int64_t d_AHP = 100;
 
@@ -49,56 +45,33 @@ void fidesinnova::setup(int64_t g, int64_t tau, int64_t p) {
   int64_t current_exponent = 1;
   int64_t newPower = d_AHP % pMinusOne;
 
-  /*
-  //can directly assign tmp to g
-  // int64_t tmp = g;*/
-
-  int64_t tmp = 0;
-
   tau %= p - 1;
-  tmp = g;
 
   //push into ck
   for (int64_t i = 0; i < d_AHP; i++) {
-    ck.push_back(tmp);
-    tmp = (tmp * tau) % p;
+    ck.push_back(g);
+    g = (g * tau) % p;
 
   }
 
-  Serial.print("ck = {");
+  cout << "ck = {";
   for (int64_t i = 0; i < ck.size(); i++) {
-    Serial.print(String(ck[i]));
+    cout << ck[i];
     if (ck.size() - i > 1) {
-      Serial.print(", ");
+      cout << ", ";
     }
   }
+  cout << endl;
 
   //retrive verifying key
-  Serial.println("}");
-  int64_t vk = ck[1];
-  Serial.print("vk = ");
-  Serial.println(String(vk));
-
-  // //I add this to check ck size is bigger than 1, as it will avoid overflow problem
-  // if (ck.size() > 1) {
-  //   int64_t vk = ck[1];
-  //   Serial.print("vk = ");
-  //   Serial.println(String(vk));
-  // } else {
-  //   Serial.println("Error: ck does not have enough elements.");
-  // }
-
-  //Memory consideration
-  DynamicJsonDocument doc(2048);
+  if (ck.size() > 1) {
+    vk = ck[1];
+    cout << "vk = " << vk << endl;
+  } else {
+    cout << "Error: ck does not have enough elements." << endl;
+  }
 
   // TODO: Add class numbert to the setup.json file
-
-
-
-  JsonArray jsonArray = doc.createNestedArray("ck");
-  for (int64_t value : ck) {
-    jsonArray.add(value);  // Add each element to the JSON array
-  }
 
   /*
   //it might be more clear to use different name to store JsonArray between "ck" and "vk", 
@@ -107,16 +80,26 @@ void fidesinnova::setup(int64_t g, int64_t tau, int64_t p) {
   // JsonArray vkArray = doc.createNestedArray("vk");
   // vkArray.add(vk);  // Add the "vk" value to the "vk" JSON array */
 
-  jsonArray = doc.createNestedArray("vk");
-  jsonArray.add(vk);
-  // Serialize the JSON document to a string for testing
-  String output;
-  serializeJson(doc, output);
+  ordered_json setupJson;
+  setupJson.clear();
+  setupJson["ck"] = ck;
+  setupJson["vk"] = vk;
 
+  // Serialize JSON object to a string
+  std::string setupString = setupJson.dump();
 
-  // TheArch->Kath: Generate 12 setup.json with the maximum of c_k elements of 12*n_g for each class. 
+  // Use regex to format arrays correctly
+  // Write JSON object to a file
+  std::ofstream setupFile("/data/setupX.json");
+  if (setupFile.is_open()) {
+      setupFile << setupString;
+      setupFile.close();
+      cout << "JSON data has been written to setup.json\n";
+  } else {
+      cerr << "Error opening file for writing\n";
+  }
+
+  // TheArch->Kath: Generate 18 setup.json with the maximum of c_k elements of 12*n_g for each class. 
   // setup1.json, setup2.json, setup3.json, ..., setup18.json
-  // Store setup(p, class, ck, vk) in setup.json
-  removeFile("/setup.json");
-  writeFile("/setup.json", output);
+  // Store setup(class, ck, vk) in setupX.json
 }
