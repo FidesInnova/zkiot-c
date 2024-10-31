@@ -542,3 +542,13 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t p) {
   removeFile("/program_commitment.json");
   writeFile("/program_commitment.json", output);
 }
+
+
+
+// Strore Matrix A and B in the program_param.json
+// {
+//   "A": [col1,col2,col3,...],
+//   "B": [[row,col,val],[row,col,val],[row,col,val],...]
+// }
+
+
