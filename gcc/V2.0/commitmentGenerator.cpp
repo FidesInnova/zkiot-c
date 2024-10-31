@@ -74,7 +74,7 @@
 
 #include "fidesinnova.h"
 
-void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t mod) {
+void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t p) {
   //read /setup.json file to initialize the cryptographic environment
   String setup = readFile("/setup.json");
 
@@ -180,7 +180,7 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t mod) {
   Serial.println(n);
 
   t = n_i + 1;
-  m = (((Polynomial::power(n, 2, mod) - n) / 2) - ((Polynomial::power(t, 2, mod) - t) / 2)) % mod;
+  m = (((Polynomial::power(n, 2, p) - n) / 2) - ((Polynomial::power(t, 2, p) - t) / 2)) % p;
 
   // Initialize matrices A, B, C
   vector<vector<int64_t>> A(n, vector<int64_t>(n, 0ll));
@@ -222,7 +222,7 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t mod) {
     //constrct A,B,C Matrix
     if (operation == "li") {
       X = xStr.toInt();
-      z[i + 1] = X % mod;
+      z[i + 1] = X % p;
     } else {
       gateIndex++;
       int64_t newI = gateIndex + n_i;
@@ -233,24 +233,24 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t mod) {
 
         if (isDigit(xStr[0])) {
           X = xStr.toInt();
-          z[i + 1] = (z[i] + X) % mod;
+          z[i + 1] = (z[i] + X) % p;
           B[n_i + newI - 1][0] = X;
           B[n_i + newI - 1][newI - 1] = 1;
         } else if (isDigit(yStr[0])) {
           Y = yStr.toInt();
-          z[i + 1] = (z[i] + Y) % mod;
+          z[i + 1] = (z[i] + Y) % p;
           B[n_i + newI - 1][0] = Y;
           B[n_i + newI - 1][newI - 1] = 1;
         }
       } else if (operation == "mul") {
         if (isDigit(xStr[0])) {
           X = xStr.toInt();
-          z[i + 1] = (z[i] * X) % mod;
+          z[i + 1] = (z[i] * X) % p;
           A[n_i + newI - 1][newI - 1] = X;
           B[n_i + newI - 1][newI - 1] = 1;
         } else if (isDigit(yStr[0])) {
           Y = yStr.toInt();
-          z[i + 1] = (z[i] * Y) % mod;
+          z[i + 1] = (z[i] * Y) % p;
           A[n_i + newI - 1][newI - 1] = 1;
           B[n_i + newI - 1][0] = Y;
         }
@@ -275,10 +275,10 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t mod) {
   int64_t w, g_n;
 
   H.push_back(1);
-  g_n = ((mod - 1) / n) % mod;
-  w = Polynomial::power(g, g_n, mod);
+  g_n = ((p - 1) / n) % p;
+  w = Polynomial::power(g, g_n, p);
   for (int64_t i = 1; i < n; i++) {
-    H.push_back(Polynomial::power(w, i, mod));
+    H.push_back(Polynomial::power(w, i, p));
   }
   Serial.print("H[n]: ");
   for (int64_t i = 0; i < n; i++) {
@@ -292,10 +292,10 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t mod) {
   // Vector K to store powers of y
   vector<int64_t> K;
   K.push_back(1);
-  g_m = ((mod - 1) * Polynomial::modInverse(m, mod)) % mod;
-  y = Polynomial::power(g, g_m, mod);
+  g_m = ((p - 1) * Polynomial::pInverse(m, p)) % p;
+  y = Polynomial::power(g, g_m, p);
   for (int64_t i = 1; i < m; i++) {
-    K.push_back(Polynomial::power(y, i, mod));
+    K.push_back(Polynomial::power(y, i, p));
   }
   Serial.print("K[m]: ");
   for (int64_t i = 0; i < m; i++) {
@@ -306,9 +306,9 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t mod) {
   
   // Create a polynomial vector vH_x of size (n + 1) initialized to 0
   vector<int64_t> vH_x(n + 1, 0);
-  vH_x[0] = (-1) % mod;
+  vH_x[0] = (-1) % p;
   if (vH_x[0] < 0) {
-    vH_x[0] += mod;
+    vH_x[0] += p;
   }
   vH_x[n] = 1;
   Polynomial::printPolynomial(vH_x, "vH(x)");
@@ -332,7 +332,7 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t mod) {
   colA[1].push_back(59);
   colA[1].push_back(42);
   Polynomial::printMapping(colA, "col_A");
-  vector<vector<int64_t>> valA = Polynomial::valMapping(K, H, nonZeroRowsA, nonZeroColsA, mod);
+  vector<vector<int64_t>> valA = Polynomial::valMapping(K, H, nonZeroRowsA, nonZeroColsA, p);
   Polynomial::printMapping(valA, "val_A");
 
   vector<vector<int64_t>> nonZeroRowsB = Polynomial::getNonZeroRows(B);
@@ -351,7 +351,7 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t mod) {
   colB[1].push_back(1);
   colB[1].push_back(135);
   Polynomial::printMapping(colB, "col_B");
-  vector<vector<int64_t>> valB = Polynomial::valMapping(K, H, nonZeroRowsB, nonZeroColsB, mod);
+  vector<vector<int64_t>> valB = Polynomial::valMapping(K, H, nonZeroRowsB, nonZeroColsB, p);
   Polynomial::printMapping(valB, "val_B");
 
   vector<vector<int64_t>> nonZeroRowsC = Polynomial::getNonZeroRows(C);
@@ -372,21 +372,21 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t mod) {
   colC[1].push_back(42);
   colC[1].push_back(59);
   Polynomial::printMapping(colC, "col_C");
-  vector<vector<int64_t>> valC = Polynomial::valMapping(K, H, nonZeroRowsC, nonZeroColsC, mod);
+  vector<vector<int64_t>> valC = Polynomial::valMapping(K, H, nonZeroRowsC, nonZeroColsC, p);
   Polynomial::printMapping(valC, "val_C");
 
 
-  vector<int64_t> rowA_x = Polynomial::setupLagrangePolynomial(rowA[0], rowA[1], mod, "rowA(x)");
-  vector<int64_t> colA_x = Polynomial::setupLagrangePolynomial(colA[0], colA[1], mod, "colA(x)");
-  vector<int64_t> valA_x = Polynomial::setupLagrangePolynomial(valA[0], valA[1], mod, "valA(x)");
+  vector<int64_t> rowA_x = Polynomial::setupLagrangePolynomial(rowA[0], rowA[1], p, "rowA(x)");
+  vector<int64_t> colA_x = Polynomial::setupLagrangePolynomial(colA[0], colA[1], p, "colA(x)");
+  vector<int64_t> valA_x = Polynomial::setupLagrangePolynomial(valA[0], valA[1], p, "valA(x)");
 
-  vector<int64_t> rowB_x = Polynomial::setupLagrangePolynomial(rowB[0], rowB[1], mod, "rowB(x)");
-  vector<int64_t> colB_x = Polynomial::setupLagrangePolynomial(colB[0], colB[1], mod, "colB(x)");
-  vector<int64_t> valB_x = Polynomial::setupLagrangePolynomial(valB[0], valB[1], mod, "valB(x)");
+  vector<int64_t> rowB_x = Polynomial::setupLagrangePolynomial(rowB[0], rowB[1], p, "rowB(x)");
+  vector<int64_t> colB_x = Polynomial::setupLagrangePolynomial(colB[0], colB[1], p, "colB(x)");
+  vector<int64_t> valB_x = Polynomial::setupLagrangePolynomial(valB[0], valB[1], p, "valB(x)");
 
-  vector<int64_t> rowC_x = Polynomial::setupLagrangePolynomial(rowC[0], rowC[1], mod, "rowC(x)");
-  vector<int64_t> colC_x = Polynomial::setupLagrangePolynomial(colC[0], colC[1], mod, "colC(x)");
-  vector<int64_t> valC_x = Polynomial::setupLagrangePolynomial(valC[0], valC[1], mod, "valC(x)");
+  vector<int64_t> rowC_x = Polynomial::setupLagrangePolynomial(rowC[0], rowC[1], p, "rowC(x)");
+  vector<int64_t> colC_x = Polynomial::setupLagrangePolynomial(colC[0], colC[1], p, "colC(x)");
+  vector<int64_t> valC_x = Polynomial::setupLagrangePolynomial(valC[0], valC[1], p, "valC(x)");
 
   Serial.print("O_AHP = {");
   vector<int64_t> O_AHP;
@@ -416,27 +416,27 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t mod) {
   // size_t minSize = std::min(rowA_x.size(), ck.size()); // **Changed: Added minSize for safer iteration**
   // for (int64_t i = 0; i < minSize; i++) { // **Changed: Use minSize in loop condition**
   for (int64_t i = 0; i < rowA_x.size(); i++) {
-    Com0_AHP += (ck[i] * rowA_x[i]) % mod;
-    Com1_AHP += (ck[i] * colA_x[i]) % mod;
-    Com2_AHP += (ck[i] * valA_x[i]) % mod;
+    Com0_AHP += (ck[i] * rowA_x[i]) % p;
+    Com1_AHP += (ck[i] * colA_x[i]) % p;
+    Com2_AHP += (ck[i] * valA_x[i]) % p;
     
-    Com3_AHP += (ck[i] * rowB_x[i]) % mod;
-    Com4_AHP += (ck[i] * colB_x[i]) % mod;
-    Com5_AHP += (ck[i] * valB_x[i]) % mod;
+    Com3_AHP += (ck[i] * rowB_x[i]) % p;
+    Com4_AHP += (ck[i] * colB_x[i]) % p;
+    Com5_AHP += (ck[i] * valB_x[i]) % p;
     
-    Com6_AHP += (ck[i] * rowC_x[i]) % mod;
-    Com7_AHP += (ck[i] * colC_x[i]) % mod;
-    Com8_AHP += (ck[i] * valC_x[i]) % mod;
+    Com6_AHP += (ck[i] * rowC_x[i]) % p;
+    Com7_AHP += (ck[i] * colC_x[i]) % p;
+    Com8_AHP += (ck[i] * valC_x[i]) % p;
 
-    Com0_AHP %= mod;
-    Com1_AHP %= mod;
-    Com2_AHP %= mod;
-    Com3_AHP %= mod;
-    Com4_AHP %= mod;
-    Com5_AHP %= mod;
-    Com6_AHP %= mod;
-    Com7_AHP %= mod;
-    Com8_AHP %= mod;
+    Com0_AHP %= p;
+    Com1_AHP %= p;
+    Com2_AHP %= p;
+    Com3_AHP %= p;
+    Com4_AHP %= p;
+    Com5_AHP %= p;
+    Com6_AHP %= p;
+    Com7_AHP %= p;
+    Com8_AHP %= p;
   }
   Serial.print("Com0_AHP = ");
   Serial.println(Com0_AHP);
