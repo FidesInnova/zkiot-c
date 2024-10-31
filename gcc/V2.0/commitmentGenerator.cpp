@@ -560,20 +560,20 @@ Also, add proofgen macro in assembly at the end of the last instuction and store
 
 program.s  -> program_new.s
 36 JMP        36 JMP    
-37 Add        37 savereg()
-38 Mul        38 Add
-39 Add        39 savereg()
-40 BEQ        40 savereg()
-41 BEG        41 Mul
-42 Mul        42 savereg()
-43 SHL        43 savereg()
-              44 Add
-              45 savereg()
+37 Add        37 savereg(R1,R2)
+38 Mul        38 Add R1,R2,7
+39 Add        39 savereg(R1,R2)
+40 BEQ        40 savereg(R4)
+41 BEG        41 Mul R4,4
+42 Mul        42 savereg(R4)
+43 SHL        43 savereg(R23,R4,R5)
+              44 Add R23,R4,R5
+              45 savereg(R23,R4,R5)
               46 BEQ
               47 BEG
-              48 savereg()
-              49 Mul
-              50 savereg()
+              48 savereg(R6,R7)
+              49 Mul R6,R7
+              50 savereg(R6,R7)
               51 proofgen()
               52 SHL
 */
