@@ -36,7 +36,7 @@ void fidesinnova::setup(int64_t g, int64_t tau, int64_t p) {
   // }
   
   // Find the maximum value
-  int64_t d_AHP = 12 * n_g;
+  // int64_t d_AHP = 12 * n_g;
   
   // Use a predefined max
   int64_t d_AHP = 100;
@@ -90,11 +90,11 @@ void fidesinnova::setup(int64_t g, int64_t tau, int64_t p) {
 
   // Use regex to format arrays correctly
   // Write JSON object to a file
-  std::ofstream setupFile("/data/setupX.json");
+  std::ofstream setupFile("data/setupX.json");
   if (setupFile.is_open()) {
       setupFile << setupString;
       setupFile.close();
-      cout << "JSON data has been written to setup.json\n";
+      cout << "JSON data has been written to setupX.json\n";
   } else {
       cerr << "Error opening file for writing\n";
   }
