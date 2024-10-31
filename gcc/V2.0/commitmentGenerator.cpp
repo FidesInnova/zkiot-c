@@ -558,24 +558,30 @@ Read program.s and insert assembly macro SaveReg() before and after each instruc
 Example Lines: [37-39],42
 Also, add proofgen macro in assembly at the end of the last instuction and store it in program_new.s.
 
-program.s  -> program_new.s
-36 JMP        36 JMP    
-37 Add        37 savereg(R1,R2)
-38 Mul        38 Add R1,R2,7
-39 Add        39 savereg(R1,R2)
-40 BEQ        40 savereg(R4)
-41 BEG        41 Mul R4,4
-42 Mul        42 savereg(R4)
-43 SHL        43 savereg(R23,R4,R5)
-              44 Add R23,R4,R5
-              45 savereg(R23,R4,R5)
-              46 BEQ
-              47 BEG
-              48 savereg(R6,R7)
-              49 Mul R6,R7
-              50 savereg(R6,R7)
-              51 proofgen()
-              52 SHL
+program.s   
+36 JMP            
+37 Add        
+38 Mul        
+39 Add        
+40 BEQ      
+41 BEG      
+42 Mul      
+43 SHL   
+
+program_new.s
+36 JMP 
+37 savereg()
+38 Add        
+39 Mul        
+40 Add
+41 savereg()
+42 proofgen()
+43 BEQ      
+44 BEG      
+45 Mul      
+46 SHL   
+
+            
 */
 
 
