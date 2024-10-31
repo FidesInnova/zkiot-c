@@ -51,7 +51,7 @@
     .section  .note.GNU-stack,"",@progbits
 
 
-
+Read the Class and Lines from device_config.json to be used in the code and pass all parameters to the program_commitment.json.
   device_config.json
   {
     "Class": 32-bit Integer,
