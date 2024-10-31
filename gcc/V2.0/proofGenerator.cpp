@@ -20,7 +20,7 @@
 
 #include "fidesinnova.h"
 
-void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod) {
+void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
   //It's duplicate codes as the commitment
   String setup = readFile("/setup.json");
   DynamicJsonDocument jsonSetup(2048);  // Create a DynamicJsonDocument with a buffer size
@@ -100,7 +100,7 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
   Serial.println(n);
 
   t = n_i + 1;
-  m = (((Polynomial::power(n, 2, mod) - n) / 2) - ((Polynomial::power(t, 2, mod) - t) / 2)) % mod;
+  m = (((Polynomial::power(n, 2, p) - n) / 2) - ((Polynomial::power(t, 2, p) - t) / 2)) % p;
 
   // Initialize matrices A, B, C
   vector<vector<int64_t>> A(n, vector<int64_t>(n, 0ll));
@@ -141,7 +141,7 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
 
     if (operation == "li") {
       X = xStr.toInt();
-      z[i + 1] = X % mod;
+      z[i + 1] = X % p;
     } else {
       gateIndex++;
       int64_t newI = gateIndex + n_i;
@@ -152,24 +152,24 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
 
         if (isDigit(xStr[0])) {
           X = xStr.toInt();
-          z[i + 1] = (z[i] + X) % mod;
+          z[i + 1] = (z[i] + X) % p;
           B[n_i + newI - 1][0] = X;
           B[n_i + newI - 1][newI - 1] = 1;
         } else if (isDigit(yStr[0])) {
           Y = yStr.toInt();
-          z[i + 1] = (z[i] + Y) % mod;
+          z[i + 1] = (z[i] + Y) % p;
           B[n_i + newI - 1][0] = Y;
           B[n_i + newI - 1][newI - 1] = 1;
         }
       } else if (operation == "mul") {
         if (isDigit(xStr[0])) {
           X = xStr.toInt();
-          z[i + 1] = (z[i] * X) % mod;
+          z[i + 1] = (z[i] * X) % p;
           A[n_i + newI - 1][newI - 1] = X;
           B[n_i + newI - 1][newI - 1] = 1;
         } else if (isDigit(yStr[0])) {
           Y = yStr.toInt();
-          z[i + 1] = (z[i] * Y) % mod;
+          z[i + 1] = (z[i] * Y) % p;
           A[n_i + newI - 1][newI - 1] = 1;
           B[n_i + newI - 1][0] = Y;
         }
@@ -193,10 +193,10 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
   int64_t w, g_n;
 
   H.push_back(1);
-  g_n = ((mod - 1) / n) % mod;
-  w = Polynomial::power(g, g_n, mod);
+  g_n = ((p - 1) / n) % p;
+  w = Polynomial::power(g, g_n, p);
   for (int64_t i = 1; i < n; i++) {
-    H.push_back(Polynomial::power(w, i, mod));
+    H.push_back(Polynomial::power(w, i, p));
   }
   Serial.print("H[n]: ");
   for (int64_t i = 0; i < n; i++) {
@@ -209,10 +209,10 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
 
   vector<int64_t> K;
   K.push_back(1);
-  g_m = ((mod - 1) * Polynomial::modInverse(m, mod)) % mod;
-  y = Polynomial::power(g, g_m, mod);
+  g_m = ((p - 1) * Polynomial::pInverse(m, p)) % p;
+  y = Polynomial::power(g, g_m, p);
   for (int64_t i = 1; i < m; i++) {
-    K.push_back(Polynomial::power(y, i, mod));
+    K.push_back(Polynomial::power(y, i, p));
   }
   Serial.print("K[m]: ");
   for (int64_t i = 0; i < m; i++) {
@@ -225,18 +225,18 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
   vector<vector<int64_t>> Az(n, vector<int64_t>(1, 0));
   vector<vector<int64_t>> Bz(n, vector<int64_t>(1, 0));
   vector<vector<int64_t>> Cz(n, vector<int64_t>(1, 0));
-  // Matrix multiplication with modulo
+  // Matrix multiplication with pulo
   for (int64_t i = 0; i < n; i++) {
     for (int64_t j = 0; j < 1; j++) {
       for (int64_t k = 0; k < n; k++) {
-        Az[i][j] = (Az[i][j] + (A[i][k] * z[k]) % mod) % mod;
-        Bz[i][j] = (Bz[i][j] + (B[i][k] * z[k]) % mod) % mod;
-        Cz[i][j] = (Cz[i][j] + (C[i][k] * z[k]) % mod) % mod;
+        Az[i][j] = (Az[i][j] + (A[i][k] * z[k]) % p) % p;
+        Bz[i][j] = (Bz[i][j] + (B[i][k] * z[k]) % p) % p;
+        Cz[i][j] = (Cz[i][j] + (C[i][k] * z[k]) % p) % p;
       }
     }
   }
-  Serial.print("Matrice Az under modulo ");
-  Serial.print(mod);
+  Serial.print("Matrice Az under pulo ");
+  Serial.print(p);
   Serial.print(" is: ");
   for (int64_t i = 0; i < n; i++) {
     Serial.print(Az[i][0]);
@@ -244,8 +244,8 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
   }
   Serial.println("");
 
-  Serial.print("Matrice Bz under modulo ");
-  Serial.print(mod);
+  Serial.print("Matrice Bz under pulo ");
+  Serial.print(p);
   Serial.print(" is: ");
   for (int64_t i = 0; i < n; i++) {
     Serial.print(Bz[i][0]);
@@ -253,8 +253,8 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
   }
   Serial.println("");
 
-  Serial.print("Matrice Cz under modulo ");
-  Serial.print(mod);
+  Serial.print("Matrice Cz under pulo ");
+  Serial.print(p);
   Serial.print(" is: ");
   for (int64_t i = 0; i < n; i++) {
     Serial.print(Cz[i][0]);
@@ -272,8 +272,8 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
       zA[0].push_back(H[i]);
       zA[1].push_back(Az[i][0]);
     } else {
-      // zA[0].push_back(Polynomial::generateRandomNumber(H, mod - n));
-      // zA[1].push_back(Polynomial::generateRandomNumber(H, mod - n));
+      // zA[0].push_back(Polynomial::generateRandomNumber(H, p - n));
+      // zA[1].push_back(Polynomial::generateRandomNumber(H, p - n));
     }
     Serial.print("zA(");
     Serial.print(zA[0][i]);
@@ -285,7 +285,7 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
   zA[0].push_back(80);
   zA[1].push_back(47);
 
-  vector<int64_t> z_hatA = Polynomial::setupLagrangePolynomial(zA[0], zA[1], mod, "z_hatA(x)");
+  vector<int64_t> z_hatA = Polynomial::setupLagrangePolynomial(zA[0], zA[1], p, "z_hatA(x)");
 
 
   vector<vector<int64_t>> zB(2);
@@ -297,7 +297,7 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
       zB[1].push_back(Bz[i][0]);
     } else {
       // zB[0].push_back(zA[0][i]);
-      // zB[1].push_back(Polynomial::generateRandomNumber(H, mod - n));
+      // zB[1].push_back(Polynomial::generateRandomNumber(H, p - n));
     }
     Serial.print("zB(");
     Serial.print(zB[0][i]);
@@ -308,7 +308,7 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
   zB[1].push_back(15);
   zB[0].push_back(80);
   zB[1].push_back(170);
-  vector<int64_t> z_hatB = Polynomial::setupLagrangePolynomial(zB[0], zB[1], mod, "z_hatB(x)");
+  vector<int64_t> z_hatB = Polynomial::setupLagrangePolynomial(zB[0], zB[1], p, "z_hatB(x)");
 
   vector<vector<int64_t>> zC(2);
   Serial.println("zC(x):");
@@ -319,7 +319,7 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
       zC[1].push_back(Cz[i][0]);
     } else {
       // zC[0].push_back(zA[0][i]);
-      // zC[1].push_back(Polynomial::generateRandomNumber(H, mod - n));
+      // zC[1].push_back(Polynomial::generateRandomNumber(H, p - n));
     }
     Serial.print("zC(");
     Serial.print(zC[0][i]);
@@ -330,7 +330,7 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
   zC[1].push_back(1);
   zC[0].push_back(80);
   zC[1].push_back(100);
-  vector<int64_t> z_hatC = Polynomial::setupLagrangePolynomial(zC[0], zC[1], mod, "z_hatC(x)");
+  vector<int64_t> z_hatC = Polynomial::setupLagrangePolynomial(zC[0], zC[1], p, "z_hatC(x)");
 
 
   vector<int64_t> zero_to_t_for_H;
@@ -341,7 +341,7 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
     zero_to_t_for_H.push_back(H[i]);
     zero_to_t_for_z.push_back(z[i]);
   }
-  vector<int64_t> polyX_HAT_H = Polynomial::setupLagrangePolynomial(zero_to_t_for_H, zero_to_t_for_z, mod, "x_hat(h)");
+  vector<int64_t> polyX_HAT_H = Polynomial::setupLagrangePolynomial(zero_to_t_for_H, zero_to_t_for_z, p, "x_hat(h)");
 
   for (int64_t i = 0; i < n - t; i++) {
     t_to_n_for_H.push_back(H[i + t]);
@@ -352,23 +352,23 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
   vector<int64_t> w_bar_numerator(n - t, 1);
   vector<int64_t> w_bar_denominator(n - t, 1);
   for (int64_t i = 0; i < n - t; i++) {
-    w_bar_numerator[i] = (t_to_n_for_z[i] - (Polynomial::evaluatePolynomial(polyX_HAT_H, t_to_n_for_H[i], mod)));
+    w_bar_numerator[i] = (t_to_n_for_z[i] - (Polynomial::evaluatePolynomial(polyX_HAT_H, t_to_n_for_H[i], p)));
 
     for (int64_t j = 0; j < zero_to_t_for_H.size(); j++) {
       w_bar_denominator[i] *= (t_to_n_for_H[i] - zero_to_t_for_H[j]);
-      // Apply modulus to keep the number within the bounds
-      w_bar_denominator[i] %= mod;
+      // Apply pulus to keep the number within the bounds
+      w_bar_denominator[i] %= p;
 
-      // // If result becomes negative, convert it to a positive equivalent under modulo
+      // // If result becomes negative, convert it to a positive equivalent under pulo
       if (w_bar_denominator[i] < 0) {
-        w_bar_denominator[i] += mod;
+        w_bar_denominator[i] += p;
       }
     }
-    w_bar_denominator[i] = Polynomial::modInverse(w_bar_denominator[i], mod);
-    w_bar[i] = (w_bar_numerator[i] * w_bar_denominator[i]) % mod;
+    w_bar_denominator[i] = Polynomial::pInverse(w_bar_denominator[i], p);
+    w_bar[i] = (w_bar_numerator[i] * w_bar_denominator[i]) % p;
 
     if (w_bar[i] < 0) {
-      w_bar[i] += mod;
+      w_bar[i] += p;
     }
     Serial.print("w_bar(");
     Serial.print(t_to_n_for_H[i]);
@@ -392,23 +392,23 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
   w_hat[1].push_back(180);
   for (int64_t i = n; i < n + b; i++) {
     // w_hat[0].push_back(zA[0][i]);
-    // w_hat[1].push_back(Polynomial::generateRandomNumber(H, mod));
+    // w_hat[1].push_back(Polynomial::generateRandomNumber(H, p));
     Serial.print("w_hat(");
     Serial.print(w_hat[0][i - b]);
     Serial.print(")= ");
     Serial.println(w_hat[1][i - b]);
   }
-  vector<int64_t> w_hat_x = Polynomial::setupLagrangePolynomial(w_hat[0], w_hat[1], mod, "w_hat(x)");
+  vector<int64_t> w_hat_x = Polynomial::setupLagrangePolynomial(w_hat[0], w_hat[1], p, "w_hat(x)");
 
-  vector<int64_t> productAB = Polynomial::multiplyPolynomials(z_hatA, z_hatB, mod);
-  vector<int64_t> zAzB_zC = Polynomial::subtractPolynomials(productAB, z_hatC, mod);
+  vector<int64_t> productAB = Polynomial::multiplyPolynomials(z_hatA, z_hatB, p);
+  vector<int64_t> zAzB_zC = Polynomial::subtractPolynomials(productAB, z_hatC, p);
   Polynomial::printPolynomial(zAzB_zC, "zA(x)zB(x)-zC(x)");
 
 
   vector<int64_t> vH_x(n + 1, 0);
-  vH_x[0] = (-1) % mod;
+  vH_x[0] = (-1) % p;
   if (vH_x[0] < 0) {
-    vH_x[0] += mod; //Handling negative values properly
+    vH_x[0] += p; //Handling negative values properly
   }
   vH_x[n] = 1;
   Polynomial::printPolynomial(vH_x, "KvH(x)");
@@ -418,25 +418,25 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
   // Multiply (x - K) for all other K
   for (size_t i = 1; i < K.size(); i++) {
     vector<int64_t> nextPoly = Polynomial::createLinearPolynomial(K[i]);
-    vK_x = Polynomial::multiplyPolynomials(vK_x, nextPoly, mod);
+    vK_x = Polynomial::multiplyPolynomials(vK_x, nextPoly, p);
   }
   Polynomial::printPolynomial(vK_x, "vK(x)");
 
   // Dividing the product of zAzB_zC by vH_x
-  vector<int64_t> h_0_x = Polynomial::dividePolynomials(zAzB_zC, vH_x, mod)[0];
+  vector<int64_t> h_0_x = Polynomial::dividePolynomials(zAzB_zC, vH_x, p)[0];
   Polynomial::printPolynomial(h_0_x, "h0(x)");
 
-  // vector<int64_t> s_x = generateRandomPolynomial(n, (2*n)+b-1, mod);
+  // vector<int64_t> s_x = generateRandomPolynomial(n, (2*n)+b-1, p);
   vector<int64_t> s_x = { 115, 3, 0, 0, 20, 1, 0, 17, 101, 0, 5 };
   Polynomial::printPolynomial(s_x, "s(x)");
 
-  int64_t sigma1 = Polynomial::sumOfEvaluations(s_x, H, mod);
+  int64_t sigma1 = Polynomial::sumOfEvaluations(s_x, H, p);
   Serial.print("sigma1 = ");
   Serial.println(sigma1);
 
   int64_t alpha = 10;
-  int64_t beta1 = 22;  // int64_t beta1 = hashAndExtractLower4Bytes(s_x[8], mod);
-  int64_t beta2 = 80;  // int64_t beta2 = hashAndExtractLower4Bytes(s_x[9], mod);
+  int64_t beta1 = 22;  // int64_t beta1 = hashAndExtractLower4Bytes(s_x[8], p);
+  int64_t beta2 = 80;  // int64_t beta2 = hashAndExtractLower4Bytes(s_x[9], p);
   int64_t etaA = 2;
   int64_t etaB = 30;
   int64_t etaC = 100;
@@ -455,25 +455,25 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
   Serial.println(etaC);
 
 
-  vector<int64_t> etaA_z_hatA_x = Polynomial::multiplyPolynomialByNumber(z_hatA, etaA, mod);
-  vector<int64_t> etaB_z_hatB_x = Polynomial::multiplyPolynomialByNumber(z_hatB, etaB, mod);
-  vector<int64_t> etaC_z_hatC_x = Polynomial::multiplyPolynomialByNumber(z_hatC, etaC, mod);
+  vector<int64_t> etaA_z_hatA_x = Polynomial::multiplyPolynomialByNumber(z_hatA, etaA, p);
+  vector<int64_t> etaB_z_hatB_x = Polynomial::multiplyPolynomialByNumber(z_hatB, etaB, p);
+  vector<int64_t> etaC_z_hatC_x = Polynomial::multiplyPolynomialByNumber(z_hatC, etaC, p);
   Polynomial::printPolynomial(etaA_z_hatA_x, "etaA_z_hatA(x)");
   Polynomial::printPolynomial(etaB_z_hatB_x, "etaB_z_hatB(x)");
   Polynomial::printPolynomial(etaC_z_hatC_x, "etaC_z_hatC(x)");
 
-  vector<int64_t> Sum_M_eta_M_z_hat_M_x = Polynomial::addPolynomials(Polynomial::addPolynomials(etaA_z_hatA_x, etaB_z_hatB_x, mod), etaC_z_hatC_x, mod);
+  vector<int64_t> Sum_M_eta_M_z_hat_M_x = Polynomial::addPolynomials(Polynomial::addPolynomials(etaA_z_hatA_x, etaB_z_hatB_x, p), etaC_z_hatC_x, p);
   Polynomial::printPolynomial(Sum_M_eta_M_z_hat_M_x, "Sum_M_z_hatM(x)");
 
-  vector<int64_t> r_alpha_x = Polynomial::calculatePolynomial_r_alpha_x(alpha, n, mod);
+  vector<int64_t> r_alpha_x = Polynomial::calculatePolynomial_r_alpha_x(alpha, n, p);
   Polynomial::printPolynomial(r_alpha_x, "r(alpha, x)");
 
-  vector<int64_t> r_Sum_x = Polynomial::multiplyPolynomials(r_alpha_x, Sum_M_eta_M_z_hat_M_x, mod);
+  vector<int64_t> r_Sum_x = Polynomial::multiplyPolynomials(r_alpha_x, Sum_M_eta_M_z_hat_M_x, p);
   Polynomial::printPolynomial(r_Sum_x, "r(alpha, x)Sum_M_z_hatM(x)");
 
-  vector<int64_t> v_H = Polynomial::expandPolynomials(zero_to_t_for_H, mod);
+  vector<int64_t> v_H = Polynomial::expandPolynomials(zero_to_t_for_H, p);
   Polynomial::printPolynomial(v_H, "v_H");
-  vector<int64_t> z_hat_x = Polynomial::addPolynomials(Polynomial::multiplyPolynomials(w_hat_x, v_H, mod), polyX_HAT_H, mod);
+  vector<int64_t> z_hat_x = Polynomial::addPolynomials(Polynomial::multiplyPolynomials(w_hat_x, v_H, p), polyX_HAT_H, p);
   Polynomial::printPolynomial(z_hat_x, "z_hat(x)");
 
   vector<vector<int64_t>> nonZeroRowsA = Polynomial::getNonZeroRows(A);
@@ -494,22 +494,22 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
   colA[1].push_back(59);
   colA[1].push_back(42);
   Polynomial::printMapping(colA, "col_A");
-  vector<vector<int64_t>> valA = Polynomial::valMapping(K, H, nonZeroRowsA, nonZeroColsA, mod);
+  vector<vector<int64_t>> valA = Polynomial::valMapping(K, H, nonZeroRowsA, nonZeroColsA, p);
   Polynomial::printMapping(valA, "val_A");
 
   vector<int64_t> A_hat(2);
   for (int64_t i = 0; i < nonZeroRowsA[0].size(); i++) {
-    vector<int64_t> buff_n = Polynomial::calculatePolynomial_r_alpha_x(rowA[1][i], H.size(), mod);
-    int64_t eval = Polynomial::evaluatePolynomial(buff_n, rowA[1][i], mod);
-    vector<int64_t> buff = Polynomial::calculatePolynomial_r_alpha_x(colA[1][i], H.size(), mod);
-    eval = (eval * valA[1][i]) % mod;
+    vector<int64_t> buff_n = Polynomial::calculatePolynomial_r_alpha_x(rowA[1][i], H.size(), p);
+    int64_t eval = Polynomial::evaluatePolynomial(buff_n, rowA[1][i], p);
+    vector<int64_t> buff = Polynomial::calculatePolynomial_r_alpha_x(colA[1][i], H.size(), p);
+    eval = (eval * valA[1][i]) % p;
     if (eval < 0) {
-      eval += mod;
+      eval += p;
     }
-    buff = Polynomial::multiplyPolynomialByNumber(buff, eval, mod);
-    buff = Polynomial::multiplyPolynomialByNumber(buff, Polynomial::calculatePolynomial_r_alpha_k(alpha, rowA[1][i], H.size(), mod), mod);
+    buff = Polynomial::multiplyPolynomialByNumber(buff, eval, p);
+    buff = Polynomial::multiplyPolynomialByNumber(buff, Polynomial::calculatePolynomial_r_alpha_k(alpha, rowA[1][i], H.size(), p), p);
     if (i > 0) {
-      A_hat = Polynomial::addPolynomials(A_hat, buff, mod);
+      A_hat = Polynomial::addPolynomials(A_hat, buff, p);
     } else {
       A_hat = buff;
     }
@@ -533,22 +533,22 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
   colB[1].push_back(1);
   colB[1].push_back(135);
   Polynomial::printMapping(colB, "col_B");
-  vector<vector<int64_t>> valB = Polynomial::valMapping(K, H, nonZeroRowsB, nonZeroColsB, mod);
+  vector<vector<int64_t>> valB = Polynomial::valMapping(K, H, nonZeroRowsB, nonZeroColsB, p);
   Polynomial::printMapping(valB, "val_B");
 
   vector<int64_t> B_hat(2);
   for (int64_t i = 0; i < nonZeroRowsB[0].size(); i++) {
-    vector<int64_t> buff_n = Polynomial::calculatePolynomial_r_alpha_x(rowB[1][i], H.size(), mod);
-    int64_t eval = Polynomial::evaluatePolynomial(buff_n, rowB[1][i], mod);
-    vector<int64_t> buff = Polynomial::calculatePolynomial_r_alpha_x(colB[1][i], H.size(), mod);
-    eval = (eval * valB[1][i]) % mod;
+    vector<int64_t> buff_n = Polynomial::calculatePolynomial_r_alpha_x(rowB[1][i], H.size(), p);
+    int64_t eval = Polynomial::evaluatePolynomial(buff_n, rowB[1][i], p);
+    vector<int64_t> buff = Polynomial::calculatePolynomial_r_alpha_x(colB[1][i], H.size(), p);
+    eval = (eval * valB[1][i]) % p;
     if (eval < 0) {
-      eval += mod;
+      eval += p;
     }
-    buff = Polynomial::multiplyPolynomialByNumber(buff, eval, mod);
-    buff = Polynomial::multiplyPolynomialByNumber(buff, Polynomial::calculatePolynomial_r_alpha_k(alpha, rowB[1][i], H.size(), mod), mod);
+    buff = Polynomial::multiplyPolynomialByNumber(buff, eval, p);
+    buff = Polynomial::multiplyPolynomialByNumber(buff, Polynomial::calculatePolynomial_r_alpha_k(alpha, rowB[1][i], H.size(), p), p);
     if (i > 0) {
-      B_hat = Polynomial::addPolynomials(B_hat, buff, mod);
+      B_hat = Polynomial::addPolynomials(B_hat, buff, p);
     } else {
       B_hat = buff;
     }
@@ -575,22 +575,22 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
   colC[1].push_back(42);
   colC[1].push_back(59);
   Polynomial::printMapping(colC, "col_C");
-  vector<vector<int64_t>> valC = Polynomial::valMapping(K, H, nonZeroRowsC, nonZeroColsC, mod);
+  vector<vector<int64_t>> valC = Polynomial::valMapping(K, H, nonZeroRowsC, nonZeroColsC, p);
   Polynomial::printMapping(valC, "val_C");
 
   vector<int64_t> C_hat(2);
   for (int64_t i = 0; i < nonZeroRowsC[0].size(); i++) {
-    vector<int64_t> buff_n = Polynomial::calculatePolynomial_r_alpha_x(rowC[1][i], H.size(), mod);
-    int64_t eval = Polynomial::evaluatePolynomial(buff_n, rowC[1][i], mod);
-    vector<int64_t> buff = Polynomial::calculatePolynomial_r_alpha_x(colC[1][i], H.size(), mod);
-    eval = (eval * valC[1][i]) % mod;
+    vector<int64_t> buff_n = Polynomial::calculatePolynomial_r_alpha_x(rowC[1][i], H.size(), p);
+    int64_t eval = Polynomial::evaluatePolynomial(buff_n, rowC[1][i], p);
+    vector<int64_t> buff = Polynomial::calculatePolynomial_r_alpha_x(colC[1][i], H.size(), p);
+    eval = (eval * valC[1][i]) % p;
     if (eval < 0) {
-      eval += mod;
+      eval += p;
     }
-    buff = Polynomial::multiplyPolynomialByNumber(buff, eval, mod);
-    buff = Polynomial::multiplyPolynomialByNumber(buff, Polynomial::calculatePolynomial_r_alpha_k(alpha, rowC[1][i], H.size(), mod), mod);
+    buff = Polynomial::multiplyPolynomialByNumber(buff, eval, p);
+    buff = Polynomial::multiplyPolynomialByNumber(buff, Polynomial::calculatePolynomial_r_alpha_k(alpha, rowC[1][i], H.size(), p), p);
     if (i > 0) {
-      C_hat = Polynomial::addPolynomials(C_hat, buff, mod);
+      C_hat = Polynomial::addPolynomials(C_hat, buff, p);
     } else {
       C_hat = buff;
     }
@@ -599,142 +599,142 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
   Serial.println("");
 
 /*
-// Check for overflow risk for etaA, etaB and etaC and ensure mod is applied correctly
-// vector<int64_t> etaA_z_hatA_x = Polynomial::multiplyPolynomialByNumber(A_hatA, etaA % mod, mod);
-// vector<int64_t> etaB_z_hatB_x = Polynomial::multiplyPolynomialByNumber(B_hatB, etaB % mod, mod);
-// vector<int64_t> etaC_z_hatC_x = Polynomial::multiplyPolynomialByNumber(C_hatC, etaC % mod, mod);*/
+// Check for overflow risk for etaA, etaB and etaC and ensure p is applied correctly
+// vector<int64_t> etaA_z_hatA_x = Polynomial::multiplyPolynomialByNumber(A_hatA, etaA % p, p);
+// vector<int64_t> etaB_z_hatB_x = Polynomial::multiplyPolynomialByNumber(B_hatB, etaB % p, p);
+// vector<int64_t> etaC_z_hatC_x = Polynomial::multiplyPolynomialByNumber(C_hatC, etaC % p, p);*/
 
-  vector<int64_t> eta_A_hat = Polynomial::multiplyPolynomialByNumber(A_hat, etaA, mod);
-  vector<int64_t> eta_B_hat = Polynomial::multiplyPolynomialByNumber(B_hat, etaB, mod);
-  vector<int64_t> eta_C_hat = Polynomial::multiplyPolynomialByNumber(C_hat, etaC, mod);
+  vector<int64_t> eta_A_hat = Polynomial::multiplyPolynomialByNumber(A_hat, etaA, p);
+  vector<int64_t> eta_B_hat = Polynomial::multiplyPolynomialByNumber(B_hat, etaB, p);
+  vector<int64_t> eta_C_hat = Polynomial::multiplyPolynomialByNumber(C_hat, etaC, p);
   Polynomial::printPolynomial(eta_A_hat, "eta_A_hat: ");
   Polynomial::printPolynomial(eta_B_hat, "eta_B_hat: ");
   Polynomial::printPolynomial(eta_C_hat, "eta_C_hat: ");
 
   // Calculate the sum of the three polynomials and print the result
-  vector<int64_t> Sum_M_eta_M_r_M_alpha_x = Polynomial::addPolynomials(Polynomial::addPolynomials(eta_A_hat, eta_B_hat, mod), eta_C_hat, mod);
+  vector<int64_t> Sum_M_eta_M_r_M_alpha_x = Polynomial::addPolynomials(Polynomial::addPolynomials(eta_A_hat, eta_B_hat, p), eta_C_hat, p);
   Polynomial::printPolynomial(Sum_M_eta_M_r_M_alpha_x, "Sum_M_eta_M_r_M(alpha ,x)");
 
   // Multiply the sum by another polynomial z_hat_x and print the result
-  vector<int64_t> Sum_M_eta_M_r_M_alpha_x_z_hat_x = Polynomial::multiplyPolynomials(Sum_M_eta_M_r_M_alpha_x, z_hat_x, mod);
+  vector<int64_t> Sum_M_eta_M_r_M_alpha_x_z_hat_x = Polynomial::multiplyPolynomials(Sum_M_eta_M_r_M_alpha_x, z_hat_x, p);
   Polynomial::printPolynomial(Sum_M_eta_M_r_M_alpha_x_z_hat_x, "Sum_M_eta_M_r_M(alpha ,x)z-hat(x)");
 
-  // Calculate the sum for the check protocol, subtracting the modified sum from s_x
-  vector<int64_t> Sum_check_protocol = Polynomial::addPolynomials(s_x, (Polynomial::subtractPolynomials(r_Sum_x, Sum_M_eta_M_r_M_alpha_x_z_hat_x, mod)), mod);
+  // Calculate the sum for the check protocol, subtracting the pified sum from s_x
+  vector<int64_t> Sum_check_protocol = Polynomial::addPolynomials(s_x, (Polynomial::subtractPolynomials(r_Sum_x, Sum_M_eta_M_r_M_alpha_x_z_hat_x, p)), p);
   Polynomial::printPolynomial(Sum_check_protocol, "Sum_check_protocol");
 
   // Divide the sum check protocol by vH_x to get two results: h1(x) and g1(x)
-  vector<int64_t> h_1_x = Polynomial::dividePolynomials(Sum_check_protocol, vH_x, mod)[0];
+  vector<int64_t> h_1_x = Polynomial::dividePolynomials(Sum_check_protocol, vH_x, p)[0];
   Polynomial::printPolynomial(h_1_x, "h1(x)");
 
   // Get the second part of the division result, g1(x), and erase the first element
-  vector<int64_t> g_1_x = Polynomial::dividePolynomials(Sum_check_protocol, vH_x, mod)[1];
+  vector<int64_t> g_1_x = Polynomial::dividePolynomials(Sum_check_protocol, vH_x, p)[1];
   g_1_x.erase(g_1_x.begin());
   Polynomial::printPolynomial(g_1_x, "g1(x)");
 
   // Calculate sigma2 using the evaluations of the polynomials A_hat, B_hat, and C_hat and print the result of sigma2
-  int64_t sigma2 = ((etaA * Polynomial::evaluatePolynomial(A_hat, beta1, mod)) % mod + (etaB * Polynomial::evaluatePolynomial(B_hat, beta1, mod)) % mod + (etaC * Polynomial::evaluatePolynomial(C_hat, beta1, mod)) % mod) % mod;
+  int64_t sigma2 = ((etaA * Polynomial::evaluatePolynomial(A_hat, beta1, p)) % p + (etaB * Polynomial::evaluatePolynomial(B_hat, beta1, p)) % p + (etaC * Polynomial::evaluatePolynomial(C_hat, beta1, p)) % p) % p;
   Serial.print("sigma2 = ");
   Serial.println(sigma2);
 
-  // Initialize vectors for the modified polynomial results with zeros
+  // Initialize vectors for the pified polynomial results with zeros
   vector<int64_t> A_hat_M_hat(H.size(), 0);
   vector<int64_t> B_hat_M_hat(H.size(), 0);
   vector<int64_t> C_hat_M_hat(H.size(), 0);
 
-  // Loop through non-zero rows for matrix A and calculate the modified polynomial A_hat_M_hat
+  // Loop through non-zero rows for matrix A and calculate the pified polynomial A_hat_M_hat
   for (int64_t i = 0; i < nonZeroRowsA[0].size(); i++) {
-    vector<int64_t> buff_nA = Polynomial::calculatePolynomial_r_alpha_x(colA[1][i], H.size(), mod);
-    int64_t evalA = Polynomial::evaluatePolynomial(buff_nA, beta1, mod);
-    vector<int64_t> buffA = Polynomial::calculatePolynomial_r_alpha_x(rowA[1][i], H.size(), mod);
-    evalA = (evalA * valA[1][i]) % mod;
+    vector<int64_t> buff_nA = Polynomial::calculatePolynomial_r_alpha_x(colA[1][i], H.size(), p);
+    int64_t evalA = Polynomial::evaluatePolynomial(buff_nA, beta1, p);
+    vector<int64_t> buffA = Polynomial::calculatePolynomial_r_alpha_x(rowA[1][i], H.size(), p);
+    evalA = (evalA * valA[1][i]) % p;
     if (evalA < 0) {
-      evalA += mod;
+      evalA += p;
     }
-    buffA = Polynomial::multiplyPolynomialByNumber(buffA, evalA, mod);
+    buffA = Polynomial::multiplyPolynomialByNumber(buffA, evalA, p);
 
     if (i > 0) {
-      A_hat_M_hat = Polynomial::addPolynomials(A_hat_M_hat, buffA, mod);
+      A_hat_M_hat = Polynomial::addPolynomials(A_hat_M_hat, buffA, p);
     } else {
       A_hat_M_hat = buffA;
     }
   }
   for (int64_t i = 0; i < nonZeroRowsB[0].size(); i++) {
-    vector<int64_t> buff_nB = Polynomial::calculatePolynomial_r_alpha_x(colB[1][i], H.size(), mod);
-    int64_t evalB = Polynomial::evaluatePolynomial(buff_nB, beta1, mod);
-    vector<int64_t> buffB = Polynomial::calculatePolynomial_r_alpha_x(rowB[1][i], H.size(), mod);
-    evalB = (evalB * valB[1][i]) % mod;
+    vector<int64_t> buff_nB = Polynomial::calculatePolynomial_r_alpha_x(colB[1][i], H.size(), p);
+    int64_t evalB = Polynomial::evaluatePolynomial(buff_nB, beta1, p);
+    vector<int64_t> buffB = Polynomial::calculatePolynomial_r_alpha_x(rowB[1][i], H.size(), p);
+    evalB = (evalB * valB[1][i]) % p;
     if (evalB < 0) {
-      evalB += mod;
+      evalB += p;
     }
-    buffB = Polynomial::multiplyPolynomialByNumber(buffB, evalB, mod);
+    buffB = Polynomial::multiplyPolynomialByNumber(buffB, evalB, p);
 
     if (i > 0) {
-      B_hat_M_hat = Polynomial::addPolynomials(B_hat_M_hat, buffB, mod);
+      B_hat_M_hat = Polynomial::addPolynomials(B_hat_M_hat, buffB, p);
     } else {
       B_hat_M_hat = buffB;
     }
   }
   for (int64_t i = 0; i < nonZeroRowsC[0].size(); i++) {
-    vector<int64_t> buff_nC = Polynomial::calculatePolynomial_r_alpha_x(colC[1][i], H.size(), mod);
-    int64_t evalC = Polynomial::evaluatePolynomial(buff_nC, beta1, mod);
-    vector<int64_t> buffC = Polynomial::calculatePolynomial_r_alpha_x(rowC[1][i], H.size(), mod);
-    evalC = (evalC * valC[1][i]) % mod;
+    vector<int64_t> buff_nC = Polynomial::calculatePolynomial_r_alpha_x(colC[1][i], H.size(), p);
+    int64_t evalC = Polynomial::evaluatePolynomial(buff_nC, beta1, p);
+    vector<int64_t> buffC = Polynomial::calculatePolynomial_r_alpha_x(rowC[1][i], H.size(), p);
+    evalC = (evalC * valC[1][i]) % p;
     if (evalC < 0) {
-      evalC += mod;
+      evalC += p;
     }
-    buffC = Polynomial::multiplyPolynomialByNumber(buffC, evalC, mod);
+    buffC = Polynomial::multiplyPolynomialByNumber(buffC, evalC, p);
 
     if (i > 0) {
-      C_hat_M_hat = Polynomial::addPolynomials(C_hat_M_hat, buffC, mod);
+      C_hat_M_hat = Polynomial::addPolynomials(C_hat_M_hat, buffC, p);
     } else {
       C_hat_M_hat = buffC;
     }
   }
-  // Print the final modified polynomials for A, B, and C
+  // Print the final pified polynomials for A, B, and C
   Polynomial::printPolynomial(A_hat_M_hat, "A_hat_M_hat");
   Polynomial::printPolynomial(B_hat_M_hat, "B_hat_M_hat");
   Polynomial::printPolynomial(C_hat_M_hat, "C_hat_M_hat");
 
-  // Multiply the modified polynomials by their respective eta values and print
-  vector<int64_t> eta_A_hat_M_hat = Polynomial::multiplyPolynomialByNumber(A_hat_M_hat, etaA, mod);
-  vector<int64_t> eta_B_hat_M_hat = Polynomial::multiplyPolynomialByNumber(B_hat_M_hat, etaB, mod);
-  vector<int64_t> eta_C_hat_M_hat = Polynomial::multiplyPolynomialByNumber(C_hat_M_hat, etaC, mod);
+  // Multiply the pified polynomials by their respective eta values and print
+  vector<int64_t> eta_A_hat_M_hat = Polynomial::multiplyPolynomialByNumber(A_hat_M_hat, etaA, p);
+  vector<int64_t> eta_B_hat_M_hat = Polynomial::multiplyPolynomialByNumber(B_hat_M_hat, etaB, p);
+  vector<int64_t> eta_C_hat_M_hat = Polynomial::multiplyPolynomialByNumber(C_hat_M_hat, etaC, p);
   Polynomial::printPolynomial(eta_A_hat_M_hat, "eta_A_hat_M_hat: ");
   Polynomial::printPolynomial(eta_B_hat_M_hat, "eta_B_hat_M_hat: ");
   Polynomial::printPolynomial(eta_C_hat_M_hat, "eta_C_hat_M_hat: ");
 
   // Calculate the final result for r_Sum_M_eta_M_M_hat_x_beta1
-  vector<int64_t> r_Sum_M_eta_M_M_hat_x_beta1 = Polynomial::multiplyPolynomials(Polynomial::addPolynomials(Polynomial::addPolynomials(eta_A_hat_M_hat, eta_B_hat_M_hat, mod), eta_C_hat_M_hat, mod), r_alpha_x, mod);
+  vector<int64_t> r_Sum_M_eta_M_M_hat_x_beta1 = Polynomial::multiplyPolynomials(Polynomial::addPolynomials(Polynomial::addPolynomials(eta_A_hat_M_hat, eta_B_hat_M_hat, p), eta_C_hat_M_hat, p), r_alpha_x, p);
   Polynomial::printPolynomial(r_Sum_M_eta_M_M_hat_x_beta1, "r_Sum_M_eta_M_M_hat_x_beta1");
 
   // Divide the final result by vH_x to get h2(x) and g2(x)
-  vector<int64_t> h_2_x = Polynomial::dividePolynomials(r_Sum_M_eta_M_M_hat_x_beta1, vH_x, mod)[0];
+  vector<int64_t> h_2_x = Polynomial::dividePolynomials(r_Sum_M_eta_M_M_hat_x_beta1, vH_x, p)[0];
   Polynomial::printPolynomial(h_2_x, "h2(x)");
 
-  vector<int64_t> g_2_x = Polynomial::dividePolynomials(r_Sum_M_eta_M_M_hat_x_beta1, vH_x, mod)[1];
+  vector<int64_t> g_2_x = Polynomial::dividePolynomials(r_Sum_M_eta_M_M_hat_x_beta1, vH_x, p)[1];
   g_2_x.erase(g_2_x.begin());//remove the first item
   Polynomial::printPolynomial(g_2_x, "g2(x)");
 
   // Generate Lagrange polynomials for row, column, and value vectors for matrices A and B
-  vector<int64_t> rowA_x = Polynomial::setupLagrangePolynomial(rowA[0], rowA[1], mod, "rowA(x)");
-  vector<int64_t> colA_x = Polynomial::setupLagrangePolynomial(colA[0], colA[1], mod, "colA(x)");
-  vector<int64_t> valA_x = Polynomial::setupLagrangePolynomial(valA[0], valA[1], mod, "valA(x)");
+  vector<int64_t> rowA_x = Polynomial::setupLagrangePolynomial(rowA[0], rowA[1], p, "rowA(x)");
+  vector<int64_t> colA_x = Polynomial::setupLagrangePolynomial(colA[0], colA[1], p, "colA(x)");
+  vector<int64_t> valA_x = Polynomial::setupLagrangePolynomial(valA[0], valA[1], p, "valA(x)");
 
-  vector<int64_t> rowB_x = Polynomial::setupLagrangePolynomial(rowB[0], rowB[1], mod, "rowB(x)");
-  vector<int64_t> colB_x = Polynomial::setupLagrangePolynomial(colB[0], colB[1], mod, "colB(x)");
-  vector<int64_t> valB_x = Polynomial::setupLagrangePolynomial(valB[0], valB[1], mod, "valB(x)");
+  vector<int64_t> rowB_x = Polynomial::setupLagrangePolynomial(rowB[0], rowB[1], p, "rowB(x)");
+  vector<int64_t> colB_x = Polynomial::setupLagrangePolynomial(colB[0], colB[1], p, "colB(x)");
+  vector<int64_t> valB_x = Polynomial::setupLagrangePolynomial(valB[0], valB[1], p, "valB(x)");
 
-  vector<int64_t> rowC_x = Polynomial::setupLagrangePolynomial(rowC[0], rowC[1], mod, "rowC(x)");
-  vector<int64_t> colC_x = Polynomial::setupLagrangePolynomial(colC[0], colC[1], mod, "colC(x)");
-  vector<int64_t> valC_x = Polynomial::setupLagrangePolynomial(valC[0], valC[1], mod, "valC(x)");
+  vector<int64_t> rowC_x = Polynomial::setupLagrangePolynomial(rowC[0], rowC[1], p, "rowC(x)");
+  vector<int64_t> colC_x = Polynomial::setupLagrangePolynomial(colC[0], colC[1], p, "colC(x)");
+  vector<int64_t> valC_x = Polynomial::setupLagrangePolynomial(valC[0], valC[1], p, "valC(x)");
 
   // Evaluate polynomial vH at beta1 and beta2
-  int64_t vH_beta1 = Polynomial::evaluatePolynomial(vH_x, beta1, mod);
+  int64_t vH_beta1 = Polynomial::evaluatePolynomial(vH_x, beta1, p);
   Serial.print("vH(beta1) = ");
   Serial.println(vH_beta1);
 
-  int64_t vH_beta2 = Polynomial::evaluatePolynomial(vH_x, beta2, mod);
+  int64_t vH_beta2 = Polynomial::evaluatePolynomial(vH_x, beta2, p);
   Serial.print("vH(beta2) = ");
   Serial.println(vH_beta2);
 
@@ -744,27 +744,27 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
 
   // Loop over K to compute delta and signature values for A, B, and C
   for (int64_t i = 0; i < K.size(); i++) {
-    int64_t deA = (beta2 - Polynomial::evaluatePolynomial(rowA_x, K[i], mod)) * (beta1 - Polynomial::evaluatePolynomial(colA_x, K[i], mod)) % mod;
-    if (deA < 0) deA += mod;
+    int64_t deA = (beta2 - Polynomial::evaluatePolynomial(rowA_x, K[i], p)) * (beta1 - Polynomial::evaluatePolynomial(colA_x, K[i], p)) % p;
+    if (deA < 0) deA += p;
 
-    int64_t deB = (beta2 - Polynomial::evaluatePolynomial(rowB_x, K[i], mod)) * (beta1 - Polynomial::evaluatePolynomial(colB_x, K[i], mod)) % mod;
-    if (deB < 0) deB += mod;
+    int64_t deB = (beta2 - Polynomial::evaluatePolynomial(rowB_x, K[i], p)) * (beta1 - Polynomial::evaluatePolynomial(colB_x, K[i], p)) % p;
+    if (deB < 0) deB += p;
 
-    int64_t deC = (beta2 - Polynomial::evaluatePolynomial(rowC_x, K[i], mod)) * (beta1 - Polynomial::evaluatePolynomial(colC_x, K[i], mod)) % mod;
-    if (deC < 0) deC += mod;
+    int64_t deC = (beta2 - Polynomial::evaluatePolynomial(rowC_x, K[i], p)) * (beta1 - Polynomial::evaluatePolynomial(colC_x, K[i], p)) % p;
+    if (deC < 0) deC += p;
 
-    int64_t sig3_A = (etaA * (vH_beta2 * vH_beta1 % mod) % mod * Polynomial::evaluatePolynomial(valA_x, K[i], mod) % mod * Polynomial::modInverse(deA, mod)) % mod;
-    if (sig3_A < 0) sig3_A += mod;
+    int64_t sig3_A = (etaA * (vH_beta2 * vH_beta1 % p) % p * Polynomial::evaluatePolynomial(valA_x, K[i], p) % p * Polynomial::pInverse(deA, p)) % p;
+    if (sig3_A < 0) sig3_A += p;
 
-    int64_t sig3_B = (etaB * (vH_beta2 * vH_beta1 % mod) % mod * Polynomial::evaluatePolynomial(valB_x, K[i], mod) % mod * Polynomial::modInverse(deB, mod)) % mod;
-    if (sig3_B < 0) sig3_B += mod;
+    int64_t sig3_B = (etaB * (vH_beta2 * vH_beta1 % p) % p * Polynomial::evaluatePolynomial(valB_x, K[i], p) % p * Polynomial::pInverse(deB, p)) % p;
+    if (sig3_B < 0) sig3_B += p;
 
-    int64_t sig3_C = (etaC * (vH_beta2 * vH_beta1 % mod) % mod * Polynomial::evaluatePolynomial(valC_x, K[i], mod) % mod * Polynomial::modInverse(deC, mod)) % mod;
-    if (sig3_C < 0) sig3_C += mod;
+    int64_t sig3_C = (etaC * (vH_beta2 * vH_beta1 % p) % p * Polynomial::evaluatePolynomial(valC_x, K[i], p) % p * Polynomial::pInverse(deC, p)) % p;
+    if (sig3_C < 0) sig3_C += p;
 
-    points_f_3[i] = (sig3_A + sig3_B + sig3_C) % mod;
+    points_f_3[i] = (sig3_A + sig3_B + sig3_C) % p;
     sigma3 += points_f_3[i];
-    sigma3 %= mod;
+    sigma3 %= p;
   }
   Serial.print("sigma3 = ");
   Serial.println(sigma3);
@@ -774,31 +774,31 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
   vector<int64_t> poly_beta2 = { beta2 };
 
   // Compute polynomial products for signatures
-  vector<int64_t> poly_pi_a = Polynomial::multiplyPolynomials(Polynomial::subtractPolynomials(rowA_x, poly_beta2, mod), Polynomial::subtractPolynomials(colA_x, poly_beta1, mod), mod);
-  vector<int64_t> poly_pi_b = Polynomial::multiplyPolynomials(Polynomial::subtractPolynomials(rowB_x, poly_beta2, mod), Polynomial::subtractPolynomials(colB_x, poly_beta1, mod), mod);
-  vector<int64_t> poly_pi_c = Polynomial::multiplyPolynomials(Polynomial::subtractPolynomials(rowC_x, poly_beta2, mod), Polynomial::subtractPolynomials(colC_x, poly_beta1, mod), mod);
+  vector<int64_t> poly_pi_a = Polynomial::multiplyPolynomials(Polynomial::subtractPolynomials(rowA_x, poly_beta2, p), Polynomial::subtractPolynomials(colA_x, poly_beta1, p), p);
+  vector<int64_t> poly_pi_b = Polynomial::multiplyPolynomials(Polynomial::subtractPolynomials(rowB_x, poly_beta2, p), Polynomial::subtractPolynomials(colB_x, poly_beta1, p), p);
+  vector<int64_t> poly_pi_c = Polynomial::multiplyPolynomials(Polynomial::subtractPolynomials(rowC_x, poly_beta2, p), Polynomial::subtractPolynomials(colC_x, poly_beta1, p), p);
   Polynomial::printPolynomial(poly_pi_c, "poly_pi_a");
   Polynomial::printPolynomial(poly_pi_b, "poly_pi_b");
   Polynomial::printPolynomial(poly_pi_c, "poly_pi_c");
 
   // Compute polynomials for signature multipliers
-  vector<int64_t> poly_etaA_vH_B2_vH_B1 = { (etaA * vH_beta2 * vH_beta1) % mod };
-  vector<int64_t> poly_etaB_vH_B2_vH_B1 = { (etaB * vH_beta2 * vH_beta1) % mod };
-  vector<int64_t> poly_etaC_vH_B2_vH_B1 = { (etaC * vH_beta2 * vH_beta1) % mod };
+  vector<int64_t> poly_etaA_vH_B2_vH_B1 = { (etaA * vH_beta2 * vH_beta1) % p };
+  vector<int64_t> poly_etaB_vH_B2_vH_B1 = { (etaB * vH_beta2 * vH_beta1) % p };
+  vector<int64_t> poly_etaC_vH_B2_vH_B1 = { (etaC * vH_beta2 * vH_beta1) % p };
 
   // Calculate signatures
-  vector<int64_t> poly_sig_a = Polynomial::multiplyPolynomials(poly_etaA_vH_B2_vH_B1, valA_x, mod);
-  vector<int64_t> poly_sig_b = Polynomial::multiplyPolynomials(poly_etaB_vH_B2_vH_B1, valB_x, mod);
-  vector<int64_t> poly_sig_c = Polynomial::multiplyPolynomials(poly_etaC_vH_B2_vH_B1, valC_x, mod);
+  vector<int64_t> poly_sig_a = Polynomial::multiplyPolynomials(poly_etaA_vH_B2_vH_B1, valA_x, p);
+  vector<int64_t> poly_sig_b = Polynomial::multiplyPolynomials(poly_etaB_vH_B2_vH_B1, valB_x, p);
+  vector<int64_t> poly_sig_c = Polynomial::multiplyPolynomials(poly_etaC_vH_B2_vH_B1, valC_x, p);
 
-  vector<int64_t> a_x = Polynomial::addPolynomials(Polynomial::addPolynomials(Polynomial::multiplyPolynomials(poly_sig_a, Polynomial::multiplyPolynomials(poly_pi_b, poly_pi_c, mod), mod), Polynomial::multiplyPolynomials(poly_sig_b, Polynomial::multiplyPolynomials(poly_pi_a, poly_pi_c, mod), mod), mod), Polynomial::multiplyPolynomials(poly_sig_c, Polynomial::multiplyPolynomials(poly_pi_a, poly_pi_b, mod), mod), mod);
+  vector<int64_t> a_x = Polynomial::addPolynomials(Polynomial::addPolynomials(Polynomial::multiplyPolynomials(poly_sig_a, Polynomial::multiplyPolynomials(poly_pi_b, poly_pi_c, p), p), Polynomial::multiplyPolynomials(poly_sig_b, Polynomial::multiplyPolynomials(poly_pi_a, poly_pi_c, p), p), p), Polynomial::multiplyPolynomials(poly_sig_c, Polynomial::multiplyPolynomials(poly_pi_a, poly_pi_b, p), p), p);
   Polynomial::printPolynomial(a_x, "a(x)");
 
-  vector<int64_t> b_x = Polynomial::multiplyPolynomials(Polynomial::multiplyPolynomials(poly_pi_a, poly_pi_b, mod), poly_pi_c, mod);
+  vector<int64_t> b_x = Polynomial::multiplyPolynomials(Polynomial::multiplyPolynomials(poly_pi_a, poly_pi_b, p), poly_pi_c, p);
   Polynomial::printPolynomial(b_x, "b(x)");
 
   // Set up polynomial for f_3 using K
-  vector<int64_t> poly_f_3x = Polynomial::setupLagrangePolynomial(K, points_f_3, mod, "poly_f_3(x)");
+  vector<int64_t> poly_f_3x = Polynomial::setupLagrangePolynomial(K, points_f_3, p, "poly_f_3(x)");
 
   vector<int64_t> g_3_x = poly_f_3x;
   g_3_x.erase(g_3_x.begin());
@@ -806,16 +806,16 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
 
   // Calculate sigma_3_set_k based on sigma3 and K.size()
   vector<int64_t> sigma_3_set_k;
-  sigma_3_set_k.push_back((sigma3 * Polynomial::modInverse(K.size(), mod)) % mod);
+  sigma_3_set_k.push_back((sigma3 * Polynomial::pInverse(K.size(), p)) % p);
   Serial.print("sigma_3_set_k = ");
   Serial.println(sigma_3_set_k[0]);
 
   // Update polynomial f_3 by subtracting sigma_3_set_k
-  vector<int64_t> poly_f_3x_new = Polynomial::subtractPolynomials(poly_f_3x, sigma_3_set_k, mod);
+  vector<int64_t> poly_f_3x_new = Polynomial::subtractPolynomials(poly_f_3x, sigma_3_set_k, p);
   Polynomial::printPolynomial(poly_f_3x_new, "f3(x)new");
 
   // Calculate polynomial h_3(x) using previous results
-  vector<int64_t> h_3_x = Polynomial::dividePolynomials(Polynomial::subtractPolynomials(a_x, Polynomial::multiplyPolynomials(b_x, Polynomial::addPolynomials(poly_f_3x_new, sigma_3_set_k, mod), mod), mod), vK_x, mod)[0];
+  vector<int64_t> h_3_x = Polynomial::dividePolynomials(Polynomial::subtractPolynomials(a_x, Polynomial::multiplyPolynomials(b_x, Polynomial::addPolynomials(poly_f_3x_new, sigma_3_set_k, p), p), p), vK_x, p)[0];
   Polynomial::printPolynomial(h_3_x, "h3(x)");
 
   // Define random values based on s_x
@@ -835,50 +835,50 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
   // Initialize the polynomial p(x) by performing several polynomial operations and print
   vector<int64_t> p_x =
     Polynomial::addPolynomials(
-      Polynomial::addPolynomials(Polynomial::addPolynomials(Polynomial::multiplyPolynomialByNumber(w_hat_x, eta_w_hat, mod), Polynomial::multiplyPolynomialByNumber(z_hatA, eta_z_hatA, mod), mod),
-                                 Polynomial::addPolynomials(Polynomial::multiplyPolynomialByNumber(z_hatB, eta_z_hatB, mod), Polynomial::multiplyPolynomialByNumber(z_hatC, eta_z_hatC, mod), mod), mod),
+      Polynomial::addPolynomials(Polynomial::addPolynomials(Polynomial::multiplyPolynomialByNumber(w_hat_x, eta_w_hat, p), Polynomial::multiplyPolynomialByNumber(z_hatA, eta_z_hatA, p), p),
+                                 Polynomial::addPolynomials(Polynomial::multiplyPolynomialByNumber(z_hatB, eta_z_hatB, p), Polynomial::multiplyPolynomialByNumber(z_hatC, eta_z_hatC, p), p), p),
       Polynomial::addPolynomials(
-        Polynomial::addPolynomials(Polynomial::addPolynomials(Polynomial::multiplyPolynomialByNumber(h_0_x, eta_h_0_x, mod), Polynomial::multiplyPolynomialByNumber(s_x, eta_s_x, mod), mod),
-                                   Polynomial::addPolynomials(Polynomial::multiplyPolynomialByNumber(g_1_x, eta_g_1_x, mod), Polynomial::multiplyPolynomialByNumber(h_1_x, eta_h_1_x, mod), mod), mod),
-        Polynomial::addPolynomials(Polynomial::addPolynomials(Polynomial::multiplyPolynomialByNumber(g_2_x, eta_g_2_x, mod), Polynomial::multiplyPolynomialByNumber(h_2_x, eta_h_2_x, mod), mod),
-                                   Polynomial::addPolynomials(Polynomial::multiplyPolynomialByNumber(g_3_x, eta_g_3_x, mod), Polynomial::multiplyPolynomialByNumber(h_3_x, eta_h_3_x, mod), mod), mod),
-        mod),
-      mod);
+        Polynomial::addPolynomials(Polynomial::addPolynomials(Polynomial::multiplyPolynomialByNumber(h_0_x, eta_h_0_x, p), Polynomial::multiplyPolynomialByNumber(s_x, eta_s_x, p), p),
+                                   Polynomial::addPolynomials(Polynomial::multiplyPolynomialByNumber(g_1_x, eta_g_1_x, p), Polynomial::multiplyPolynomialByNumber(h_1_x, eta_h_1_x, p), p), p),
+        Polynomial::addPolynomials(Polynomial::addPolynomials(Polynomial::multiplyPolynomialByNumber(g_2_x, eta_g_2_x, p), Polynomial::multiplyPolynomialByNumber(h_2_x, eta_h_2_x, p), p),
+                                   Polynomial::addPolynomials(Polynomial::multiplyPolynomialByNumber(g_3_x, eta_g_3_x, p), Polynomial::multiplyPolynomialByNumber(h_3_x, eta_h_3_x, p), p), p),
+        p),
+      p);
   Polynomial::printPolynomial(p_x, "p(x)");
 
   // Choose a random value for z
   int64_t z_random = 2;
-  int64_t y_prime = Polynomial::evaluatePolynomial(p_x, z_random, mod);
+  int64_t y_prime = Polynomial::evaluatePolynomial(p_x, z_random, p);
   Serial.print("y_prime = ");
   Serial.println(y_prime);
 
   // p(x) - y'  =>  p(x)  !!!!!!!
   vector<int64_t> q_xBuf;
-  q_xBuf.push_back(mod - z_random);
+  q_xBuf.push_back(p - z_random);
   q_xBuf.push_back(1);
   Polynomial::printPolynomial(q_xBuf, "div = ");
 
-  vector<int64_t> q_x = Polynomial::dividePolynomials(p_x, q_xBuf, mod)[0];
+  vector<int64_t> q_x = Polynomial::dividePolynomials(p_x, q_xBuf, p)[0];
   Polynomial::printPolynomial(q_x, "q(x)");
 
   // Generate a KZG commitment for q(x) using the provided verification key (ck)
-  int64_t p_17_AHP = Polynomial::KZG_Commitment(ck, q_x, mod);
+  int64_t p_17_AHP = Polynomial::KZG_Commitment(ck, q_x, p);
   Serial.print("p_17_AHP = ");
   Serial.println(p_17_AHP);
 
   // Generate KZG commitments for various polynomials and print
-  int64_t Com1_AHP_x = Polynomial::KZG_Commitment(ck, w_hat_x, mod);
-  int64_t Com2_AHP_x = Polynomial::KZG_Commitment(ck, z_hatA, mod);
-  int64_t Com3_AHP_x = Polynomial::KZG_Commitment(ck, z_hatB, mod);
-  int64_t Com4_AHP_x = Polynomial::KZG_Commitment(ck, z_hatC, mod);
-  int64_t Com5_AHP_x = Polynomial::KZG_Commitment(ck, h_0_x, mod);
-  int64_t Com6_AHP_x = Polynomial::KZG_Commitment(ck, s_x, mod);
-  int64_t Com7_AHP_x = Polynomial::KZG_Commitment(ck, g_1_x, mod);
-  int64_t Com8_AHP_x = Polynomial::KZG_Commitment(ck, h_1_x, mod);
-  int64_t Com9_AHP_x = Polynomial::KZG_Commitment(ck, g_2_x, mod);
-  int64_t Com10_AHP_x = Polynomial::KZG_Commitment(ck, h_2_x, mod);
-  int64_t Com11_AHP_x = Polynomial::KZG_Commitment(ck, g_3_x, mod);
-  int64_t Com12_AHP_x = Polynomial::KZG_Commitment(ck, h_3_x, mod);
+  int64_t Com1_AHP_x = Polynomial::KZG_Commitment(ck, w_hat_x, p);
+  int64_t Com2_AHP_x = Polynomial::KZG_Commitment(ck, z_hatA, p);
+  int64_t Com3_AHP_x = Polynomial::KZG_Commitment(ck, z_hatB, p);
+  int64_t Com4_AHP_x = Polynomial::KZG_Commitment(ck, z_hatC, p);
+  int64_t Com5_AHP_x = Polynomial::KZG_Commitment(ck, h_0_x, p);
+  int64_t Com6_AHP_x = Polynomial::KZG_Commitment(ck, s_x, p);
+  int64_t Com7_AHP_x = Polynomial::KZG_Commitment(ck, g_1_x, p);
+  int64_t Com8_AHP_x = Polynomial::KZG_Commitment(ck, h_1_x, p);
+  int64_t Com9_AHP_x = Polynomial::KZG_Commitment(ck, g_2_x, p);
+  int64_t Com10_AHP_x = Polynomial::KZG_Commitment(ck, h_2_x, p);
+  int64_t Com11_AHP_x = Polynomial::KZG_Commitment(ck, g_3_x, p);
+  int64_t Com12_AHP_x = Polynomial::KZG_Commitment(ck, h_3_x, p);
   Serial.print("Com1_AHP_x = ");
   Serial.println(Com1_AHP_x);
   Serial.print("Com2_AHP_x = ");
@@ -905,7 +905,7 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t mod)
   Serial.println(Com12_AHP_x);
 
   // Generate a KZG commitment for the combined polynomial p(x)
-  int64_t ComP_AHP_x = Polynomial::KZG_Commitment(ck, p_x, mod);
+  int64_t ComP_AHP_x = Polynomial::KZG_Commitment(ck, p_x, p);
   Serial.print("ComP_AHP = ");
   Serial.println(ComP_AHP_x);
 
