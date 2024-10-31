@@ -2,16 +2,16 @@
 #include <stdint.h>
 
 
-void fidesinnova::setup(int64_t g, int64_t tau, int64_t mod) {
+void fidesinnova::setup(int64_t g, int64_t tau, int64_t p) {
   vector<int64_t> ck;
 
   // TheArch->TheSol: Test and uncomment the following section.
   /*
-  // //I add this to ensure the value of mod is valid, or it will show overflow error
-  // if (mod > 1) { 
-  //   tau %= mod - 1;
+  // //I add this to ensure the value of p is valid, or it will show overflow error
+  // if (p > 1) { 
+  //   tau %= p - 1;
   // } else {
-  //   Serial.println("Invalid modulus value");
+  //   Serial.println("Invalid pulus value");
   //   return;
   // } */
 
@@ -45,9 +45,9 @@ void fidesinnova::setup(int64_t g, int64_t tau, int64_t mod) {
   // Use a predefined max
   int64_t d_AHP = 100;
 
-  int64_t modMinusOne = mod - 1;
+  int64_t pMinusOne = p - 1;
   int64_t current_exponent = 1;
-  int64_t newPower = d_AHP % modMinusOne;
+  int64_t newPower = d_AHP % pMinusOne;
 
   /*
   //can directly assign tmp to g
@@ -55,13 +55,13 @@ void fidesinnova::setup(int64_t g, int64_t tau, int64_t mod) {
 
   int64_t tmp = 0;
 
-  tau %= mod - 1;
+  tau %= p - 1;
   tmp = g;
 
   //push into ck
   for (int64_t i = 0; i < d_AHP; i++) {
     ck.push_back(tmp);
-    tmp = (tmp * tau) % mod;
+    tmp = (tmp * tau) % p;
 
   }
 
