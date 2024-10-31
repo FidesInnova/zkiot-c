@@ -539,6 +539,6 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t p) {
 
   String output;
   serializeJson(doc, output);
-  removeFile("/commitment.json");
-  writeFile("/commitment.json", output);
+  removeFile("/program_commitment.json");
+  writeFile("/program_commitment.json", output);
 }
