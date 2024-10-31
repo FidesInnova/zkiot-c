@@ -478,6 +478,7 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t p) {
     "Firmware_Version": float,
     "Lines": 64-bit Array
   }
+// TODO: Add commitmentID to the program_commitment.json.
   
   */
 
