@@ -20,7 +20,7 @@ int64_t Polynomial::power(int64_t base, int64_t exponent, int64_t p) {
 
 //These two functions Polynomial::power and Polynomial::pExp are the same, should delete one to be clear
 
-// Function to compute the pular exponentiation (a^b) % p
+// Function to compute the p exponentiation (a^b) % p
 int64_t Polynomial::pExp(int64_t a, int64_t b, int64_t p) {
   int64_t result = 1;
   a = a % p;
@@ -34,7 +34,7 @@ int64_t Polynomial::pExp(int64_t a, int64_t b, int64_t p) {
   return result;
 }
 
-// Function to compute the pular inverse using Fermat's Little Theorem
+// Function to compute the p inverse using Fermat's Little Theorem
 int64_t Polynomial::pInverse(int64_t a, int64_t p) {
   return pExp(a, p - 2, p);
 }
@@ -56,7 +56,7 @@ int64_t Polynomial::generateRandomNumber(const vector<int64_t>& H, int64_t p) {
   return randomNumber;
 }
 
-// Add two polynomials with pular arithmetic
+// Add two polynomials with p arithmetic
 vector<int64_t> Polynomial::addPolynomials(const vector<int64_t>& poly1, const vector<int64_t>& poly2, int64_t p) {
   // // I add this to check if p is positive for clarity usability of the function
   //   if (p <= 0) {
@@ -84,7 +84,7 @@ vector<int64_t> Polynomial::addPolynomials(const vector<int64_t>& poly1, const v
   return result;
 }
 
-// Subtract two polynomials with pular arithmetic
+// Subtract two polynomials with p arithmetic
 vector<int64_t> Polynomial::subtractPolynomials(const vector<int64_t>& poly1, const vector<int64_t>& poly2, int64_t p) {
   size_t maxSize = max(poly1.size(), poly2.size());
   vector<int64_t> buf1 = poly1;
@@ -198,7 +198,7 @@ vector<int64_t> Polynomial::LagrangePolynomial(int64_t i, const vector<int64_t>&
       vector<int64_t> term = { static_cast<int64_t>((p - x_values[j]) % p), 1 };  // (x - x_j)
       int64_t denominator = (x_values[i] + p - x_values[j]) % p;
 
-      // Efficient calculation of the pular inverse
+      // Efficient calculation of the p inverse
       int64_t inv_denominator = pInverse(denominator, p);
 
       // Multiply the result by (x - x_j) / (x_i - x_j)
