@@ -554,9 +554,28 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t p) {
 
 
 /*
-Read program.s and insert assembly of store register based on the line provided by device_config.json
+Read program.s and insert assembly macro SaveReg() before and after each instruction which is specified by the Lines in the device_config.json file
+Example Lines: [37-39],42
+Also, add proofgen macro in assembly at the end of the last instuction and store it in program_new.s.
 
-Add ProofGen function in assembly at the end of the last instuction and store it in program_new.s.
+program.s  -> program_new.s
+36 JMP        36 JMP    
+37 Add        37 savereg()
+38 Mul        38 Add
+39 Add        39 savereg()
+40 BEQ        40 savereg()
+41 BEG        41 Mul
+42 Mul        42 savereg()
+43 SHL        43 savereg()
+              44 Add
+              45 savereg()
+              46 BEQ
+              47 BEG
+              48 savereg()
+              49 Mul
+              50 savereg()
+              51 proofgen()
+              52 SHL
 */
 
 
