@@ -1,4 +1,7 @@
 #include "polynomial.h"
+#include <iostream>
+#include <unordered_map>
+#include <random>
 
 
 int64_t Polynomial::power(int64_t base, int64_t exponent, int64_t p) {
@@ -39,21 +42,33 @@ int64_t Polynomial::pInverse(int64_t a, int64_t p) {
   return pExp(a, p - 2, p);
 }
 
-int64_t Polynomial::generateRandomNumber(const vector<int64_t>& H, int64_t p) {
-  int64_t randomNumber;
-  bool found;
-  do {
-    randomNumber = random(0, p);  // Generate a random number between 0 and p-1
-    found = false;
-    // Check if the generated number is in array H
-    for (size_t i = 0; i < H.size(); i++) {
-      if (H[i] == randomNumber) {
-        found = true;
-        break;
-      }
-    }
-  } while (found);
-  return randomNumber;
+// int64_t Polynomial::generateRandomNumber(const vector<int64_t>& H, int64_t p) {
+//   int64_t randomNumber;
+//   bool found;
+//   do {
+//     randomNumber = random(0, p);  // Generate a random number between 0 and p-1
+//     found = false;
+//     // Check if the generated number is in array H
+//     for (size_t i = 0; i < H.size(); i++) {
+//       if (H[i] == randomNumber) {
+//         found = true;
+//         break;
+//       }
+//     }
+//   } while (found);
+//   return randomNumber;
+// }
+
+int64_t generateRandomNumber(const std::vector<int64_t>& H, int64_t mod) {
+    std::mt19937_64 rng(std::random_device{}());  // Use random_device to seed the generator
+    std::uniform_int_distribution<int64_t> dist(0, mod - 1);
+    
+    int64_t randomNumber;
+    do {
+        randomNumber = dist(rng);
+    } while (std::find(H.begin(), H.end(), randomNumber) != H.end());
+
+    return randomNumber;
 }
 
 // Add two polynomials with p arithmetic
@@ -223,7 +238,7 @@ vector<int64_t> Polynomial::setupLagrangePolynomial(const vector<int64_t> x_valu
   for (int64_t i = 0; i < num_points; i++) {
     if (y_values[i] != 0) {  // Only process non-zero y-values
       vector<int64_t> Li = LagrangePolynomial(i, x_values, p);
-      printPolynomial(Li, "L" + std::string(i + 1));
+      printPolynomial(Li, "L" + std::to_string(i + 1));
 
       // Multiply the L_i(x) by y_i and add to the final polynomial
       for (int64_t j = 0; j < Li.size(); j++) {
@@ -365,7 +380,7 @@ void Polynomial::printPolynomial(const vector<int64_t>& coefficients, const std:
 }
 
 // Utility functions for trimming and removing commas
-std::string trim(const std::string& str) {
+std::string Polynomial::trim(const std::string& str) {
     size_t first = str.find_first_not_of(' ');
     if (first == std::string::npos)
         return "";
@@ -374,7 +389,7 @@ std::string trim(const std::string& str) {
 }
 
 // Helper function to Remove commas from a string
-std::string removeCommas(const std::string& str) {
+std::string Polynomial::removeCommas(const std::string& str) {
     size_t first = str.find_first_not_of(',');
     if (first == std::string::npos)
         return "";
@@ -383,7 +398,7 @@ std::string removeCommas(const std::string& str) {
 }
 
 void Polynomial::printMatrix(vector<vector<int64_t>>& matrix, const std::string& name) {
-  cout << "Matrix " << name << ":";
+  cout << "Matrix " << name << ":" << endl;
   for (const auto& row : matrix) {
     for (int64_t val : row) {
       cout << val << " ";
@@ -440,7 +455,7 @@ vector<vector<int64_t>> Polynomial::createMapping(const vector<int64_t>& K, cons
 // Function to print the mapping
 void Polynomial::printMapping(vector<vector<int64_t>>& row, const std::string& name) {
   for (int64_t i = 0; i < row[0].size(); i++) {
-    cout << name << "(" << row[0][i] << ") = " << row[1][i];
+    cout << name << "(" << row[0][i] << ") = " << row[1][i] << endl;
   }
   cout << endl;
 }

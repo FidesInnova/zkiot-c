@@ -72,50 +72,79 @@ Read the Class and Lines from device_config.json to be used in the code and pass
 
 */
 
-#include "fidesinnova.h"
+// #include "fidesinnova.h"
 
-void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t p) {
-  //read /setup.json file to initialize the cryptographic environment
-  String setup = readFile("/setup.json");
+#include "polynomial.h"
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include "json.hpp"
+using ordered_json = nlohmann::ordered_json;
+#include <regex>
 
-  DynamicJsonDocument jsonSetup(2048);  // Create a DynamicJsonDocument with a buffer size
-  deserializeJson(jsonSetup, setup);
+using namespace std;
 
-  vector<int64_t> ck;
-  JsonArray array = jsonSetup["ck"];
-  for (JsonVariant v : array) {
-    ck.push_back(v.as<int64_t>());
+void commitmentGenerator(std::string path, int64_t g, int64_t p) {
+  std::ifstream setupFile("setup.json");
+  if (!setupFile.is_open()) {
+      std::cerr << "Could not open the file!" << std::endl;
   }
-  int64_t vk = jsonSetup["vk"][0].as<int64_t>();
+  nlohmann::json jsonData;
+  setupFile >> jsonData;
+  setupFile.close();
+  int64_t Class = jsonData["Class"].get<int64_t>();
+  vector<int64_t> ck = jsonData["ck"].get<vector<int64_t>>();
+  int64_t vk = jsonData["vk"].get<int64_t>();
 
-  const char* defaultInstructions =
-    "li R1, 4\n"
-    "mul R1, R1, 5\n"
-    "addi R1, R1, 11\n"
-    "mul R1, R1, 26\n";
+  std::string line;
+  std::vector<std::string> instructions;
 
-  vector<String> instructions;
+  // Reading the instructions from the file
+  std::ifstream file("instructions.s");
+  if (!file) {
+    throw std::runtime_error("Error opening file");
+  }
+  std::unordered_map<int64_t, int64_t> inputs; // Store which registers are inputs
+  // std::cout << "Reading " << filename << "\n";
+  while (std::getline(file, line)) {
+    // std::cout << line << "\n";
+    instructions.push_back(line);
+  }
+  // std::cout << "End of the file\n";
+  file.close();
+
+
+
+
+
+  /*vector<std::string> instructions;
   // Convert the raw instructions into separate lines
-  String instruction(defaultInstructions);
+  std::string instruction(defaultInstructions);
   int64_t startIndex = 0;
   int64_t endIndex;
   // Split the string based on newline character
   while ((endIndex = instruction.indexOf('\n', startIndex)) != -1) {
-    instructions.push_back(instruction.substring(startIndex, endIndex));
+    instructions.push_back(instruction.substr(startIndex, endIndex));
     startIndex = endIndex + 1;
   }
   // Add the last instruction if there's no newline at the end
   if (startIndex < instruction.length()) {
-    instructions.push_back(instruction.substring(startIndex));
-  }
+    instructions.push_back(instruction.substr(startIndex));
+  }*/
+
+
+
+
 
   // Number of gates and inputs
   int64_t n_g = 0;
   int64_t n_i = 0;
-
+/*
   // Parse instructions to determine n_g and n_i
   int64_t inputs[32] = { 0 };
   for (const auto& inst : instructions) {
+
     // Tokenize the instruction manually
     int64_t firstSpace = inst.indexOf(' ');
 
@@ -125,31 +154,31 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t p) {
     //   return;  // Exit if format is wrong
     // }
 
-    String operation = inst.substring(0, firstSpace);   // Extract the operation
-    String remainder = inst.substring(firstSpace + 1);  // Extract the remainder (registers and values)
+    std::string operation = inst.substr(0, firstSpace);   // Extract the operation
+    std::string remainder = inst.substr(firstSpace + 1);  // Extract the remainder (registers and values)
     
     // //add .trim() to achieve a better format of input
-    // String remainder = inst.substring(firstSpace + 1).trim();  // Extract the remainder (registers and values)
+    // String remainder = inst.substr(firstSpace + 1).trim();  // Extract the remainder (registers and values)
 
     int64_t secondSpace = remainder.indexOf(' ');
-    String rStr = remainder.substring(0, secondSpace);   // Extract first register or value
-    String rest = remainder.substring(secondSpace + 1);  // The rest of the instruction
+    std::string rStr = remainder.substr(0, secondSpace);   // Extract first register or value
+    std::string rest = remainder.substr(secondSpace + 1);  // The rest of the instruction
 
-    //String rest = remainder.substring(secondSpace + 1).trim();
+    //String rest = remainder.substr(secondSpace + 1).trim();
 
     if (operation == "li") {
       n_i++;
-      String xStr = rest;  // Only one value left for li
+      std::string xStr = rest;  // Only one value left for li
 
-      int64_t R = rStr.substring(1).toInt();  // Get the register number
+      int64_t R = std::stoi(rStr.substr(1));  // Get the register number
 
       //I add this to chekch if it has been successfully converted to int, if not, R = 0;
-      // if (R == 0 && rStr.substring(1) != "0") {
+      // if (R == 0 && rStr.substr(1) != "0") {
       //   Serial.println("Error: Invalid register number");
       //   return;
       // }
 
-      int64_t X = xStr.toInt();               // Get the immediate value
+      int64_t X = std::stoi(xStr);               // Get the immediate value
 
       // if (X == 0 && xStr != "0") {
       //   Serial.println("Error: Invalid immediate value");
@@ -161,23 +190,42 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t p) {
       n_g++;
 
       int64_t thirdSpace = rest.indexOf(' ');
-      String xStr = rest.substring(0, thirdSpace);   // Extract the second value (xStr)
-      String yStr = rest.substring(thirdSpace + 1);  // Extract the third value (yStr)
+      std::string xStr = rest.substr(0, thirdSpace);   // Extract the second value (xStr)
+      std::string yStr = rest.substr(thirdSpace + 1);  // Extract the third value (yStr)
 
       xStr = Polynomial::trim(Polynomial::removeCommas(xStr));
       yStr = Polynomial::trim(Polynomial::removeCommas(yStr));
     }
+  }*/
+ for (const auto& instr : instructions) {
+    std::stringstream ss(instr);
+    std::string operation, rStr, xStr, yStr;
+    
+    ss >> operation >> rStr;
+
+    if (operation == "li") {
+      ss >> xStr;
+      n_i++;
+      int64_t R = std::stoi(rStr.substr(1));
+      int64_t X = std::stoi(xStr);
+      inputs[R] = X;
+    } else {
+      ss >> xStr >> yStr;
+      xStr = Polynomial::trim(xStr);
+      yStr = Polynomial::trim(yStr);
+      xStr = Polynomial::removeCommas(xStr);
+      yStr = Polynomial::removeCommas(yStr);
+      n_g++;
+    }
+    // std::cout << "operation: " << operation << "\tX: " << xStr << "\tY: " << yStr << "\n";
   }
-  Serial.print("Number of immediate instructions (n_i): ");
-  Serial.println(n_i);
-  Serial.print("Number of general instructions (n_g): ");
-  Serial.println(n_g);
+  cout << "Number of immediate instructions (n_i): " << n_i << endl;
+  cout << "Number of general instructions (n_g): " << n_g << endl;
 
   // Matrix order
   int64_t n = n_g + n_i + 1;
   int64_t m, t;
-  Serial.print("Matrix order: ");
-  Serial.println(n);
+  cout << "Matrix order: " << n << endl;
 
   t = n_i + 1;
   m = (((Polynomial::power(n, 2, p) - n) / 2) - ((Polynomial::power(t, 2, p) - t) / 2)) % p;
@@ -191,26 +239,86 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t p) {
   int64_t z[n + 1];
   z[0] = 1;
 
-  for (int64_t i = 0; i < n - 1; i++) {
-    String inst = instructions[i];
+  for (int64_t i = 0; i < n-1; i++) {
+    std::stringstream ss(instructions[i]);
+    std::string operation, rStr, xStr, yStr;
+    ss >> operation >> rStr;
+    int64_t R = std::stoi(rStr.substr(1));
+
+    if (operation == "li") {
+      ss >> xStr;
+    }
+    else {
+      ss >> xStr >> yStr;
+    }
+    // Remove commas
+    xStr = Polynomial::removeCommas(xStr);
+    yStr = Polynomial::removeCommas(yStr);
+    // Trim spaces
+    xStr = Polynomial::trim(xStr);
+    yStr = Polynomial::trim(yStr);
+
+    int64_t X,Y;
+    if (operation == "li") {
+      X = std::stoi(xStr);
+      z[i+1] = X % p;
+    } else {
+      ss >> xStr >> yStr;
+      
+      gateIndex++;
+      int64_t newI = gateIndex + n_i;
+      C[newI][newI] = 1;
+
+      if (operation == "add") {
+        A[n_i+newI-1][1-1] = 1;
+
+        if (std::isdigit(xStr[0])) {
+          X = std::stoi(xStr);
+          z[i+1] = (z[i] + X) % p;
+          B[n_i+newI-1][0] = X;
+          B[n_i+newI-1][newI-1] = 1;
+        } else if(std::isdigit(yStr[0])){
+          Y = std::stoi(yStr);
+          z[i+1] = z[i] + Y;
+          B[n_i+newI-1][0] = Y;
+          B[n_i+newI-1][newI-1] = 1;
+        }
+
+    } else if (operation == "mul") {
+        if (std::isdigit(xStr[0])) {
+          X = std::stoi(xStr);
+          z[i+1] = (z[i] * X) % p;
+          A[n_i+newI-1][newI-1] = X;
+          B[n_i+newI-1][newI-1] = 1;
+        } else if (std::isdigit(yStr[0])) {
+          Y = std::stoi(yStr);
+          z[i+1] = (z[i] * Y) % p;
+          A[n_i+newI-1][newI-1] = 1;
+          B[n_i+newI-1][0] = Y;
+        }
+      }
+    }
+  }
+  /*for (int64_t i = 0; i < n - 1; i++) {
+    std::string inst = instructions[i];
     // Tokenize the instruction
     int64_t firstSpace = inst.indexOf(' ');
-    String operation = inst.substring(0, firstSpace);
-    String remainder = inst.substring(firstSpace + 1);
+    std::string operation = inst.substr(0, firstSpace);
+    std::string remainder = inst.substr(firstSpace + 1);
 
     int64_t secondSpace = remainder.indexOf(' ');
-    String rStr = remainder.substring(0, secondSpace);
-    String rest = remainder.substring(secondSpace + 1);
+    std::string rStr = remainder.substr(0, secondSpace);
+    std::string rest = remainder.substr(secondSpace + 1);
 
-    int64_t R = rStr.substring(1).toInt();  // Extract register number
+    int64_t R = std::stoi(rStr.substr(1));  // Extract register number
 
-    String xStr, yStr;
+    std::string xStr, yStr;
     if (operation == "li") {
       xStr = rest;
     } else {
       int64_t thirdSpace = rest.indexOf(' ');
-      xStr = rest.substring(0, thirdSpace);
-      yStr = rest.substring(thirdSpace + 1);
+      xStr = rest.substr(0, thirdSpace);
+      yStr = rest.substr(thirdSpace + 1);
     }
 
     // Remove commas and trim spaces
@@ -221,7 +329,7 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t p) {
 
     //constrct A,B,C Matrix
     if (operation == "li") {
-      X = xStr.toInt();
+      X = std::stoi(xStr);
       z[i + 1] = X % p;
     } else {
       gateIndex++;
@@ -231,40 +339,40 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t p) {
       if (operation == "addi") {
         A[n_i + newI - 1][0] = 1;
 
-        if (isDigit(xStr[0])) {
-          X = xStr.toInt();
+        if (std::isdigit(xStr[0])) {
+          X = std::stoi(xStr);
           z[i + 1] = (z[i] + X) % p;
           B[n_i + newI - 1][0] = X;
           B[n_i + newI - 1][newI - 1] = 1;
-        } else if (isDigit(yStr[0])) {
-          Y = yStr.toInt();
+        } else if (std::isdigit(yStr[0])) {
+          Y = std::stoi(yStr);
           z[i + 1] = (z[i] + Y) % p;
           B[n_i + newI - 1][0] = Y;
           B[n_i + newI - 1][newI - 1] = 1;
         }
       } else if (operation == "mul") {
-        if (isDigit(xStr[0])) {
-          X = xStr.toInt();
+        if (std::isdigit(xStr[0])) {
+          X = std::stoi(xStr);
           z[i + 1] = (z[i] * X) % p;
           A[n_i + newI - 1][newI - 1] = X;
           B[n_i + newI - 1][newI - 1] = 1;
-        } else if (isDigit(yStr[0])) {
-          Y = yStr.toInt();
+        } else if (std::isdigit(yStr[0])) {
+          Y = std::stoi(yStr);
           z[i + 1] = (z[i] * Y) % p;
           A[n_i + newI - 1][newI - 1] = 1;
           B[n_i + newI - 1][0] = Y;
         }
       }
     }
-  }
-  Serial.print("z = [");
+  }*/
+  cout << "z = [";
   for (int64_t i = 0; i < n; i++) {
-    Serial.print(z[i]);
+    cout << z[i];
     if (n - i > 1) {
-      Serial.print(", ");
+      cout << ", ";
     }
   }
-  Serial.println("]");
+  cout << "]" << endl;
 
   Polynomial::printMatrix(A, "A");
   Polynomial::printMatrix(B, "B");
@@ -280,12 +388,11 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t p) {
   for (int64_t i = 1; i < n; i++) {
     H.push_back(Polynomial::power(w, i, p));
   }
-  Serial.print("H[n]: ");
+  cout << "H[n]: ";
   for (int64_t i = 0; i < n; i++) {
-    Serial.print(H[i]);
-    Serial.print(" ");
+    cout << H[i] << " ";
   }
-  Serial.println("");
+  cout << endl;
 
   int64_t y, g_m;
 
@@ -297,12 +404,11 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t p) {
   for (int64_t i = 1; i < m; i++) {
     K.push_back(Polynomial::power(y, i, p));
   }
-  Serial.print("K[m]: ");
+  cout << "K[m]: ";
   for (int64_t i = 0; i < m; i++) {
-    Serial.print(K[i]);
-    Serial.print(" ");
+    cout << K[i] << " ";
   }
-  Serial.println("");
+  cout << endl;
   
   // Create a polynomial vector vH_x of size (n + 1) initialized to 0
   vector<int64_t> vH_x(n + 1, 0);
@@ -388,7 +494,6 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t p) {
   vector<int64_t> colC_x = Polynomial::setupLagrangePolynomial(colC[0], colC[1], p, "colC(x)");
   vector<int64_t> valC_x = Polynomial::setupLagrangePolynomial(valC[0], valC[1], p, "valC(x)");
 
-  Serial.print("O_AHP = {");
   vector<int64_t> O_AHP;
 
   O_AHP.insert(O_AHP.end(), rowA_x.begin(), rowA_x.end());
@@ -403,13 +508,14 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t p) {
   O_AHP.insert(O_AHP.end(), colC_x.begin(), colC_x.end());
   O_AHP.insert(O_AHP.end(), valC_x.begin(), valC_x.end());
 
+  cout << "O_AHP = {";
   for (int64_t i = 0; i < O_AHP.size(); i++) {
-    Serial.print(O_AHP[i]);
+    cout << O_AHP[i];
     if (i != O_AHP.size() - 1) {
-      Serial.print(", ");
+      cout << ", ";
     }
   }
-  Serial.println("}");
+  cout << "}" << endl;
 
   int64_t Com0_AHP = 0, Com1_AHP = 0, Com2_AHP = 0, Com3_AHP = 0, Com4_AHP = 0, Com5_AHP = 0, Com6_AHP = 0, Com7_AHP = 0, Com8_AHP = 0;
   // Ensure ck and *_x vectors are of the same size before iterating
@@ -438,32 +544,23 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t p) {
     Com7_AHP %= p;
     Com8_AHP %= p;
   }
-  Serial.print("Com0_AHP = ");
-  Serial.println(Com0_AHP);
+  cout << "Com0_AHP = " << Com0_AHP << endl;
 
-  Serial.print("Com1_AHP = ");
-  Serial.println(Com1_AHP);
+  cout << "Com1_AHP = " << Com1_AHP << endl;
 
-  Serial.print("Com2_AHP = ");
-  Serial.println(Com2_AHP);
+  cout << "Com2_AHP = " << Com2_AHP << endl;
 
-  Serial.print("Com3_AHP = ");
-  Serial.println(Com3_AHP);
+  cout << "Com3_AHP = " << Com3_AHP << endl;
 
-  Serial.print("Com4_AHP = ");
-  Serial.println(Com4_AHP);
+  cout << "Com4_AHP = " << Com4_AHP << endl;
 
-  Serial.print("Com5_AHP = ");
-  Serial.println(Com5_AHP);
+  cout << "Com5_AHP = " << Com5_AHP << endl;
 
-  Serial.print("Com6_AHP = ");
-  Serial.println(Com6_AHP);
+  cout << "Com6_AHP = " << Com6_AHP << endl;
 
-  Serial.print("Com7_AHP = ");
-  Serial.println(Com7_AHP);
+  cout << "Com7_AHP = " << Com7_AHP << endl;
 
-  Serial.print("Com8_AHP = ");
-  Serial.println(Com8_AHP);
+  cout << "Com8_AHP = " << Com8_AHP << endl;
 
 
   // TODO: Add from device_config.json to the program_commitment.json
@@ -483,67 +580,89 @@ void fidesinnova::commitmentGenerator(String path, int64_t g, int64_t p) {
   */
 
 
+  ordered_json commitment;
+  commitment.clear();
+  commitment["Class"] = Class;
+  commitment["m"] = m;
+  commitment["n"] = n;
+  commitment["RowA"] = rowA_x;
+  commitment["ColA"] = colA_x;
+  commitment["ValA"] = valA_x;
 
+  commitment["RowB"] = rowB_x;
+  commitment["ColB"] = colB_x;
+  commitment["ValB"] = valB_x;
 
-  DynamicJsonDocument doc(2048);
-  JsonArray jsonArray;
-  jsonArray = doc.createNestedArray("m");
-  jsonArray.add(m);
+  commitment["RowC"] = rowC_x;
+  commitment["ColC"] = colC_x;
+  commitment["ValC"] = valC_x;
+  
+  commitment["Curve"] = "bn128";
+  commitment["PolynomialCommitment"] = "KZG";
 
-  jsonArray = doc.createNestedArray("n");
-  jsonArray.add(n);
-
-  jsonArray = doc.createNestedArray("RowA");
-  for (int64_t value : rowA_x) {
-    jsonArray.add(value);
-  }
-  jsonArray = doc.createNestedArray("ColA");
-  for (int64_t value : colA_x) {
-    jsonArray.add(value);
-  }
-  jsonArray = doc.createNestedArray("ValA");
-  for (int64_t value : valA_x) {
-    jsonArray.add(value);
-  }
-
-  jsonArray = doc.createNestedArray("RowB");
-  for (int64_t value : rowB_x) {
-    jsonArray.add(value);
-  }
-  jsonArray = doc.createNestedArray("ColB");
-  for (int64_t value : colB_x) {
-    jsonArray.add(value);
-  }
-  jsonArray = doc.createNestedArray("ValB");
-  for (int64_t value : valB_x) {
-    jsonArray.add(value);
+  // Serialize JSON object to a string
+  std::string commitmentString = commitment.dump();
+  // Write JSON object to a file
+  std::ofstream commitmentFile("program_commitment.json");
+  if (commitmentFile.is_open()) {
+      commitmentFile << commitmentString;
+      commitmentFile.close();
+      std::cout << "JSON data has been written to program_commitment.json\n";
+  } else {
+      std::cerr << "Error opening file for writing\n";
   }
 
-  jsonArray = doc.createNestedArray("RowC");
-  for (int64_t value : rowC_x) {
-    jsonArray.add(value);
-  }
-  jsonArray = doc.createNestedArray("ColC");
-  for (int64_t value : colC_x) {
-    jsonArray.add(value);
-  }
-  jsonArray = doc.createNestedArray("ValC");
-  for (int64_t value : valC_x) {
-    jsonArray.add(value);
-  }
 
-  jsonArray = doc.createNestedArray("Curve");
-  jsonArray.add("bn128");
+  
+  ordered_json program_param;
+  program_param.clear();
+  program_param["Class"] = Class;
+  program_param["ck"] = ck;
+  program_param["vk"] = vk;
+  program_param["A"] = nonZeroColsA[0];
+  vector<vector<vector<int64_t>>> nonZeroB;
+  for(int64_t i = 0; i < nonZeroRowsB[0].size(); i++){
+    nonZeroB.push_back({{nonZeroRowsB[0][i], nonZeroColsB[0][i], nonZeroColsB[1][i]}});
+  }
+  program_param["B"] = nonZeroB;
 
-  jsonArray = doc.createNestedArray("PolynomialCommitment");
-  jsonArray.add("KZG");
-
-  String output;
-  serializeJson(doc, output);
-  removeFile("/program_commitment.json");
-  writeFile("/program_commitment.json", output);
+  // Serialize JSON object to a string
+  std::string program_paramString = program_param.dump();
+  // Write JSON object to a file
+  std::ofstream program_paramFile("program_param.json");
+  if (program_paramFile.is_open()) {
+      program_paramFile << program_paramString;
+      program_paramFile.close();
+      std::cout << "JSON data has been written to program_param.json\n";
+  } else {
+      std::cerr << "Error opening file for writing\n";
+  }
 }
 
+
+int main() {
+  /*
+  std::string configFile, assemblyFile, newAssemblyFile;
+
+  // Input filenames
+  std::cout << "Enter the device config file name: ";
+  std::cin >> configFile;
+  std::cout << "Enter the program assembly file name: ";
+  std::cin >> assemblyFile;
+  std::cout << "Enter the output file name for modified assembly: ";
+  std::cin >> newAssemblyFile;
+
+  nlohmann::json config;
+  auto [startLine, endLine] = parseDeviceConfig(configFile, config);
+
+  modifyAndSaveAssembly(assemblyFile, newAssemblyFile, startLine, endLine);
+
+  std::cout << "Modified assembly file saved as: " << newAssemblyFile << std::endl;
+
+  */
+  commitmentGenerator("/setup.json", 2, 181);
+  return 0;
+}
 
 
 // Strore Matrix A and B in the program_param.json
@@ -570,12 +689,14 @@ program.s
 
 program_new.s
 36 JMP 
-37 savereg()
+37 saveRegX()
 38 Add        
+37 saveRegW0()
 39 Mul        
+37 saveRegW1()
 40 Add
-41 savereg()
-42 proofgen()
+41 saveRegY()
+42 proofGen()
 43 BEQ      
 44 BEG      
 45 Mul      
