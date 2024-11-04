@@ -83,7 +83,7 @@ public:
   static vector<vector<int64_t>> createMapping(const vector<int64_t>& K, const vector<int64_t>& H, const vector<vector<int64_t>>& nonZero);
 
   // Function to print the mapping
-  static void printMapping(vector<vector<int64_t>>& row, const std::string& name);
+  static void printMapping(vector<vector<int64_t> >& row, const std::string& name);
 
   // Function to create the val mapping
   static vector<vector<int64_t>> valMapping(const vector<int64_t>& K, const vector<int64_t>& H, vector<vector<int64_t>>& nonZeroRows, vector<vector<int64_t>>& nonZeroCols, int64_t p);
