@@ -69,16 +69,26 @@ void fidesinnova::setup(int64_t tau) {
   for (int class_value = 0; class_value < n_g_values.size(); ++class_value) {
     // Get n_g for current file
     int n_g = n_g_values[class_value];
+    int p = p_values[class_value];
+
+     // Validate p and g
+    if (p <= 1) {
+        cout << "Invalid p value for Class " << class_value + 1 << ": " << p << endl;
+        continue; // Skip this iteration
+    }
     int64_t d_AHP = 12 * n_g;
 
     // Calculate new power for g based on d_AHP
-    int64_t pMinusOne = p_values[class_value] - 1;
+    int64_t pMinusOne = p - 1;
     tau %= pMinusOne;
 
     // Push values into ck
     ck.clear(); // Clear previous values
+    int g = g_values[class_value];
+
     for (int64_t i = 0; i < d_AHP; i++) {
-        ck.push_back(g_values[class_value]);
+      ck.push_back(g);
+      g = (g * tau) %  p;
     }
 
     // Output ck for verification
