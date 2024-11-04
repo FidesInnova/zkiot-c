@@ -9,7 +9,7 @@ using ordered_json = nlohmann::ordered_json;
 #include <iostream>
 using namespace std;
 
-void fidesinnova::setup(int64_t g, int64_t tau, int64_t p) {
+void fidesinnova::setup(int64_t tau) {
   vector<int64_t> ck;
   int64_t vk;
 
@@ -55,9 +55,14 @@ void fidesinnova::setup(int64_t g, int64_t tau, int64_t p) {
 
   // Read n_g_values from class.json
   std::vector<int64_t> n_g_values;
+  std::vector<int64_t> g_values;
+  std::vector<int64_t> p_values;
+
   for (const auto& entry : classJsonData) {
     // Extract n_g from each object in the JSON array
     n_g_values.push_back(entry["n_g"].get<int64_t>());
+    g_values.push_back(entry["g"].get<int64_t>());
+    p_values.push_back(entry["p"].get<int64_t>());
   }
 
   // Loop to create multiple setup files
@@ -67,14 +72,13 @@ void fidesinnova::setup(int64_t g, int64_t tau, int64_t p) {
     int64_t d_AHP = 12 * n_g;
 
     // Calculate new power for g based on d_AHP
-    int64_t pMinusOne = p - 1;
+    int64_t pMinusOne = p_values[class_value] - 1;
     tau %= pMinusOne;
 
     // Push values into ck
     ck.clear(); // Clear previous values
     for (int64_t i = 0; i < d_AHP; i++) {
-        ck.push_back(g);
-        g = (g * tau) % p;
+        ck.push_back(g_values[class_value]);
     }
 
     // Output ck for verification
@@ -115,4 +119,16 @@ void fidesinnova::setup(int64_t g, int64_t tau, int64_t p) {
         cerr << "Error opening file for writing setup" << class_value + 1 << ".json\n";
     }
   }
+}
+
+int main() {
+    int64_t tau = 119; // Initialize tau
+    uint64_t n = 5;      // Initialize m
+    uint64_t b = 2;      // Initialize b
+
+    fidesinnova lib;   // Create an instance of fidesinnova
+    lib.setup(tau); // Call setup with g, p, and tau
+    // lib.commitmentGenerator("instruction.txt", g, p);
+    // lib.proofGenerator("instruction.txt", g, b, p);
+    // lib.verifier(g, p);
 }
