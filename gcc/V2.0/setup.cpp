@@ -39,14 +39,32 @@ void fidesinnova::setup(int64_t g, int64_t tau, int64_t p) {
   // Find the maximum value
   // int64_t d_AHP = 12 * n_g;
 
-  // Define an array for variable n_g values for the 12 setups
-  vector<int> n_g_values = {1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536};
+  // Create a JSON object for class.json
+  nlohmann::json classJsonData;
+
+  // Open the JSON file for reading (class.json)
+  std::ifstream classFile("class.json");
+  if (!classFile.is_open()) {
+      std::cerr << "Could not open class.json!" << std::endl;
+      return; // Exit if the file cannot be opened
+  }
+
+  // Parse the JSON data from class.json
+  classFile >> classJsonData;
+  classFile.close();
+
+  // Read n_g_values from class.json
+  std::vector<int64_t> n_g_values;
+  for (const auto& entry : classJsonData) {
+    // Extract n_g from each object in the JSON array
+    n_g_values.push_back(entry["n_g"].get<int64_t>());
+  }
 
   // Loop to create multiple setup files
   for (int class_value = 0; class_value < n_g_values.size(); ++class_value) {
     // Get n_g for current file
     int n_g = n_g_values[class_value];
-    int64_t d_AHP = 12 * n_g; // Calculate d_AHP based on n_g
+    int64_t d_AHP = 12 * n_g;
 
     // Calculate new power for g based on d_AHP
     int64_t pMinusOne = p - 1;
@@ -80,7 +98,7 @@ void fidesinnova::setup(int64_t g, int64_t tau, int64_t p) {
 
     // Create JSON object
     ordered_json setupJson;
-    setupJson["Class"] = class_value + 1; // Class number starting from 1
+    setupJson["Class"] = class_value + 1;
     setupJson["ck"] = ck;
     setupJson["vk"] = vk;
 
