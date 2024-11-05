@@ -9,6 +9,7 @@
 #include <string>
 
 using namespace std;
+extern "C" void store_register_instances();
 
 class fidesinnova {
 public:

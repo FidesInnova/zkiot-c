@@ -18,10 +18,12 @@ main:
 	.cfi_def_cfa 8, 0
  #APP
 # 6 "program.cpp" 1
-	li a0, 4
-addi a0, a0, 5
-mul a0, a0, 11
-addi a0, a0, 26
+	li s2, 4
+	li s3, 5
+	li s4, 26
+mul s2, s2, s3
+addi s2, s2, 11
+mul s2, s2, s4
 
 # 0 "" 2
  #NO_APP

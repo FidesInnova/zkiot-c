@@ -72,9 +72,9 @@ Read the Class and Lines from device_config.json to be used in the code and pass
 
 */
 
-// #include "fidesinnova.h"
+#include "fidesinnova.h"
 
-#include "polynomial.h"
+// #include "polynomial.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -85,294 +85,319 @@ using ordered_json = nlohmann::ordered_json;
 
 using namespace std;
 
-void commitmentGenerator(std::string path, int64_t g, int64_t p) {
-  std::ifstream setupFile("setup.json");
-  if (!setupFile.is_open()) {
-      std::cerr << "Could not open the file!" << std::endl;
+std::vector<std::string> instructions;
+int64_t Class;
+
+// Function to read JSON config file and parse lines to read from assembly file
+std::pair<int64_t, int64_t> parseDeviceConfig(const std::string &configFile, nlohmann::json &config) {
+  std::ifstream configFileStream(configFile, std::ifstream::binary);
+  if (!configFileStream.is_open()) {
+      std::cerr << "Error opening config file: " << configFile << std::endl;
+      exit(EXIT_FAILURE);
   }
-  nlohmann::json jsonData;
-  setupFile >> jsonData;
-  setupFile.close();
-  int64_t Class = jsonData["Class"].get<int64_t>();
-  vector<int64_t> ck = jsonData["ck"].get<vector<int64_t>>();
-  int64_t vk = jsonData["vk"].get<int64_t>();
+
+  configFileStream >> config;
+  configFileStream.close();
+
+  std::vector<int64_t> linesToRead;
+
+  int64_t startLine = config["Lines"][0].get<int64_t>();
+  int64_t endLine = config["Lines"][1].get<int64_t>();
+  Class = config["Class"].get<int64_t>();
+
+  return {startLine, endLine};
+}
+
+// Function to read specified lines from assembly file
+std::vector<std::string> readAssemblyLines(const std::string &assemblyFile, int64_t startLine, int64_t endLine) {
+  std::ifstream assemblyFileStream(assemblyFile);
+  if (!assemblyFileStream.is_open()) {
+      std::cerr << "Error opening assembly file: " << assemblyFile << std::endl;
+      exit(EXIT_FAILURE);
+  }
+
+  std::vector<std::string> selectedLines;
+  std::string line;
+  int64_t currentLineNumber = 1;
+
+  while (std::getline(assemblyFileStream, line)) {
+      if (currentLineNumber >= startLine && currentLineNumber <= endLine) {
+          selectedLines.push_back(line);
+      }
+      ++currentLineNumber;
+  }
+
+  assemblyFileStream.close();
+  return selectedLines;
+}
+
+// Function to modify assembly file content and save to new file
+void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &newAssemblyFile, int64_t startLine, int64_t endLine) {
+  std::ifstream assemblyFileStream(assemblyFile);
+  if (!assemblyFileStream.is_open()) {
+      std::cerr << "Error opening assembly file: " << assemblyFile << std::endl;
+      exit(EXIT_FAILURE);
+  }
+
+  std::ofstream newAssemblyFileStream(newAssemblyFile);
+  if (!newAssemblyFileStream.is_open()) {
+      std::cerr << "Error creating new assembly file: " << newAssemblyFile << std::endl;
+      exit(EXIT_FAILURE);
+  }
 
   std::string line;
-  std::vector<std::string> instructions;
+  int64_t currentLineNumber = 1;
+  int64_t index = 0;
 
-  // Reading the instructions from the file
-  std::ifstream file("instructions.s");
-  if (!file) {
-    throw std::runtime_error("Error opening file");
-  }
-  std::unordered_map<int64_t, int64_t> inputs; // Store which registers are inputs
-  // std::cout << "Reading " << filename << "\n";
-  while (std::getline(file, line)) {
-    // std::cout << line << "\n";
-    instructions.push_back(line);
-  }
-  // std::cout << "End of the file\n";
-  file.close();
-
-
-
-
-
-  /*vector<std::string> instructions;
-  // Convert the raw instructions into separate lines
-  std::string instruction(defaultInstructions);
-  int64_t startIndex = 0;
-  int64_t endIndex;
-  // Split the string based on newline character
-  while ((endIndex = instruction.indexOf('\n', startIndex)) != -1) {
-    instructions.push_back(instruction.substr(startIndex, endIndex));
-    startIndex = endIndex + 1;
-  }
-  // Add the last instruction if there's no newline at the end
-  if (startIndex < instruction.length()) {
-    instructions.push_back(instruction.substr(startIndex));
-  }*/
-
-
-
-
-
-  // Number of gates and inputs
-  int64_t n_g = 0;
-  int64_t n_i = 0;
-/*
-  // Parse instructions to determine n_g and n_i
-  int64_t inputs[32] = { 0 };
-  for (const auto& inst : instructions) {
-
-    // Tokenize the instruction manually
-    int64_t firstSpace = inst.indexOf(' ');
-
-    //I add this for error handling for if there is no ''
-    // if (firstSpace == -1) {
-    //   Serial.println("Error: Invalid instruction format");
-    //   return;  // Exit if format is wrong
-    // }
-
-    std::string operation = inst.substr(0, firstSpace);   // Extract the operation
-    std::string remainder = inst.substr(firstSpace + 1);  // Extract the remainder (registers and values)
-    
-    // //add .trim() to achieve a better format of input
-    // String remainder = inst.substr(firstSpace + 1).trim();  // Extract the remainder (registers and values)
-
-    int64_t secondSpace = remainder.indexOf(' ');
-    std::string rStr = remainder.substr(0, secondSpace);   // Extract first register or value
-    std::string rest = remainder.substr(secondSpace + 1);  // The rest of the instruction
-
-    //String rest = remainder.substr(secondSpace + 1).trim();
-
-    if (operation == "li") {
-      n_i++;
-      std::string xStr = rest;  // Only one value left for li
-
-      int64_t R = std::stoi(rStr.substr(1));  // Get the register number
-
-      //I add this to chekch if it has been successfully converted to int, if not, R = 0;
-      // if (R == 0 && rStr.substr(1) != "0") {
-      //   Serial.println("Error: Invalid register number");
-      //   return;
-      // }
-
-      int64_t X = std::stoi(xStr);               // Get the immediate value
-
-      // if (X == 0 && xStr != "0") {
-      //   Serial.println("Error: Invalid immediate value");
-      //   return;
-      // }
-
-      inputs[R] = X;  // Store the immediate value in the corresponding register
-    } else {
-      n_g++;
-
-      int64_t thirdSpace = rest.indexOf(' ');
-      std::string xStr = rest.substr(0, thirdSpace);   // Extract the second value (xStr)
-      std::string yStr = rest.substr(thirdSpace + 1);  // Extract the third value (yStr)
-
-      xStr = Polynomial::trim(Polynomial::removeCommas(xStr));
-      yStr = Polynomial::trim(Polynomial::removeCommas(yStr));
+  while (std::getline(assemblyFileStream, line)) {
+    // Insert variables before the specified lines
+    if (currentLineNumber == startLine) {
+      newAssemblyFileStream << "jal store_register_instances\n";
+      instructions.push_back(line);
     }
-  }*/
+    else if(currentLineNumber > startLine && currentLineNumber <= endLine){
+      newAssemblyFileStream << "jal store_register_instances\n";
+      instructions.push_back(line);
+    }
+    else if (currentLineNumber == endLine + 1){
+      newAssemblyFileStream << "jal store_register_instances\n";
+    }
+
+    newAssemblyFileStream << line << std::endl;
+    ++currentLineNumber;
+  }
+
+  int64_t spaceSize = (endLine - startLine) * 4;
+  std::string assemblyCode = R"(
+  #### Subroutine Code (`store_registers.s`)
+
+  ```assembly
+          .data
+  a0_saved:    .word 0               # Temporary storage for the original value of a0
+  last_space_instance:  .word 0      # Temporary storage for the latest instance value
+
+  x0_array:    .space {SPACE_SIZE}   # Array for x0
+  x1_array:    .space {SPACE_SIZE}   # Array for x1
+  x2_array:    .space {SPACE_SIZE}   # Array for x2
+  x3_array:    .space {SPACE_SIZE}   # Array for x3
+  x4_array:    .space {SPACE_SIZE}   # Array for x4
+  x5_array:    .space {SPACE_SIZE}   # Array for x5
+  x6_array:    .space {SPACE_SIZE}   # Array for x6
+  x7_array:    .space {SPACE_SIZE}   # Array for x7
+  x8_array:    .space {SPACE_SIZE}   # Array for x8
+  x9_array:    .space {SPACE_SIZE}   # Array for x9
+  x10_array:   .space {SPACE_SIZE}   # Array for x10
+  x11_array:   .space {SPACE_SIZE}   # Array for x11
+  x12_array:   .space {SPACE_SIZE}   # Array for x12
+  x13_array:   .space {SPACE_SIZE}   # Array for x13
+  x14_array:   .space {SPACE_SIZE}   # Array for x14
+  x15_array:   .space {SPACE_SIZE}   # Array for x15
+  x16_array:   .space {SPACE_SIZE}   # Array for x16
+  x17_array:   .space {SPACE_SIZE}   # Array for x17
+  x18_array:   .space {SPACE_SIZE}   # Array for x18
+  x19_array:   .space {SPACE_SIZE}   # Array for x19
+  x20_array:   .space {SPACE_SIZE}   # Array for x20
+  x21_array:   .space {SPACE_SIZE}   # Array for x21
+  x22_array:   .space {SPACE_SIZE}   # Array for x22
+  x23_array:   .space {SPACE_SIZE}   # Array for x23
+  x24_array:   .space {SPACE_SIZE}   # Array for x24
+  x25_array:   .space {SPACE_SIZE}   # Array for x25
+  x26_array:   .space {SPACE_SIZE}   # Array for x26
+  x27_array:   .space {SPACE_SIZE}   # Array for x27
+  x28_array:   .space {SPACE_SIZE}   # Array for x28
+  x29_array:   .space {SPACE_SIZE}   # Array for x29
+  x30_array:   .space {SPACE_SIZE}   # Array for x30
+  x31_array:   .space {SPACE_SIZE}   # Array for x31
+
+      .text
+      .globl store_register_instances
+  store_register_instances:
+      sw a0, a0_saved                # Save the original value of a0
+
+      # Load the instance index into a0 from memory
+      lw a0, last_space_instance                # Read saved value of last instance
+
+      # Store each register's value in its respective array
+      sw x0, x0_array(a0)            # Store x0 in x0_array at index given by a0
+      sw x1, x1_array(a0)            # Store x1 in x1_array at index given by a0
+      sw x2, x2_array(a0)            # Store x2 in x2_array at index given by a0
+      sw x3, x3_array(a0)            # Store x3 in x3_array at index given by a0
+      sw x4, x4_array(a0)            # Store x4 in x4_array at index given by a0
+      sw x5, x5_array(a0)            # Store x5 in x5_array at index given by a0
+      sw x6, x6_array(a0)            # Store x6 in x6_array at index given by a0
+      sw x7, x7_array(a0)            # Store x7 in x7_array at index given by a0
+      sw x8, x8_array(a0)            # Store x8 in x8_array at index given by a0
+      sw x9, x9_array(a0)            # Store x9 in x9_array at index given by a0
+      sw x10, x10_array(a0)          # Store x10 in x10_array at index given by a0
+      sw x11, x11_array(a0)          # Store x11 in x11_array at index given by a0
+      sw x12, x12_array(a0)          # Store x12 in x12_array at index given by a0
+      sw x13, x13_array(a0)          # Store x13 in x13_array at index given by a0
+      sw x14, x14_array(a0)          # Store x14 in x14_array at index given by a0
+      sw x15, x15_array(a0)          # Store x15 in x15_array at index given by a0
+      sw x16, x16_array(a0)          # Store x16 in x16_array at index given by a0
+      sw x17, x17_array(a0)          # Store x17 in x17_array at index given by a0
+      sw x18, x18_array(a0)          # Store x18 in x18_array at index given by a0
+      sw x19, x19_array(a0)          # Store x19 in x19_array at index given by a0
+      sw x20, x20_array(a0)          # Store x20 in x20 array at index given by a0
+      sw x21, x21_array(a0)          # Store x21 in x21_array at index given by a0
+      sw x22, x22_array(a0)          # Store x22 in x22_array at index given by a0
+      sw x23, x23_array(a0)          # Store x23 in x23_array at index given by a0
+      sw x24, x24_array(a0)          # Store x24 in x24_array at index given by a0
+      sw x25, x25_array(a0)          # Store x25 in x25_array at index given by a0
+      sw x26, x26_array(a0)          # Store x26 in x26_array at index given by a0
+      sw x27, x27_array(a0)          # Store x27 in x27_array at index given by a0
+      sw x28, x28_array(a0)          # Store x28 in x28_array at index given by a0
+      sw x29, x29_array(a0)          # Store x29 in x29_array at index given by a0
+      sw x30, x30_array(a0)          # Store x30 in x30_array at index given by a0
+      sw x31, x31_array(a0)          # Store x31 in x31_array at index given by a0
+      
+      sw a0, last_space_instance     # Save the original value of last instance
+
+      # Restore original value of a0 from saved location
+      lw a0, a0_saved                # Restore original value of a0
+
+      ret                            # Return from function
+  )";
+
+  // Convert spaceSize to a string
+  std::ostringstream oss;
+  oss << spaceSize;
+  std::string spaceSizeStr = oss.str();
+
+  // Replace all instances of "{SPACE_SIZE}" with the actual value of spaceSize
+  size_t pos = 0;
+  while ((pos = assemblyCode.find("{SPACE_SIZE}", pos)) != std::string::npos) {
+      assemblyCode.replace(pos, 12, spaceSizeStr); // 12 is the length of "{SPACE_SIZE}"
+      pos += spaceSizeStr.length();
+  }
+
+  newAssemblyFileStream << assemblyCode << std::endl;
+
+
+  assemblyFileStream.close();
+  newAssemblyFileStream.close();
+}
+
+
+void commitmentGenerator(const std::string &setupFile) {
+  std::ifstream setupFileStream(setupFile);
+  if (!setupFileStream.is_open()) {
+      std::cerr << "Could not open the file!" << std::endl;
+  }
+  nlohmann::json setupJsonData;
+  setupFileStream >> setupJsonData;
+  setupFileStream.close();
+  vector<int64_t> ck = setupJsonData["ck"].get<vector<int64_t>>();
+  int64_t vk = setupJsonData["vk"].get<int64_t>();
+
+  
+  std::ifstream classFileStream("class.json");
+  if (!classFileStream.is_open()) {
+      std::cerr << "Could not open the file!" << std::endl;
+  }
+  nlohmann::json classJsonData;
+  classFileStream >> classJsonData;
+  classFileStream.close();
+  int64_t n_i, n_g, m, n, p, g;
+  for (const auto& item : classJsonData) {
+    if (item["Class"] == Class) {
+      // Number of inputs, gates, m, n, p, and g
+      n_i = item["n_i"].get<int64_t>();
+      n_g = item["n_g"].get<int64_t>();
+      m = item["m"].get<int64_t>();
+      n = item["n"].get<int64_t>();
+      p = item["p"].get<int64_t>();
+      g = item["g"].get<int64_t>();
+
+      std::cout << "n_i: " << n_i << ", n_g: " << n_g << std::endl;
+      break; // Stop after finding the first matching "Class"
+    }
+  }
+
+
  for (const auto& instr : instructions) {
     std::stringstream ss(instr);
-    std::string operation, rStr, xStr, yStr;
+    std::string operation, operationStr, leftStr, rightStr;
     
-    ss >> operation >> rStr;
-
-    if (operation == "li") {
-      ss >> xStr;
-      n_i++;
-      int64_t R = std::stoi(rStr.substr(1));
-      int64_t X = std::stoi(xStr);
-      inputs[R] = X;
-    } else {
-      ss >> xStr >> yStr;
-      xStr = Polynomial::trim(xStr);
-      yStr = Polynomial::trim(yStr);
-      xStr = Polynomial::removeCommas(xStr);
-      yStr = Polynomial::removeCommas(yStr);
-      n_g++;
-    }
-    // std::cout << "operation: " << operation << "\tX: " << xStr << "\tY: " << yStr << "\n";
+    ss >> operation >> operationStr;
+    ss >> leftStr >> rightStr;
+    leftStr = Polynomial::trim(leftStr);
+    rightStr = Polynomial::trim(rightStr);
+    leftStr = Polynomial::removeCommas(leftStr);
+    rightStr = Polynomial::removeCommas(rightStr);
+    // std::cout << "operation: " << operation << "\tleftInt: " << leftStr << "\trightInt: " << rightStr << "\n";
   }
   cout << "Number of immediate instructions (n_i): " << n_i << endl;
   cout << "Number of general instructions (n_g): " << n_g << endl;
 
   // Matrix order
-  int64_t n = n_g + n_i + 1;
-  int64_t m, t;
+  int64_t t;
   cout << "Matrix order: " << n << endl;
 
   t = n_i + 1;
-  m = (((Polynomial::power(n, 2, p) - n) / 2) - ((Polynomial::power(t, 2, p) - t) / 2)) % p;
+  // m = (((Polynomial::power(n, 2, p) - n) / 2) - ((Polynomial::power(t, 2, p) - t) / 2)) % p;
 
   // Initialize matrices A, B, C
   vector<vector<int64_t>> A(n, vector<int64_t>(n, 0ll));
   vector<vector<int64_t>> B(n, vector<int64_t>(n, 0ll));
   vector<vector<int64_t>> C(n, vector<int64_t>(n, 0ll));
+
   // Fill matrices based on the instructions
-  int64_t gateIndex = 0;
-  int64_t z[n + 1];
-  z[0] = 1;
-
-  for (int64_t i = 0; i < n-1; i++) {
+  for (int64_t i = 0; i < n_g; i++) {
     std::stringstream ss(instructions[i]);
-    std::string operation, rStr, xStr, yStr;
-    ss >> operation >> rStr;
-    int64_t R = std::stoi(rStr.substr(1));
+    std::string operation, operationStr, leftStr, rightStr;
+    ss >> operation >> operationStr;
+    int64_t R = std::stoi(operationStr.substr(1));
 
-    if (operation == "li") {
-      ss >> xStr;
-    }
-    else {
-      ss >> xStr >> yStr;
-    }
-    // Remove commas
-    xStr = Polynomial::removeCommas(xStr);
-    yStr = Polynomial::removeCommas(yStr);
-    // Trim spaces
-    xStr = Polynomial::trim(xStr);
-    yStr = Polynomial::trim(yStr);
+    if (operation == "add" || operation == "addi" || operation == "mul") {
+      ss >> leftStr >> rightStr;
 
-    int64_t X,Y;
-    if (operation == "li") {
-      X = std::stoi(xStr);
-      z[i+1] = X % p;
-    } else {
-      ss >> xStr >> yStr;
+      // Remove commas
+      leftStr = Polynomial::removeCommas(leftStr);
+      rightStr = Polynomial::removeCommas(rightStr);
+      // Trim spaces
+      leftStr = Polynomial::trim(leftStr);
+      rightStr = Polynomial::trim(rightStr);
+
+      int64_t leftInt,rightInt;
+      ss >> leftStr >> rightStr;
       
-      gateIndex++;
-      int64_t newI = gateIndex + n_i;
-      C[newI][newI] = 1;
+      C[1+n_i+i][1+n_i+i] = 1;
 
-      if (operation == "add") {
-        A[n_i+newI-1][1-1] = 1;
-
-        if (std::isdigit(xStr[0])) {
-          X = std::stoi(xStr);
-          z[i+1] = (z[i] + X) % p;
-          B[n_i+newI-1][0] = X;
-          B[n_i+newI-1][newI-1] = 1;
-        } else if(std::isdigit(yStr[0])){
-          Y = std::stoi(yStr);
-          z[i+1] = z[i] + Y;
-          B[n_i+newI-1][0] = Y;
-          B[n_i+newI-1][newI-1] = 1;
+      if (operation == "add" || operation == "addi") {
+        A[1+n_i+i][0] = 1;
+        if (std::isdigit(leftStr[0])) {
+          leftInt = std::stoi(leftStr);
+          B[1+n_i+i][0] = leftInt;
+          B[1+n_i+i][i+1] = 1;
+        } else if(std::isdigit(rightStr[0])){
+          rightInt = std::stoi(rightStr);
+          B[1+n_i+i][0] = rightInt;
+          B[1+n_i+i][i+1] = 1;
         }
 
     } else if (operation == "mul") {
-        if (std::isdigit(xStr[0])) {
-          X = std::stoi(xStr);
-          z[i+1] = (z[i] * X) % p;
-          A[n_i+newI-1][newI-1] = X;
-          B[n_i+newI-1][newI-1] = 1;
-        } else if (std::isdigit(yStr[0])) {
-          Y = std::stoi(yStr);
-          z[i+1] = (z[i] * Y) % p;
-          A[n_i+newI-1][newI-1] = 1;
-          B[n_i+newI-1][0] = Y;
+        if (std::isdigit(leftStr[0])) {
+          cout << "left" << endl;
+          leftInt = std::stoi(leftStr);
+          cout << leftInt << endl;
+          A[1+n_i+i][0] = leftInt;
+          B[1+n_i+i][i+1] = 1;
+        } else if (std::isdigit(rightStr[0])) {
+          cout << "right" << endl;
+          rightInt = std::stoi(rightStr);
+          cout << rightInt << endl;
+          A[1+n_i+i][i+1] = 1;
+          B[1+n_i+i][0] = rightInt;
         }
       }
     }
-  }
-  /*for (int64_t i = 0; i < n - 1; i++) {
-    std::string inst = instructions[i];
-    // Tokenize the instruction
-    int64_t firstSpace = inst.indexOf(' ');
-    std::string operation = inst.substr(0, firstSpace);
-    std::string remainder = inst.substr(firstSpace + 1);
-
-    int64_t secondSpace = remainder.indexOf(' ');
-    std::string rStr = remainder.substr(0, secondSpace);
-    std::string rest = remainder.substr(secondSpace + 1);
-
-    int64_t R = std::stoi(rStr.substr(1));  // Extract register number
-
-    std::string xStr, yStr;
-    if (operation == "li") {
-      xStr = rest;
-    } else {
-      int64_t thirdSpace = rest.indexOf(' ');
-      xStr = rest.substr(0, thirdSpace);
-      yStr = rest.substr(thirdSpace + 1);
-    }
-
-    // Remove commas and trim spaces
-    xStr = Polynomial::trim(Polynomial::removeCommas(xStr));
-    yStr = Polynomial::trim(Polynomial::removeCommas(yStr));
-
-    int64_t X, Y;
-
-    //constrct A,B,C Matrix
-    if (operation == "li") {
-      X = std::stoi(xStr);
-      z[i + 1] = X % p;
-    } else {
-      gateIndex++;
-      int64_t newI = gateIndex + n_i;
-      C[newI][newI] = 1;
-
-      if (operation == "addi") {
-        A[n_i + newI - 1][0] = 1;
-
-        if (std::isdigit(xStr[0])) {
-          X = std::stoi(xStr);
-          z[i + 1] = (z[i] + X) % p;
-          B[n_i + newI - 1][0] = X;
-          B[n_i + newI - 1][newI - 1] = 1;
-        } else if (std::isdigit(yStr[0])) {
-          Y = std::stoi(yStr);
-          z[i + 1] = (z[i] + Y) % p;
-          B[n_i + newI - 1][0] = Y;
-          B[n_i + newI - 1][newI - 1] = 1;
-        }
-      } else if (operation == "mul") {
-        if (std::isdigit(xStr[0])) {
-          X = std::stoi(xStr);
-          z[i + 1] = (z[i] * X) % p;
-          A[n_i + newI - 1][newI - 1] = X;
-          B[n_i + newI - 1][newI - 1] = 1;
-        } else if (std::isdigit(yStr[0])) {
-          Y = std::stoi(yStr);
-          z[i + 1] = (z[i] * Y) % p;
-          A[n_i + newI - 1][newI - 1] = 1;
-          B[n_i + newI - 1][0] = Y;
-        }
-      }
-    }
-  }*/
-  cout << "z = [";
-  for (int64_t i = 0; i < n; i++) {
-    cout << z[i];
-    if (n - i > 1) {
-      cout << ", ";
+    
+    else {
+      cout << "!!! Undefined instruction in the defiend Line range !!!\n" << operation << endl;
+      std::exit(0);
     }
   }
-  cout << "]" << endl;
 
   Polynomial::printMatrix(A, "A");
   Polynomial::printMatrix(B, "B");
@@ -422,61 +447,61 @@ void commitmentGenerator(std::string path, int64_t g, int64_t p) {
  // Create a mapping for the non-zero rows using parameters K and H
   vector<vector<int64_t>> nonZeroRowsA = Polynomial::getNonZeroRows(A);
   vector<vector<int64_t>> rowA = Polynomial::createMapping(K, H, nonZeroRowsA);
-  rowA[1].push_back(1);
-  rowA[1].push_back(135);
-  rowA[1].push_back(125);
-  rowA[1].push_back(59);
-  rowA[1].push_back(42);
-  rowA[1].push_back(1);
+  // rowA[1].push_back(1);
+  // rowA[1].push_back(135);
+  // rowA[1].push_back(125);
+  // rowA[1].push_back(59);
+  // rowA[1].push_back(42);
+  // rowA[1].push_back(1);
   Polynomial::printMapping(rowA, "row_A");
   vector<vector<int64_t>> nonZeroColsA = Polynomial::getNonZeroCols(A);
   vector<vector<int64_t>> colA = Polynomial::createMapping(K, H, nonZeroColsA);
-  colA[1].push_back(42);
-  colA[1].push_back(1);
-  colA[1].push_back(135);
-  colA[1].push_back(125);
-  colA[1].push_back(59);
-  colA[1].push_back(42);
+  // colA[1].push_back(42);
+  // colA[1].push_back(1);
+  // colA[1].push_back(135);
+  // colA[1].push_back(125);
+  // colA[1].push_back(59);
+  // colA[1].push_back(42);
   Polynomial::printMapping(colA, "col_A");
   vector<vector<int64_t>> valA = Polynomial::valMapping(K, H, nonZeroRowsA, nonZeroColsA, p);
   Polynomial::printMapping(valA, "val_A");
 
   vector<vector<int64_t>> nonZeroRowsB = Polynomial::getNonZeroRows(B);
   vector<vector<int64_t>> rowB = Polynomial::createMapping(K, H, nonZeroRowsB);
-  rowB[1].push_back(59);
-  rowB[1].push_back(1);
-  rowB[1].push_back(42);
-  rowB[1].push_back(135);
-  rowB[1].push_back(59);
+  // rowB[1].push_back(59);
+  // rowB[1].push_back(1);
+  // rowB[1].push_back(42);
+  // rowB[1].push_back(135);
+  // rowB[1].push_back(59);
   Polynomial::printMapping(rowB, "row_B");
   vector<vector<int64_t>> nonZeroColsB = Polynomial::getNonZeroCols(B);
   vector<vector<int64_t>> colB = Polynomial::createMapping(K, H, nonZeroColsB);
-  colB[1].push_back(59);
-  colB[1].push_back(42);
-  colB[1].push_back(125);
-  colB[1].push_back(1);
-  colB[1].push_back(135);
+  // colB[1].push_back(59);
+  // colB[1].push_back(42);
+  // colB[1].push_back(125);
+  // colB[1].push_back(1);
+  // colB[1].push_back(135);
   Polynomial::printMapping(colB, "col_B");
   vector<vector<int64_t>> valB = Polynomial::valMapping(K, H, nonZeroRowsB, nonZeroColsB, p);
   Polynomial::printMapping(valB, "val_B");
 
   vector<vector<int64_t>> nonZeroRowsC = Polynomial::getNonZeroRows(C);
   vector<vector<int64_t>> rowC = Polynomial::createMapping(K, H, nonZeroRowsC);
-  rowC[1].push_back(1);
-  rowC[1].push_back(59);
-  rowC[1].push_back(125);
-  rowC[1].push_back(1);
-  rowC[1].push_back(135);
-  rowC[1].push_back(42);
+  // rowC[1].push_back(1);
+  // rowC[1].push_back(59);
+  // rowC[1].push_back(125);
+  // rowC[1].push_back(1);
+  // rowC[1].push_back(135);
+  // rowC[1].push_back(42);
   Polynomial::printMapping(rowC, "row_C");
   vector<vector<int64_t>> nonZeroColsC = Polynomial::getNonZeroCols(C);
   vector<vector<int64_t>> colC = Polynomial::createMapping(K, H, nonZeroColsC);
-  colC[1].push_back(125);
-  colC[1].push_back(59);
-  colC[1].push_back(1);
-  colC[1].push_back(1);
-  colC[1].push_back(42);
-  colC[1].push_back(59);
+  // colC[1].push_back(125);
+  // colC[1].push_back(59);
+  // colC[1].push_back(1);
+  // colC[1].push_back(1);
+  // colC[1].push_back(42);
+  // colC[1].push_back(59);
   Polynomial::printMapping(colC, "col_C");
   vector<vector<int64_t>> valC = Polynomial::valMapping(K, H, nonZeroRowsC, nonZeroColsC, p);
   Polynomial::printMapping(valC, "val_C");
@@ -565,7 +590,7 @@ void commitmentGenerator(std::string path, int64_t g, int64_t p) {
 
   // TODO: Add from device_config.json to the program_commitment.json
   /*
-  device_config.jso
+  device_config.json
   {
     "CommitmentID":  64-bit,
     "Class": 32-bit Integer,
@@ -603,7 +628,7 @@ void commitmentGenerator(std::string path, int64_t g, int64_t p) {
   // Serialize JSON object to a string
   std::string commitmentString = commitment.dump();
   // Write JSON object to a file
-  std::ofstream commitmentFile("program_commitment.json");
+  std::ofstream commitmentFile("data/program_commitment.json");
   if (commitmentFile.is_open()) {
       commitmentFile << commitmentString;
       commitmentFile.close();
@@ -612,24 +637,20 @@ void commitmentGenerator(std::string path, int64_t g, int64_t p) {
       std::cerr << "Error opening file for writing\n";
   }
 
-
-  
   ordered_json program_param;
   program_param.clear();
   program_param["Class"] = Class;
-  program_param["ck"] = ck;
-  program_param["vk"] = vk;
   program_param["A"] = nonZeroColsA[0];
-  vector<vector<vector<int64_t>>> nonZeroB;
+  vector<vector<int64_t>> nonZeroB;
   for(int64_t i = 0; i < nonZeroRowsB[0].size(); i++){
-    nonZeroB.push_back({{nonZeroRowsB[0][i], nonZeroColsB[0][i], nonZeroColsB[1][i]}});
+    nonZeroB.push_back({nonZeroRowsB[0][i], nonZeroColsB[0][i], nonZeroColsB[1][i]});
   }
   program_param["B"] = nonZeroB;
 
   // Serialize JSON object to a string
   std::string program_paramString = program_param.dump();
   // Write JSON object to a file
-  std::ofstream program_paramFile("program_param.json");
+  std::ofstream program_paramFile("data/program_param.json");
   if (program_paramFile.is_open()) {
       program_paramFile << program_paramString;
       program_paramFile.close();
@@ -639,18 +660,18 @@ void commitmentGenerator(std::string path, int64_t g, int64_t p) {
   }
 }
 
-
 int main() {
-  /*
-  std::string configFile, assemblyFile, newAssemblyFile;
+  std::string configFile = "device_config.json", setupFile = "setup3.json", assemblyFile = "program.s", newAssemblyFile = "new_program.s";
+
+  // TODO: Remove the hard coded file names and use the inputs from user
 
   // Input filenames
-  std::cout << "Enter the device config file name: ";
-  std::cin >> configFile;
-  std::cout << "Enter the program assembly file name: ";
-  std::cin >> assemblyFile;
-  std::cout << "Enter the output file name for modified assembly: ";
-  std::cin >> newAssemblyFile;
+  // std::cout << "Enter the device config file name: ";
+  // std::cin >> configFile;
+  // std::cout << "Enter the program assembly file name: ";
+  // std::cin >> assemblyFile;
+  // std::cout << "Enter the output file name for modified assembly: ";
+  // std::cin >> newAssemblyFile;
 
   nlohmann::json config;
   auto [startLine, endLine] = parseDeviceConfig(configFile, config);
@@ -659,8 +680,8 @@ int main() {
 
   std::cout << "Modified assembly file saved as: " << newAssemblyFile << std::endl;
 
-  */
-  commitmentGenerator("/setup.json", 2, 181);
+  // TODO: update this part to be dynamic
+  commitmentGenerator(setupFile);
   return 0;
 }
 

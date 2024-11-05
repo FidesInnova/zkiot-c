@@ -446,7 +446,7 @@ vector<vector<int64_t>> Polynomial::createMapping(const vector<int64_t>& K, cons
   }
   for (int64_t i = nonZero[0].size(); i < K.size(); i++) {
     row[0].push_back(K[i]);
-    // row[1].push_back(H[i % H.size()]);
+    row[1].push_back(H[i % H.size()]);
   }
 
   return row;
