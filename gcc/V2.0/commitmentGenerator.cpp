@@ -72,9 +72,9 @@ Read the Class and Lines from device_config.json to be used in the code and pass
 
 */
 
-#include "fidesinnova.h"
+// #include "fidesinnova.h"
 
-// #include "polynomial.h"
+#include "polynomial.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -167,7 +167,7 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
     ++currentLineNumber;
   }
 
-  int64_t spaceSize = (endLine - startLine) * 4;
+  int64_t spaceSize = ((endLine - startLine) * 4);
   std::string assemblyCode = R"(
   #### Subroutine Code (`store_registers.s`)
 
@@ -251,6 +251,7 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
       sw x30, x30_array(a0)          # Store x30 in x30_array at index given by a0
       sw x31, x31_array(a0)          # Store x31 in x31_array at index given by a0
       
+      addi a0, a0, 4
       sw a0, last_space_instance     # Save the original value of last instance
 
       # Restore original value of a0 from saved location
@@ -369,26 +370,32 @@ void commitmentGenerator(const std::string &setupFile) {
         if (std::isdigit(leftStr[0])) {
           leftInt = std::stoi(leftStr);
           B[1+n_i+i][0] = leftInt;
-          B[1+n_i+i][i+1] = 1;
-        } else if(std::isdigit(rightStr[0])){
+        }
+        else {
+          B[1+n_i+i][1+i] = 1;
+        }
+        if(std::isdigit(rightStr[0])){
           rightInt = std::stoi(rightStr);
           B[1+n_i+i][0] = rightInt;
-          B[1+n_i+i][i+1] = 1;
+        }
+        else {
+          B[1+n_i+i][1+i] = 1;
         }
 
     } else if (operation == "mul") {
         if (std::isdigit(leftStr[0])) {
-          cout << "left" << endl;
           leftInt = std::stoi(leftStr);
-          cout << leftInt << endl;
           A[1+n_i+i][0] = leftInt;
-          B[1+n_i+i][i+1] = 1;
-        } else if (std::isdigit(rightStr[0])) {
-          cout << "right" << endl;
+        }
+        else {
+          A[1+n_i+i][1+i] = 1;
+        }
+        if (std::isdigit(rightStr[0])) {
           rightInt = std::stoi(rightStr);
-          cout << rightInt << endl;
-          A[1+n_i+i][i+1] = 1;
           B[1+n_i+i][0] = rightInt;
+        }
+        else {
+          B[1+n_i+i][1+i] = 1;
         }
       }
     }
@@ -640,7 +647,11 @@ void commitmentGenerator(const std::string &setupFile) {
   ordered_json program_param;
   program_param.clear();
   program_param["Class"] = Class;
-  program_param["A"] = nonZeroColsA[0];
+  vector<vector<int64_t>> nonZeroA;
+  for(int64_t i = 0; i < nonZeroRowsA[0].size(); i++){
+    nonZeroA.push_back({nonZeroRowsA[0][i], nonZeroColsA[0][i]});
+  }
+  program_param["A"] = nonZeroA;
   vector<vector<int64_t>> nonZeroB;
   for(int64_t i = 0; i < nonZeroRowsB[0].size(); i++){
     nonZeroB.push_back({nonZeroRowsB[0][i], nonZeroColsB[0][i], nonZeroColsB[1][i]});

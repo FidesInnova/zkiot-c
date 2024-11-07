@@ -21,9 +21,9 @@ main:
 	li s2, 4
 	li s3, 5
 	li s4, 26
-mul s2, s2, 5
+mul s2, s2, s3
 addi s2, s2, 11
-mul s2, s2, 26
+mul s2, s2, s4
 addi s2, s2, 0
 
 # 0 "" 2

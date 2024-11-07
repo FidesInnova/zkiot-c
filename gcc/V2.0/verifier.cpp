@@ -96,11 +96,19 @@
 
 */
 
-#include "fidesinnova.h"
+// #include "fidesinnova.h"
 
-void fidesinnova::verifier(int64_t g, int64_t p) {
-  int64_t n_i = 1;
-  JsonArray array;
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include "json.hpp"
+using ordered_json = nlohmann::ordered_json;
+#include <regex>
+
+using namespace std;
+
+void verifier() {
   bool verify = false;
   int64_t beta3 = 5;  // Must be a random number
   int64_t z_random = 2;
@@ -127,162 +135,67 @@ void fidesinnova::verifier(int64_t g, int64_t p) {
   int64_t eta_h_3_x = 63;   // a random number  based on s_x
 
   /*********************************  Read Setup  *********************************/
-  String setup = readFile("/setup.json");
-  DynamicJsonDocument jsonSetup(4096);  // Create a DynamicJsonDocument with a buffer size
-  DeserializationError error = deserializeJson(jsonSetup, setup);
-
-  if (error) {
-    Serial.println("Failed to parse JSON");
-    return;
+  std::ifstream setupFileStream("data/setup.json");
+  if (!setupFileStream.is_open()) {
+      std::cerr << "Could not open the file!" << std::endl;
   }
-
-  vector<int64_t> ck;
-  array = jsonSetup["ck"];
-  for (JsonVariant v : array) {
-    ck.push_back(v.as<int64_t>());
-  }
-  int64_t vk = jsonSetup["vk"][0].as<int64_t>();
+  nlohmann::json setupJsonData;
+  setupFileStream >> setupJsonData;
+  setupFileStream.close();
+  int64_t Class = setupJsonData["Class"].get<int64_t>();
+  vector<int64_t> ck = setupJsonData["ck"].get<vector<int64_t>>();
+  int64_t vk = setupJsonData["vk"].get<int64_t>();
   /*********************************  Read Setup  *********************************/
 
   /*******************************  Read Commitment  ******************************/
-  String commitment = readFile("/commitment.json");
-  DynamicJsonDocument jsonCommitment(4096);  // Create a DynamicJsonDocument with a buffer size
-  deserializeJson(jsonCommitment, commitment);
-  int64_t m = jsonCommitment["m"][0].as<int64_t>();
-  int64_t n = jsonCommitment["n"][0].as<int64_t>();
-  array = jsonCommitment["RowA"];
-  vector<int64_t> rowA_x;
-  for (JsonVariant v : array) {
-    rowA_x.push_back(v.as<int64_t>());
+  std::ifstream commitmentFileStream("data/program_commitment.json");
+  if (!commitmentFileStream.is_open()) {
+      std::cerr << "Could not open the file!" << std::endl;
   }
-  Polynomial::printPolynomial(rowA_x, "rowA_x");
-
-  array = jsonCommitment["ColA"];
-  vector<int64_t> colA_x;
-  for (JsonVariant v : array) {
-    colA_x.push_back(v.as<int64_t>());
-  }
-  array = jsonCommitment["ValA"];
-  vector<int64_t> valA_x;
-  for (JsonVariant v : array) {
-    valA_x.push_back(v.as<int64_t>());
-  }
-  array = jsonCommitment["RowB"];
-  vector<int64_t> rowB_x;
-  for (JsonVariant v : array) {
-    rowB_x.push_back(v.as<int64_t>());
-  }
-
-  array = jsonCommitment["ColB"];
-  vector<int64_t> colB_x;
-  for (JsonVariant v : array) {
-    colB_x.push_back(v.as<int64_t>());
-  }
-  array = jsonCommitment["ValB"];
-  vector<int64_t> valB_x;
-  for (JsonVariant v : array) {
-    valB_x.push_back(v.as<int64_t>());
-  }
-  array = jsonCommitment["RowC"];
-  vector<int64_t> rowC_x;
-  for (JsonVariant v : array) {
-    rowC_x.push_back(v.as<int64_t>());
-  }
-  array = jsonCommitment["ColC"];
-  vector<int64_t> colC_x;
-  for (JsonVariant v : array) {
-    colC_x.push_back(v.as<int64_t>());
-  }
-  array = jsonCommitment["ValC"];
-  vector<int64_t> valC_x;
-  for (JsonVariant v : array) {
-    valC_x.push_back(v.as<int64_t>());
-  }
+  nlohmann::json commitmentJsonData;
+  commitmentFileStream >> commitmentJsonData;
+  commitmentFileStream.close();
+  vector<int64_t> rowA_x = commitmentJsonData["RowA"].get<vector<int64_t>>();
+  vector<int64_t> colA_x = commitmentJsonData["ColA"].get<vector<int64_t>>();
+  vector<int64_t> valA_x = commitmentJsonData["ValA"].get<vector<int64_t>>();
+  vector<int64_t> rowB_x = commitmentJsonData["RowB"].get<vector<int64_t>>();
+  vector<int64_t> colB_x = commitmentJsonData["ColB"].get<vector<int64_t>>();
+  vector<int64_t> valB_x = commitmentJsonData["ValB"].get<vector<int64_t>>();
+  vector<int64_t> rowC_x = commitmentJsonData["RowC"].get<vector<int64_t>>();
+  vector<int64_t> colC_x = commitmentJsonData["ColC"].get<vector<int64_t>>();
+  vector<int64_t> valC_x = commitmentJsonData["ValC"].get<vector<int64_t>>();
   /*******************************  Read Commitment  ******************************/
 
   /*********************************  Read Proof  *********************************/
-  String proof = readFile("/proof.json");
-  DynamicJsonDocument jsonProof(2048);  // Create a DynamicJsonDocument with a buffer size
-  deserializeJson(jsonProof, proof);
-
-  int64_t sigma1 = jsonProof["P1AHP"][0].as<int64_t>();
-  array = jsonProof["P2AHP"];
-  vector<int64_t> w_hat_x;
-  for (JsonVariant v : array) {
-    w_hat_x.push_back(v.as<int64_t>());
+  std::ifstream commitmentFileStream("data/proof.json");
+  if (!commitmentFileStream.is_open()) {
+      std::cerr << "Could not open the file!" << std::endl;
   }
-  array = jsonProof["P3AHP"];
-  vector<int64_t> z_hatA;
-  for (JsonVariant v : array) {
-    z_hatA.push_back(v.as<int64_t>());
-  }
-  array = jsonProof["P4AHP"];
-  vector<int64_t> z_hatB;
-  for (JsonVariant v : array) {
-    z_hatB.push_back(v.as<int64_t>());
-  }
-  array = jsonProof["P5AHP"];
-  vector<int64_t> z_hatC;
-  for (JsonVariant v : array) {
-    z_hatC.push_back(v.as<int64_t>());
-  }
-  array = jsonProof["P6AHP"];
-  vector<int64_t> h_0_x;
-  for (JsonVariant v : array) {
-    h_0_x.push_back(v.as<int64_t>());
-  }
-  array = jsonProof["P7AHP"];
-  vector<int64_t> s_x;
-  for (JsonVariant v : array) {
-    s_x.push_back(v.as<int64_t>());
-  }
-  array = jsonProof["P8AHP"];
-  vector<int64_t> g_1_x;
-  for (JsonVariant v : array) {
-    g_1_x.push_back(v.as<int64_t>());
-  }
-  array = jsonProof["P9AHP"];
-  vector<int64_t> h_1_x;
-  for (JsonVariant v : array) {
-    h_1_x.push_back(v.as<int64_t>());
-  }
-  int64_t sigma2 = jsonProof["P10AHP"][0].as<int64_t>();
-  array = jsonProof["P11AHP"];
-  vector<int64_t> g_2_x;
-  for (JsonVariant v : array) {
-    g_2_x.push_back(v.as<int64_t>());
-  }
-  array = jsonProof["P12AHP"];
-  vector<int64_t> h_2_x;
-  for (JsonVariant v : array) {
-    h_2_x.push_back(v.as<int64_t>());
-  }
-  int64_t sigma3 = jsonProof["P13AHP"][0].as<int64_t>();
-  array = jsonProof["P14AHP"];
-  vector<int64_t> g_3_x;
-  for (JsonVariant v : array) {
-    g_3_x.push_back(v.as<int64_t>());
-  }
-  array = jsonProof["P15AHP"];
-  vector<int64_t> h_3_x;
-  for (JsonVariant v : array) {
-    h_3_x.push_back(v.as<int64_t>());
-  }
-  int64_t y_prime = jsonProof["P16AHP"][0].as<int64_t>();
-  int64_t p_17_AHP = jsonProof["P17AHP"][0].as<int64_t>();
-
-  array = jsonProof["P18AHP"];
-  vector<int64_t> z;
-  for (JsonVariant v : array) {
-    z.push_back(v.as<int64_t>());
-  }
+  nlohmann::json commitmentJsonData;
+  commitmentFileStream >> commitmentJsonData;
+  commitmentFileStream.close();
+  int64_t sigma1 = jsonData["P1AHP"].get<int64_t>();
+  vector<int64_t> w_hat_x = jsonData["P2AHP"].get<vector<int64_t>>();
+  vector<int64_t> z_hatA = jsonData["P3AHP"].get<vector<int64_t>>();
+  vector<int64_t> z_hatB = jsonData["P4AHP"].get<vector<int64_t>>();
+  vector<int64_t> z_hatC = jsonData["P5AHP"].get<vector<int64_t>>();
+  vector<int64_t> h_0_x = jsonData["P6AHP"].get<vector<int64_t>>();
+  vector<int64_t> s_x = jsonData["P87HP"].get<vector<int64_t>>();
+  vector<int64_t> g_1_x = jsonData["P8AHP"].get<vector<int64_t>>();
+  vector<int64_t> h_1_x = jsonData["P9AHP"].get<vector<int64_t>>();
+  int64_t sigma2 = jsonData["P10AHP"].get<int64_t>();
+  vector<int64_t> g_2_x = jsonData["P11AHP"].get<vector<int64_t>>();
+  vector<int64_t> h_2_x = jsonData["P12AHP"].get<vector<int64_t>>();
+  int64_t sigma3 = jsonData["P13AHP"].get<int64_t>();
+  vector<int64_t> g_3_x = jsonData["P14AHP"].get<vector<int64_t>>();
+  vector<int64_t> h_3_x = jsonData["P15AHP"].get<vector<int64_t>>();
+  vector<int64_t> y_prime = jsonData["P15AHP"].get<vector<int64_t>>();
+  string curve = jsonData["curve"];
+  string protocol = jsonData["protocol"];
   /*********************************  Read Proof  *********************************/
-  Serial.print("n: ");
-  Serial.println(n);
-  Serial.print("m: ");
-  Serial.println(m);
-  Serial.print("g: ");
-  Serial.println(g);
+  cout << "n: " << n << endl;
+  cout << "m: " << m << endl;
+  cout << "g: " << g << endl;
 
   int64_t y, g_m;
   vector<int64_t> K;
@@ -318,12 +231,10 @@ void fidesinnova::verifier(int64_t g, int64_t p) {
   Polynomial::printPolynomial(vK_x, "vK(x)");
 
   int64_t vH_beta1 = Polynomial::evaluatePolynomial(vH_x, beta1, p);
-  Serial.print("vH(beta1) = ");
-  Serial.println(vH_beta1);
+  cout << "vH(beta1) = " << vH_beta1 << endl;
 
   int64_t vH_beta2 = Polynomial::evaluatePolynomial(vH_x, beta2, p);
-  Serial.print("vH(beta2) = ");
-  Serial.println(vH_beta2);
+  cout << "vH(beta2) = " << vH_beta2 << endl;
 
   vector<int64_t> poly_beta1 = { beta1 };
   vector<int64_t> poly_beta2 = { beta2 };
@@ -370,8 +281,7 @@ void fidesinnova::verifier(int64_t g, int64_t p) {
   //     t = i;
   //   }
   // }
-  Serial.print("t = ");
-  Serial.println(t);
+  cout << "t = " << t << endl;
 
   vector<int64_t> zero_to_t_for_H;
   vector<int64_t> zero_to_t_for_z;
@@ -404,42 +314,32 @@ void fidesinnova::verifier(int64_t g, int64_t p) {
   Polynomial::printPolynomial(a_x, "a_x");
   Polynomial::printPolynomial(b_x, "b_x");
   Polynomial::printPolynomial(g_3_x, "g_3_x");
-  Serial.print("beta3 = ");
-  Serial.println(beta3);
-  Serial.print("sigma3 = ");
-  Serial.println(sigma3);
+  cout << "beta3 = " << beta3 << endl;
+  cout << "sigma3 = " << sigma3 << endl;
 
   int64_t eq11 = (Polynomial::evaluatePolynomial(h_3_x, beta3, p) * Polynomial::evaluatePolynomial(vK_x, beta3, p)) % p;
   int64_t eq12 = (Polynomial::evaluatePolynomial(a_x, beta3, p) - ((Polynomial::evaluatePolynomial(b_x, beta3, p) * (beta3 * Polynomial::evaluatePolynomial(g_3_x, beta3, p) + (sigma3 * Polynomial::pInverse(m, p)) % p)))) % p;
   eq12 %= p;
   if (eq12 < 0) eq12 += p;
-  Serial.print(eq11);
-  Serial.print(" = ");
-  Serial.println(eq12);
+  cout << eq11 << " = " << eq12 << endl;
 
   int64_t eq21 = (Polynomial::evaluatePolynomial(r_alpha_x, beta2, p) * sigma3) % p;
   int64_t eq22 = ((Polynomial::evaluatePolynomial(h_2_x, beta2, p) * Polynomial::evaluatePolynomial(vH_x, beta2, p)) % p + (beta2 * Polynomial::evaluatePolynomial(g_2_x, beta2, p)) % p + (sigma2 * Polynomial::pInverse(n, p)) % p) % p;
   eq12 %= p;
   if (eq12 < 0) eq12 += p;
-  Serial.print(eq21);
-  Serial.print(" = ");
-  Serial.println(eq22);
+  cout << eq21 << " = " << eq22 << endl;
 
   int64_t eq31 = (Polynomial::evaluatePolynomial(s_x, beta1, p) + Polynomial::evaluatePolynomial(r_alpha_x, beta1, p) * Polynomial::evaluatePolynomial(Sum_M_eta_M_z_hat_M_x, beta1, p) - sigma2 * Polynomial::evaluatePolynomial(z_hat_x, beta1, p));
   int64_t eq32 = (Polynomial::evaluatePolynomial(h_1_x, beta1, p) * Polynomial::evaluatePolynomial(vH_x, beta1, p) + beta1 * Polynomial::evaluatePolynomial(g_1_x, beta1, p) + sigma1 * Polynomial::pInverse(n, p)) % p;
   eq31 %= p;
   if (eq31 < 0) eq31 += p;
-  Serial.print(eq31);
-  Serial.print(" = ");
-  Serial.println(eq32);
+  cout << eq31 << " = " << eq32 << endl;
 
   int64_t eq41 = (Polynomial::evaluatePolynomial(z_hatA, beta1, p) * Polynomial::evaluatePolynomial(z_hatB, beta1, p) - Polynomial::evaluatePolynomial(z_hatC, beta1, p));
   int64_t eq42 = (Polynomial::evaluatePolynomial(h_0_x, beta1, p) * Polynomial::evaluatePolynomial(vH_x, beta1, p)) % p;
   eq41 %= p;
   if (eq41 < 0) eq41 += p;
-  Serial.print(eq41);
-  Serial.print(" = ");
-  Serial.println(eq42);
+  cout << eq41 << " = " << eq42 << endl;
 
   int64_t eq51Buf = (ComP_AHP_x - (g * y_prime));
   eq51Buf %= p;
@@ -453,17 +353,14 @@ void fidesinnova::verifier(int64_t g, int64_t p) {
     eq52BufP2 += p;
   }
   int64_t eq52 = Polynomial::e_func(p_17_AHP, eq52BufP2, g, p);
-  Serial.print("eq51 = ");
-  Serial.println(eq51);
-  Serial.print("eq52 = ");
-  Serial.println(eq52);
+  cout << eq51 << " = " << eq52 << endl;
 
   if (eq11 == eq12 && eq21 == eq22 && eq31 == eq32 && eq41 == eq42 && eq51 == eq52) {
     verify = true;
   }
 
-  Serial.println("");
+  cout << endl;
   if (verify) {
-    Serial.println("verify!!!!!!!!!!");
+    cout << "verify!!!!!!!!!!" << endl;
   }
 }

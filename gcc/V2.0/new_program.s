@@ -22,11 +22,11 @@ main:
 	li s3, 5
 	li s4, 26
 jal store_register_instances
-mul s2, s2, 5
+mul s2, s2, s3
 jal store_register_instances
 addi s2, s2, 11
 jal store_register_instances
-mul s2, s2, 26
+mul s2, s2, s4
 jal store_register_instances
 addi s2, s2, 0
 jal store_register_instances
@@ -128,6 +128,7 @@ jal store_register_instances
       sw x30, x30_array(a0)          # Store x30 in x30_array at index given by a0
       sw x31, x31_array(a0)          # Store x31 in x31_array at index given by a0
       
+      addi a0, a0, 4
       sw a0, last_space_instance     # Save the original value of last instance
 
       # Restore original value of a0 from saved location

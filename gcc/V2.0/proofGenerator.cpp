@@ -16,178 +16,159 @@
     "B": 64-bit Integer Array<64-bit Integer Array>
   }
 
+  
+  program_param.json
+  {
+    "Class":  32-bit Integer,
+    "A": 64-bit Integer Array,
+    "B": 64-bit Integer Array<64-bit Integer Array>
+  }
+
 */
 
 #include "fidesinnova.h"
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include "json.hpp"
+using ordered_json = nlohmann::ordered_json;
+#include <regex>
 
-void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
-  //It's duplicate codes as the commitment
-  String setup = readFile("/setup.json");
-  DynamicJsonDocument jsonSetup(2048);  // Create a DynamicJsonDocument with a buffer size
-  deserializeJson(jsonSetup, setup);
-  vector<int64_t> ck;
-  JsonArray array = jsonSetup["ck"];
-  for (JsonVariant v : array) {
-    ck.push_back(v.as<int64_t>());
+using namespace std;
+
+int64_t b = 2;
+
+// Declare the arrays from assembly as external variables
+extern "C" int32_t x0_array[4];
+extern "C" int32_t x1_array[4];
+extern "C" int32_t x2_array[4];
+extern "C" int32_t x3_array[4];
+extern "C" int32_t x4_array[4];
+extern "C" int32_t x5_array[4];
+extern "C" int32_t x6_array[4];
+extern "C" int32_t x7_array[4];
+extern "C" int32_t x8_array[4];
+extern "C" int32_t x9_array[4];
+extern "C" int32_t x10_array[4];
+extern "C" int32_t x11_array[4];
+extern "C" int32_t x12_array[4];
+extern "C" int32_t x13_array[4];
+extern "C" int32_t x14_array[4];
+extern "C" int32_t x15_array[4];
+extern "C" int32_t x16_array[4];
+extern "C" int32_t x17_array[4];
+extern "C" int32_t x18_array[4];
+extern "C" int32_t x19_array[4];
+extern "C" int32_t x20_array[4];
+extern "C" int32_t x21_array[4];
+extern "C" int32_t x22_array[4];
+extern "C" int32_t x23_array[4];
+extern "C" int32_t x24_array[4];
+extern "C" int32_t x25_array[4];
+extern "C" int32_t x26_array[4];
+extern "C" int32_t x27_array[4];
+extern "C" int32_t x28_array[4];
+extern "C" int32_t x29_array[4];
+extern "C" int32_t x30_array[4];
+extern "C" int32_t x31_array[4];
+
+
+void proofGenerator() {
+  std::ifstream setupFileStream("data/setup.json");
+  if (!setupFileStream.is_open()) {
+      std::cerr << "Could not open the file!" << std::endl;
   }
-  int64_t vk = jsonSetup["vk"][0].as<int64_t>();
+  nlohmann::json setupJsonData;
+  setupFileStream >> setupJsonData;
+  setupFileStream.close();
+  int64_t Class = setupJsonData["Class"].get<int64_t>();
+  vector<int64_t> ck = setupJsonData["ck"].get<vector<int64_t>>();
+  int64_t vk = setupJsonData["vk"].get<int64_t>();
 
-  const char* defaultInstructions =
-    "li R1, 4\n"
-    "mul R1, R1, 5\n"
-    "addi R1, R1, 11\n"
-    "mul R1, R1, 26\n";
-
-  vector<String> instructions;
-  // Convert the raw instructions into separate lines
-  String instruction(defaultInstructions);
-  int64_t startIndex = 0;
-  int64_t endIndex;
-  // Split the string based on newline character
-  while ((endIndex = instruction.indexOf('\n', startIndex)) != -1) {
-    instructions.push_back(instruction.substring(startIndex, endIndex));
-    startIndex = endIndex + 1;
+  std::ifstream commitmentFileStream("data/program_commitment.json");
+  if (!commitmentFileStream.is_open()) {
+      std::cerr << "Could not open the file!" << std::endl;
   }
-  // Add the last instruction if there's no newline at the end
-  if (startIndex < instruction.length()) {
-    instructions.push_back(instruction.substring(startIndex));
+  nlohmann::json commitmentJsonData;
+  commitmentFileStream >> commitmentJsonData;
+  commitmentFileStream.close();
+  vector<int64_t> rowA_x = commitmentJsonData["RowA"].get<vector<int64_t>>();
+  vector<int64_t> colA_x = commitmentJsonData["ColA"].get<vector<int64_t>>();
+  vector<int64_t> valA_x = commitmentJsonData["ValA"].get<vector<int64_t>>();
+  vector<int64_t> rowB_x = commitmentJsonData["RowB"].get<vector<int64_t>>();
+  vector<int64_t> colB_x = commitmentJsonData["ColB"].get<vector<int64_t>>();
+  vector<int64_t> valB_x = commitmentJsonData["ValB"].get<vector<int64_t>>();
+  vector<int64_t> rowC_x = commitmentJsonData["RowC"].get<vector<int64_t>>();
+  vector<int64_t> colC_x = commitmentJsonData["ColC"].get<vector<int64_t>>();
+  vector<int64_t> valC_x = commitmentJsonData["ValC"].get<vector<int64_t>>();
+
+  
+
+  std::ifstream paramFileStream("data/program_param.json");
+  if (!paramFileStream.is_open()) {
+      std::cerr << "Could not open the file!" << std::endl;
   }
+  nlohmann::json paramJsonData;
+  paramFileStream >> paramJsonData;
+  paramFileStream.close();
+  vector<vector<int64_t>> nonZeroA = paramJsonData["A"].get<vector<vector<int64_t>>>();
+  vector<vector<int64_t>> nonZeroB = paramJsonData["B"].get<vector<vector<int64_t>>>();
 
-  // Number of gates and inputs
-  int64_t n_g = 0;
-  int64_t n_i = 0;
+  std::ifstream classFileStream("data/class.json");
+  if (!classFileStream.is_open()) {
+      std::cerr << "Could not open the file!" << std::endl;
+  }
+  nlohmann::json classJsonData;
+  classFileStream >> classJsonData;
+  classFileStream.close();
+  int64_t n_i, n_g, m, n, p, g;
+  for (const auto& item : classJsonData) {
+    if (item["Class"] == Class) {
+      // Number of inputs, gates, m, n, p, and g
+      n_i = item["n_i"].get<int64_t>();
+      n_g = item["n_g"].get<int64_t>();
+      m = item["m"].get<int64_t>();
+      n = item["n"].get<int64_t>();
+      p = item["p"].get<int64_t>();
+      g = item["g"].get<int64_t>();
 
-  // Parse instructions to determine n_g and n_i
-  int64_t inputs[32] = { 0 };
-  for (const auto& inst : instructions) {
-    // Tokenize the instruction manually
-    int64_t firstSpace = inst.indexOf(' ');
-    String operation = inst.substring(0, firstSpace);   // Extract the operation
-    String remainder = inst.substring(firstSpace + 1);  // Extract the remainder (registers and values)
-
-    int64_t secondSpace = remainder.indexOf(' ');
-    String rStr = remainder.substring(0, secondSpace);   // Extract first register or value
-    String rest = remainder.substring(secondSpace + 1);  // The rest of the instruction
-
-    if (operation == "li") {
-      n_i++;
-      String xStr = rest;  // Only one value left for li
-
-      int64_t R = rStr.substring(1).toInt();  // Get the register number
-      int64_t X = xStr.toInt();               // Get the immediate value
-
-      inputs[R] = X;  // Store the immediate value in the corresponding register
-    } else {
-      n_g++;
-
-      int64_t thirdSpace = rest.indexOf(' ');
-      String xStr = rest.substring(0, thirdSpace);   // Extract the second value (xStr)
-      String yStr = rest.substring(thirdSpace + 1);  // Extract the third value (yStr)
-
-      xStr = Polynomial::trim(Polynomial::removeCommas(xStr));
-      yStr = Polynomial::trim(Polynomial::removeCommas(yStr));
+      break; // Stop after finding the first matching "Class"
     }
   }
-  Serial.print("Number of immediate instructions (n_i): ");
-  Serial.println(n_i);
-  Serial.print("Number of general instructions (n_g): ");
-  Serial.println(n_g);
 
-  // Matrix order
-  int64_t n = n_g + n_i + 1;
-  int64_t m, t;
-  Serial.print("Matrix order: ");
-  Serial.println(n);
+  int64_t t = n_i + 1;
 
-  t = n_i + 1;
-  m = (((Polynomial::power(n, 2, p) - n) / 2) - ((Polynomial::power(t, 2, p) - t) / 2)) % p;
 
   // Initialize matrices A, B, C
   vector<vector<int64_t>> A(n, vector<int64_t>(n, 0ll));
   vector<vector<int64_t>> B(n, vector<int64_t>(n, 0ll));
   vector<vector<int64_t>> C(n, vector<int64_t>(n, 0ll));
-  // Fill matrices based on the instructions
-  int64_t gateIndex = 0;
-  int64_t z[n + 1];
-  z[0] = 1;
 
-  for (int64_t i = 0; i < n - 1; i++) {
-    String inst = instructions[i];
-    // Tokenize the instruction
-    int64_t firstSpace = inst.indexOf(' ');
-    String operation = inst.substring(0, firstSpace);
-    String remainder = inst.substring(firstSpace + 1);
-
-    int64_t secondSpace = remainder.indexOf(' ');
-    String rStr = remainder.substring(0, secondSpace);
-    String rest = remainder.substring(secondSpace + 1);
-
-    int64_t R = rStr.substring(1).toInt();  // Extract register number
-
-    String xStr, yStr;
-    if (operation == "li") {
-      xStr = rest;
-    } else {
-      int64_t thirdSpace = rest.indexOf(' ');
-      xStr = rest.substring(0, thirdSpace);
-      yStr = rest.substring(thirdSpace + 1);
-    }
-
-    // Remove commas and trim spaces
-    xStr = Polynomial::trim(Polynomial::removeCommas(xStr));
-    yStr = Polynomial::trim(Polynomial::removeCommas(yStr));
-
-    int64_t X, Y;
-
-    if (operation == "li") {
-      X = xStr.toInt();
-      z[i + 1] = X % p;
-    } else {
-      gateIndex++;
-      int64_t newI = gateIndex + n_i;
-      C[newI][newI] = 1;
-
-      if (operation == "addi") {
-        A[n_i + newI - 1][0] = 1;
-
-        if (isDigit(xStr[0])) {
-          X = xStr.toInt();
-          z[i + 1] = (z[i] + X) % p;
-          B[n_i + newI - 1][0] = X;
-          B[n_i + newI - 1][newI - 1] = 1;
-        } else if (isDigit(yStr[0])) {
-          Y = yStr.toInt();
-          z[i + 1] = (z[i] + Y) % p;
-          B[n_i + newI - 1][0] = Y;
-          B[n_i + newI - 1][newI - 1] = 1;
-        }
-      } else if (operation == "mul") {
-        if (isDigit(xStr[0])) {
-          X = xStr.toInt();
-          z[i + 1] = (z[i] * X) % p;
-          A[n_i + newI - 1][newI - 1] = X;
-          B[n_i + newI - 1][newI - 1] = 1;
-        } else if (isDigit(yStr[0])) {
-          Y = yStr.toInt();
-          z[i + 1] = (z[i] * Y) % p;
-          A[n_i + newI - 1][newI - 1] = 1;
-          B[n_i + newI - 1][0] = Y;
-        }
-      }
-    }
+  for (const auto& entry : nonZeroA) {
+    int64_t row = entry[0];
+    int64_t col = entry[1];
+    
+    // Set the value in the matrix
+    A[row][col] = 1;
   }
-  Serial.print("z = [");
-  for (int64_t i = 0; i < n; i++) {
-    Serial.print(z[i]);
-    if (n - i > 1) {
-      Serial.print(", ");
-    }
+  for (const auto& entry : nonZeroB) {
+    int64_t row = entry[0];
+    int64_t col = entry[1];
+    int64_t val = entry[2];
+    
+    // Set the value in the matrix
+    B[row][col] = val;
   }
-  Serial.println("]");
-
+  for(int64_t i = n; i > n - n_g; i--) {
+    // Set the value in the matrix
+    C[i][i] = 1;
+  }
   Polynomial::printMatrix(A, "A");
   Polynomial::printMatrix(B, "B");
   Polynomial::printMatrix(C, "C");
+
+  vector<int64_t> z;
 
   vector<int64_t> H;
   int64_t w, g_n;
@@ -198,13 +179,12 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
   for (int64_t i = 1; i < n; i++) {
     H.push_back(Polynomial::power(w, i, p));
   }
-  Serial.print("H[n]: ");
+  cout << "H[n]: ";
   for (int64_t i = 0; i < n; i++) {
-    Serial.print(H[i]);
-    Serial.print(" ");
+    cout << H[i] << " ";
   }
-  Serial.println("");
-
+  cout << endl;
+  
   int64_t y, g_m;
 
   vector<int64_t> K;
@@ -214,12 +194,11 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
   for (int64_t i = 1; i < m; i++) {
     K.push_back(Polynomial::power(y, i, p));
   }
-  Serial.print("K[m]: ");
+  cout << "K[m]: ";
   for (int64_t i = 0; i < m; i++) {
-    Serial.print(K[i]);
-    Serial.print(" ");
+    cout << K[i] << " ";
   }
-  Serial.println("");
+  cout << endl;
 
 
   vector<vector<int64_t>> Az(n, vector<int64_t>(1, 0));
@@ -235,101 +214,83 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
       }
     }
   }
-  Serial.print("Matrice Az under pulo ");
-  Serial.print(p);
-  Serial.print(" is: ");
+  cout << "Matrice Az under pulo " << p << " is: ";
   for (int64_t i = 0; i < n; i++) {
-    Serial.print(Az[i][0]);
-    Serial.print(" ");
+    cout << Az[i][0] << " ";
   }
-  Serial.println("");
+  cout << endl;
 
-  Serial.print("Matrice Bz under pulo ");
-  Serial.print(p);
-  Serial.print(" is: ");
+  cout << "Matrice Bz under pulo " << p << " is: ";
   for (int64_t i = 0; i < n; i++) {
-    Serial.print(Bz[i][0]);
-    Serial.print(" ");
+    cout << Bz[i][0] << " ";
   }
-  Serial.println("");
+  cout << endl;
 
-  Serial.print("Matrice Cz under pulo ");
-  Serial.print(p);
-  Serial.print(" is: ");
+  cout << "Matrice Cz under pulo " << p << " is: ";
   for (int64_t i = 0; i < n; i++) {
-    Serial.print(Cz[i][0]);
-    Serial.print(" ");
+    cout << Cz[i][0] << " ";
   }
-  Serial.println("");
+  cout << endl;
 
 
 
   vector<vector<int64_t>> zA(2);
-  Serial.println("zA(x):");
-  // for (int64_t i = 0; i < n + b; i++) {
-  for (int64_t i = 0; i < n; i++) {
+  cout << "zA(x):" << endl;
+  for (int64_t i = 0; i < n + b; i++) {
+  // for (int64_t i = 0; i < n; i++) {
     if (i < n) {
       zA[0].push_back(H[i]);
       zA[1].push_back(Az[i][0]);
     } else {
-      // zA[0].push_back(Polynomial::generateRandomNumber(H, p - n));
-      // zA[1].push_back(Polynomial::generateRandomNumber(H, p - n));
+      zA[0].push_back(Polynomial::generateRandomNumber(H, p - n));
+      zA[1].push_back(Polynomial::generateRandomNumber(H, p - n));
     }
-    Serial.print("zA(");
-    Serial.print(zA[0][i]);
-    Serial.print(")= ");
-    Serial.println(zA[1][i]);
+    cout << "zA(" << zA[0][i] << ")= " << zA[1][i];
   }
-  zA[0].push_back(150);
-  zA[1].push_back(5);
-  zA[0].push_back(80);
-  zA[1].push_back(47);
+  // zA[0].push_back(150);
+  // zA[1].push_back(5);
+  // zA[0].push_back(80);
+  // zA[1].push_back(47);
 
   vector<int64_t> z_hatA = Polynomial::setupLagrangePolynomial(zA[0], zA[1], p, "z_hatA(x)");
 
 
   vector<vector<int64_t>> zB(2);
-  Serial.println("zB(x):");
-  // for (int64_t i = 0; i < n + b; i++) {
-  for (int64_t i = 0; i < n; i++) {
+  cout << "zB(x):" << endl;
+  for (int64_t i = 0; i < n + b; i++) {
+  // for (int64_t i = 0; i < n; i++) {
     if (i < n) {
       zB[0].push_back(H[i]);
       zB[1].push_back(Bz[i][0]);
     } else {
-      // zB[0].push_back(zA[0][i]);
-      // zB[1].push_back(Polynomial::generateRandomNumber(H, p - n));
+      zB[0].push_back(zA[0][i]);
+      zB[1].push_back(Polynomial::generateRandomNumber(H, p - n));
     }
-    Serial.print("zB(");
-    Serial.print(zB[0][i]);
-    Serial.print(")= ");
-    Serial.println(zB[1][i]);
+    cout << "zB(" << zB[0][i] << ")= " << zB[1][i] << endl;
   }
-  zB[0].push_back(150);
-  zB[1].push_back(15);
-  zB[0].push_back(80);
-  zB[1].push_back(170);
+  // zB[0].push_back(150);
+  // zB[1].push_back(15);
+  // zB[0].push_back(80);
+  // zB[1].push_back(170);
   vector<int64_t> z_hatB = Polynomial::setupLagrangePolynomial(zB[0], zB[1], p, "z_hatB(x)");
 
   vector<vector<int64_t>> zC(2);
-  Serial.println("zC(x):");
-  // for (int64_t i = 0; i < n + b; i++) {
-  for (int64_t i = 0; i < n; i++) {
+  cout << "zC(x):";
+  for (int64_t i = 0; i < n + b; i++) {
+  // for (int64_t i = 0; i < n; i++) {
     if (i < n) {
       zC[0].push_back(H[i]);
       zC[1].push_back(Cz[i][0]);
     } else {
-      // zC[0].push_back(zA[0][i]);
-      // zC[1].push_back(Polynomial::generateRandomNumber(H, p - n));
+      zC[0].push_back(zA[0][i]);
+      zC[1].push_back(Polynomial::generateRandomNumber(H, p - n));
     }
-    Serial.print("zC(");
-    Serial.print(zC[0][i]);
-    Serial.print(")= ");
-    Serial.println(zC[1][i]);
+    cout << "zC(" << zC[0][i] << ")= " << zC[1][i] << endl;
   }
-  zC[0].push_back(150);
-  zC[1].push_back(1);
-  zC[0].push_back(80);
-  zC[1].push_back(100);
+  // zC[0].push_back(150);
+  // zC[1].push_back(1);
+  // zC[0].push_back(80);
+  // zC[1].push_back(100);
   vector<int64_t> z_hatC = Polynomial::setupLagrangePolynomial(zC[0], zC[1], p, "z_hatC(x)");
 
 
@@ -347,7 +308,7 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
     t_to_n_for_H.push_back(H[i + t]);
     t_to_n_for_z.push_back(z[i + t]);
   }
-  Serial.println("w_bar(h):");
+  cout << "w_bar(h):" << endl;
   vector<int64_t> w_bar(n - t + b);
   vector<int64_t> w_bar_numerator(n - t, 1);
   vector<int64_t> w_bar_denominator(n - t, 1);
@@ -370,33 +331,24 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
     if (w_bar[i] < 0) {
       w_bar[i] += p;
     }
-    Serial.print("w_bar(");
-    Serial.print(t_to_n_for_H[i]);
-    Serial.print(")= ");
-    Serial.println(w_bar[i]);
+    cout << "w_bar(" << t_to_n_for_H[i] << ")= " << w_bar[i] << endl;
   }
 
-  Serial.println("w_hat(x):");
+  cout << "w_hat(x):" << endl;
   vector<vector<int64_t>> w_hat(2);
   for (int64_t i = 0; i < n - t; i++) {
     w_hat[0].push_back(t_to_n_for_H[i]);
     w_hat[1].push_back(w_bar[i]);
-    Serial.print("w_hat(");
-    Serial.print(w_hat[0][i]);
-    Serial.print(")= ");
-    Serial.println(w_hat[1][i]);
+    cout << "w_hat(" << w_hat[0][i] << ")= " << w_hat[1][i] << endl;
   }
-  w_hat[0].push_back(150);
-  w_hat[1].push_back(42);
-  w_hat[0].push_back(80);
-  w_hat[1].push_back(180);
+  // w_hat[0].push_back(150);
+  // w_hat[1].push_back(42);
+  // w_hat[0].push_back(80);
+  // w_hat[1].push_back(180);
   for (int64_t i = n; i < n + b; i++) {
-    // w_hat[0].push_back(zA[0][i]);
-    // w_hat[1].push_back(Polynomial::generateRandomNumber(H, p));
-    Serial.print("w_hat(");
-    Serial.print(w_hat[0][i - b]);
-    Serial.print(")= ");
-    Serial.println(w_hat[1][i - b]);
+    w_hat[0].push_back(zA[0][i]);
+    w_hat[1].push_back(Polynomial::generateRandomNumber(H, p));
+    cout << "w_hat(" << w_hat[0][i - b] << ")= " << w_hat[1][i - b] << endl;
   }
   vector<int64_t> w_hat_x = Polynomial::setupLagrangePolynomial(w_hat[0], w_hat[1], p, "w_hat(x)");
 
@@ -431,8 +383,7 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
   Polynomial::printPolynomial(s_x, "s(x)");
 
   int64_t sigma1 = Polynomial::sumOfEvaluations(s_x, H, p);
-  Serial.print("sigma1 = ");
-  Serial.println(sigma1);
+  cout << "sigma1 = " << sigma1 << endl;
 
   int64_t alpha = 10;
   int64_t beta1 = 22;  // int64_t beta1 = hashAndExtractLower4Bytes(s_x[8], p);
@@ -441,18 +392,12 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
   int64_t etaB = 30;
   int64_t etaC = 100;
 
-  Serial.print("alpha = ");
-  Serial.println(alpha);
-  Serial.print("beta1 = ");
-  Serial.println(beta1);
-  Serial.print("beta2 = ");
-  Serial.println(beta2);
-  Serial.print("etaA = ");
-  Serial.println(etaA);
-  Serial.print("etaB = ");
-  Serial.println(etaB);
-  Serial.print("etaC = ");
-  Serial.println(etaC);
+  cout << "alpha = " << alpha << endl;
+  cout << "beta1 = " << beta1 << endl;
+  cout << "beta2 = " << beta2 << endl;
+  cout << "etaA = " << etaA << endl;
+  cout << "etaB = " << etaB << endl;
+  cout << "etaC = " << etaC << endl;
 
 
   vector<int64_t> etaA_z_hatA_x = Polynomial::multiplyPolynomialByNumber(z_hatA, etaA, p);
@@ -476,27 +421,6 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
   vector<int64_t> z_hat_x = Polynomial::addPolynomials(Polynomial::multiplyPolynomials(w_hat_x, v_H, p), polyX_HAT_H, p);
   Polynomial::printPolynomial(z_hat_x, "z_hat(x)");
 
-  vector<vector<int64_t>> nonZeroRowsA = Polynomial::getNonZeroRows(A);
-  vector<vector<int64_t>> rowA = Polynomial::createMapping(K, H, nonZeroRowsA);
-  rowA[1].push_back(1);
-  rowA[1].push_back(135);
-  rowA[1].push_back(125);
-  rowA[1].push_back(59);
-  rowA[1].push_back(42);
-  rowA[1].push_back(1);
-  Polynomial::printMapping(rowA, "row_A");
-  vector<vector<int64_t>> nonZeroColsA = Polynomial::getNonZeroCols(A);
-  vector<vector<int64_t>> colA = Polynomial::createMapping(K, H, nonZeroColsA);
-  colA[1].push_back(42);
-  colA[1].push_back(1);
-  colA[1].push_back(135);
-  colA[1].push_back(125);
-  colA[1].push_back(59);
-  colA[1].push_back(42);
-  Polynomial::printMapping(colA, "col_A");
-  vector<vector<int64_t>> valA = Polynomial::valMapping(K, H, nonZeroRowsA, nonZeroColsA, p);
-  Polynomial::printMapping(valA, "val_A");
-
   vector<int64_t> A_hat(2);
   for (int64_t i = 0; i < nonZeroRowsA[0].size(); i++) {
     vector<int64_t> buff_n = Polynomial::calculatePolynomial_r_alpha_x(rowA[1][i], H.size(), p);
@@ -515,26 +439,6 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
     }
   }
   Polynomial::printPolynomial(A_hat, "A_hat(x)");
-  Serial.println("");
-
-  vector<vector<int64_t>> nonZeroRowsB = Polynomial::getNonZeroRows(B);
-  vector<vector<int64_t>> rowB = Polynomial::createMapping(K, H, nonZeroRowsB);
-  rowB[1].push_back(59);
-  rowB[1].push_back(1);
-  rowB[1].push_back(42);
-  rowB[1].push_back(135);
-  rowB[1].push_back(59);
-  Polynomial::printMapping(rowB, "row_B");
-  vector<vector<int64_t>> nonZeroColsB = Polynomial::getNonZeroCols(B);
-  vector<vector<int64_t>> colB = Polynomial::createMapping(K, H, nonZeroColsB);
-  colB[1].push_back(59);
-  colB[1].push_back(42);
-  colB[1].push_back(125);
-  colB[1].push_back(1);
-  colB[1].push_back(135);
-  Polynomial::printMapping(colB, "col_B");
-  vector<vector<int64_t>> valB = Polynomial::valMapping(K, H, nonZeroRowsB, nonZeroColsB, p);
-  Polynomial::printMapping(valB, "val_B");
 
   vector<int64_t> B_hat(2);
   for (int64_t i = 0; i < nonZeroRowsB[0].size(); i++) {
@@ -554,30 +458,7 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
     }
   }
   Polynomial::printPolynomial(B_hat, "B_hat(x)");
-  Serial.println("");
-
-
-  vector<vector<int64_t>> nonZeroRowsC = Polynomial::getNonZeroRows(C);
-  vector<vector<int64_t>> rowC = Polynomial::createMapping(K, H, nonZeroRowsC);
-  rowC[1].push_back(1);
-  rowC[1].push_back(59);
-  rowC[1].push_back(125);
-  rowC[1].push_back(1);
-  rowC[1].push_back(135);
-  rowC[1].push_back(42);
-  Polynomial::printMapping(rowC, "row_C");
-  vector<vector<int64_t>> nonZeroColsC = Polynomial::getNonZeroCols(C);
-  vector<vector<int64_t>> colC = Polynomial::createMapping(K, H, nonZeroColsC);
-  colC[1].push_back(125);
-  colC[1].push_back(59);
-  colC[1].push_back(1);
-  colC[1].push_back(1);
-  colC[1].push_back(42);
-  colC[1].push_back(59);
-  Polynomial::printMapping(colC, "col_C");
-  vector<vector<int64_t>> valC = Polynomial::valMapping(K, H, nonZeroRowsC, nonZeroColsC, p);
-  Polynomial::printMapping(valC, "val_C");
-
+  
   vector<int64_t> C_hat(2);
   for (int64_t i = 0; i < nonZeroRowsC[0].size(); i++) {
     vector<int64_t> buff_n = Polynomial::calculatePolynomial_r_alpha_x(rowC[1][i], H.size(), p);
@@ -596,7 +477,6 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
     }
   }
   Polynomial::printPolynomial(C_hat, "C_hat(x)");
-  Serial.println("");
 
 /*
 // Check for overflow risk for etaA, etaB and etaC and ensure p is applied correctly
@@ -634,8 +514,7 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
 
   // Calculate sigma2 using the evaluations of the polynomials A_hat, B_hat, and C_hat and print the result of sigma2
   int64_t sigma2 = ((etaA * Polynomial::evaluatePolynomial(A_hat, beta1, p)) % p + (etaB * Polynomial::evaluatePolynomial(B_hat, beta1, p)) % p + (etaC * Polynomial::evaluatePolynomial(C_hat, beta1, p)) % p) % p;
-  Serial.print("sigma2 = ");
-  Serial.println(sigma2);
+  cout << "sigma2 = " << sigma2 << endl;
 
   // Initialize vectors for the pified polynomial results with zeros
   vector<int64_t> A_hat_M_hat(H.size(), 0);
@@ -717,26 +596,24 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
   Polynomial::printPolynomial(g_2_x, "g2(x)");
 
   // Generate Lagrange polynomials for row, column, and value vectors for matrices A and B
-  vector<int64_t> rowA_x = Polynomial::setupLagrangePolynomial(rowA[0], rowA[1], p, "rowA(x)");
-  vector<int64_t> colA_x = Polynomial::setupLagrangePolynomial(colA[0], colA[1], p, "colA(x)");
-  vector<int64_t> valA_x = Polynomial::setupLagrangePolynomial(valA[0], valA[1], p, "valA(x)");
+  // vector<int64_t> rowA_x = Polynomial::setupLagrangePolynomial(rowA[0], rowA[1], p, "rowA(x)");
+  // vector<int64_t> colA_x = Polynomial::setupLagrangePolynomial(colA[0], colA[1], p, "colA(x)");
+  // vector<int64_t> valA_x = Polynomial::setupLagrangePolynomial(valA[0], valA[1], p, "valA(x)");
 
-  vector<int64_t> rowB_x = Polynomial::setupLagrangePolynomial(rowB[0], rowB[1], p, "rowB(x)");
-  vector<int64_t> colB_x = Polynomial::setupLagrangePolynomial(colB[0], colB[1], p, "colB(x)");
-  vector<int64_t> valB_x = Polynomial::setupLagrangePolynomial(valB[0], valB[1], p, "valB(x)");
+  // vector<int64_t> rowB_x = Polynomial::setupLagrangePolynomial(rowB[0], rowB[1], p, "rowB(x)");
+  // vector<int64_t> colB_x = Polynomial::setupLagrangePolynomial(colB[0], colB[1], p, "colB(x)");
+  // vector<int64_t> valB_x = Polynomial::setupLagrangePolynomial(valB[0], valB[1], p, "valB(x)");
 
-  vector<int64_t> rowC_x = Polynomial::setupLagrangePolynomial(rowC[0], rowC[1], p, "rowC(x)");
-  vector<int64_t> colC_x = Polynomial::setupLagrangePolynomial(colC[0], colC[1], p, "colC(x)");
-  vector<int64_t> valC_x = Polynomial::setupLagrangePolynomial(valC[0], valC[1], p, "valC(x)");
+  // vector<int64_t> rowC_x = Polynomial::setupLagrangePolynomial(rowC[0], rowC[1], p, "rowC(x)");
+  // vector<int64_t> colC_x = Polynomial::setupLagrangePolynomial(colC[0], colC[1], p, "colC(x)");
+  // vector<int64_t> valC_x = Polynomial::setupLagrangePolynomial(valC[0], valC[1], p, "valC(x)");
 
   // Evaluate polynomial vH at beta1 and beta2
   int64_t vH_beta1 = Polynomial::evaluatePolynomial(vH_x, beta1, p);
-  Serial.print("vH(beta1) = ");
-  Serial.println(vH_beta1);
+  cout << "vH(beta1) = " << vH_beta1 << endl;
 
   int64_t vH_beta2 = Polynomial::evaluatePolynomial(vH_x, beta2, p);
-  Serial.print("vH(beta2) = ");
-  Serial.println(vH_beta2);
+  cout << "vH(beta2) = " << vH_beta2 << endl;
 
   // Initialize vectors for function points and sigma value
   vector<int64_t> points_f_3(K.size(), 0);
@@ -766,8 +643,7 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
     sigma3 += points_f_3[i];
     sigma3 %= p;
   }
-  Serial.print("sigma3 = ");
-  Serial.println(sigma3);
+  cout << "sigma3 = " << sigma3 << endl;
 
   // Create polynomials for beta1 and beta2
   vector<int64_t> poly_beta1 = { beta1 };
@@ -807,8 +683,7 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
   // Calculate sigma_3_set_k based on sigma3 and K.size()
   vector<int64_t> sigma_3_set_k;
   sigma_3_set_k.push_back((sigma3 * Polynomial::pInverse(K.size(), p)) % p);
-  Serial.print("sigma_3_set_k = ");
-  Serial.println(sigma_3_set_k[0]);
+  cout << "sigma_3_set_k = " << sigma_3_set_k[0] << endl;
 
   // Update polynomial f_3 by subtracting sigma_3_set_k
   vector<int64_t> poly_f_3x_new = Polynomial::subtractPolynomials(poly_f_3x, sigma_3_set_k, p);
@@ -849,8 +724,7 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
   // Choose a random value for z
   int64_t z_random = 2;
   int64_t y_prime = Polynomial::evaluatePolynomial(p_x, z_random, p);
-  Serial.print("y_prime = ");
-  Serial.println(y_prime);
+  cout << "y_prime = " << y_prime << endl;
 
   // p(x) - y'  =>  p(x)  !!!!!!!
   vector<int64_t> q_xBuf;
@@ -863,8 +737,7 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
 
   // Generate a KZG commitment for q(x) using the provided verification key (ck)
   int64_t p_17_AHP = Polynomial::KZG_Commitment(ck, q_x, p);
-  Serial.print("p_17_AHP = ");
-  Serial.println(p_17_AHP);
+  cout << "p_17_AHP = " << p_17_AHP << endl;
 
   // Generate KZG commitments for various polynomials and print
   int64_t Com1_AHP_x = Polynomial::KZG_Commitment(ck, w_hat_x, p);
@@ -879,35 +752,22 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
   int64_t Com10_AHP_x = Polynomial::KZG_Commitment(ck, h_2_x, p);
   int64_t Com11_AHP_x = Polynomial::KZG_Commitment(ck, g_3_x, p);
   int64_t Com12_AHP_x = Polynomial::KZG_Commitment(ck, h_3_x, p);
-  Serial.print("Com1_AHP_x = ");
-  Serial.println(Com1_AHP_x);
-  Serial.print("Com2_AHP_x = ");
-  Serial.println(Com2_AHP_x);
-  Serial.print("Com3_AHP_x = ");
-  Serial.println(Com3_AHP_x);
-  Serial.print("Com4_AHP_x = ");
-  Serial.println(Com4_AHP_x);
-  Serial.print("Com5_AHP_x = ");
-  Serial.println(Com5_AHP_x);
-  Serial.print("Com6_AHP_x = ");
-  Serial.println(Com6_AHP_x);
-  Serial.print("Com7_AHP_x = ");
-  Serial.println(Com7_AHP_x);
-  Serial.print("Com8_AHP_x = ");
-  Serial.println(Com8_AHP_x);
-  Serial.print("Com9_AHP_x = ");
-  Serial.println(Com9_AHP_x);
-  Serial.print("Com10_AHP_x = ");
-  Serial.println(Com10_AHP_x);
-  Serial.print("Com11_AHP_x = ");
-  Serial.println(Com11_AHP_x);
-  Serial.print("Com12_AHP_x = ");
-  Serial.println(Com12_AHP_x);
+  cout << "Com1_AHP_x = " << Com1_AHP_x << endl;
+  cout << "Com2_AHP_x = " << Com2_AHP_x << endl;
+  cout << "Com3_AHP_x = " << Com3_AHP_x << endl;
+  cout << "Com4_AHP_x = " << Com4_AHP_x << endl;
+  cout << "Com5_AHP_x = " << Com5_AHP_x << endl;
+  cout << "Com6_AHP_x = " << Com6_AHP_x << endl;
+  cout << "Com7_AHP_x = " << Com7_AHP_x << endl;
+  cout << "Com8_AHP_x = " << Com8_AHP_x << endl;
+  cout << "Com9_AHP_x = " << Com9_AHP_x << endl;
+  cout << "Com10_AHP_x = " << Com10_AHP_x << endl;
+  cout << "Com11_AHP_x = " << Com11_AHP_x << endl;
+  cout << "Com12_AHP_x = " << Com12_AHP_x << endl;
 
   // Generate a KZG commitment for the combined polynomial p(x)
   int64_t ComP_AHP_x = Polynomial::KZG_Commitment(ck, p_x, p);
-  Serial.print("ComP_AHP = ");
-  Serial.println(ComP_AHP_x);
+  cout << "ComP_AHP = " << ComP_AHP_x << endl;
 
 
 
@@ -925,6 +785,7 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
 
 
   //create a Json document to store proof-realated data
+  /*
   DynamicJsonDocument doc(2048);
   JsonArray jsonArray;
   jsonArray = doc.createNestedArray("P1AHP");
@@ -997,4 +858,12 @@ void fidesinnova::proofGenerator(String path, int64_t g, int64_t b, int64_t p) {
   serializeJson(doc, output);
   removeFile("/proof.json");
   writeFile("/proof.json", output);
+  */
+}
+
+
+int main() {
+  
+  proofGenerator();
+  return 0;
 }
