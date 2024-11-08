@@ -790,7 +790,7 @@ void proofGenerator() {
     "IoT_Device_Name": String,
     "Device_Hardware_Version": float,
     "Firmware_Version": float,
-    "Lines": 64-bit Array,
+    "code_block": 64-bit Array,
   */
 
 

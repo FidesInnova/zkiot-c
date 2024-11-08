@@ -51,7 +51,7 @@
     .section  .note.GNU-stack,"",@progbits
 
 
-Read the Class and Lines from device_config.json to be used in the code and pass all parameters to the program_commitment.json.
+Read the Class and code_block from device_config.json to be used in the code and pass all parameters to the program_commitment.json.
   device_config.json
   {
     "Class": 32-bit Integer,
@@ -59,7 +59,7 @@ Read the Class and Lines from device_config.json to be used in the code and pass
     "IoT_Device_Name": String,
     "Device_Hardware_Version": float,
     "Firmware_Version": float,
-    "Lines": 64-bit Array
+    "code_block": 64-bit Array
   }
 
 
@@ -82,6 +82,7 @@ Read the Class and Lines from device_config.json to be used in the code and pass
 #include "json.hpp"
 using ordered_json = nlohmann::ordered_json;
 #include <regex>
+#include <sstream>
 
 using namespace std;
 
@@ -101,8 +102,8 @@ std::pair<int64_t, int64_t> parseDeviceConfig(const std::string &configFile, nlo
 
   std::vector<int64_t> linesToRead;
 
-  int64_t startLine = config["Lines"][0].get<int64_t>();
-  int64_t endLine = config["Lines"][1].get<int64_t>();
+  int64_t startLine = config["code_block"][0].get<int64_t>();
+  int64_t endLine = config["code_block"][1].get<int64_t>();
   Class = config["Class"].get<int64_t>();
 
   return {startLine, endLine};
@@ -578,21 +579,13 @@ void commitmentGenerator(const std::string &setupFile) {
     Com8_AHP %= p;
   }
   cout << "Com0_AHP = " << Com0_AHP << endl;
-
   cout << "Com1_AHP = " << Com1_AHP << endl;
-
   cout << "Com2_AHP = " << Com2_AHP << endl;
-
   cout << "Com3_AHP = " << Com3_AHP << endl;
-
   cout << "Com4_AHP = " << Com4_AHP << endl;
-
   cout << "Com5_AHP = " << Com5_AHP << endl;
-
   cout << "Com6_AHP = " << Com6_AHP << endl;
-
   cout << "Com7_AHP = " << Com7_AHP << endl;
-
   cout << "Com8_AHP = " << Com8_AHP << endl;
 
 
@@ -606,7 +599,7 @@ void commitmentGenerator(const std::string &setupFile) {
     "IoT_Device_Name": String,
     "Device_Hardware_Version": float,
     "Firmware_Version": float,
-    "Lines": 64-bit Array
+    "code_block": 64-bit Array
   }
 // TODO: Add commitmentID to the program_commitment.json.
   
@@ -615,6 +608,11 @@ void commitmentGenerator(const std::string &setupFile) {
 
   ordered_json commitment;
   commitment.clear();
+  commitment["commitmentID"] = commitmentID;
+  commitment["IoT_Manufacturer_Name"] = IoT_Manufacturer_Name;
+  commitment["IoT_Device_Name"] = IoT_Device_Name;
+  commitment["Device_Hardware_Version"] = Device_Hardware_Version;
+  commitment["Firmware_Version"] = Firmware_Version;
   commitment["Class"] = Class;
   commitment["m"] = m;
   commitment["n"] = n;
@@ -687,9 +685,12 @@ int main() {
 
   // TODO: Remove the hard coded file names and use the inputs from user
 
+  // std::string configFile, setupFile, assemblyFile, newAssemblyFile;
   // Input filenames
   // std::cout << "Enter the device config file name: ";
   // std::cin >> configFile;
+  // std::cout << "Enter setup file name: ";
+  // std::cin >> setupFile;
   // std::cout << "Enter the program assembly file name: ";
   // std::cin >> assemblyFile;
   // std::cout << "Enter the output file name for modified assembly: ";
@@ -716,8 +717,8 @@ int main() {
 
 
 /*
-Read program.s and insert assembly macro SaveReg() before and after the instructions block which is specified by the Lines in the device_config.json file
-Example Lines: 37-39
+Read program.s and insert assembly macro SaveReg() before and after the instructions block which is specified by the code_block in the device_config.json file
+Example code_block: 37-39
 Also, add proofgen macro in assembly at the end of the last instuction and store it in program_new.s.
 
 program.s   

@@ -14,10 +14,7 @@ extern "C" void store_register_instances();
 
 class fidesinnova {
 public:
-  // void setup(int64_t tau);
-  // void commitmentGenerator(String path, int64_t g, int64_t p);
   void proofGenerator();
-  // void verifier(int64_t g, int64_t p);
 
 private:
 };
