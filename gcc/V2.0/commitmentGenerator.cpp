@@ -161,13 +161,14 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
     }
     else if (currentLineNumber == endLine + 1){
       newAssemblyFileStream << "jal store_register_instances\n";
+      newAssemblyFileStream << "jal proofGenerator\n";
     }
 
     newAssemblyFileStream << line << std::endl;
     ++currentLineNumber;
   }
 
-  int64_t spaceSize = ((endLine - startLine) * 4);
+  int64_t spaceSize = (((endLine - startLine) + 2) * 4);
   std::string assemblyCode = R"(
   #### Subroutine Code (`store_registers.s`)
 
@@ -268,7 +269,7 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
   // Replace all instances of "{SPACE_SIZE}" with the actual value of spaceSize
   size_t pos = 0;
   while ((pos = assemblyCode.find("{SPACE_SIZE}", pos)) != std::string::npos) {
-      assemblyCode.replace(pos, 12, spaceSizeStr); // 12 is the length of "{SPACE_SIZE}"
+      assemblyCode.replace(pos, spaceSize, spaceSizeStr); // spaceSize is the length of "{SPACE_SIZE}"
       pos += spaceSizeStr.length();
   }
 
@@ -617,6 +618,8 @@ void commitmentGenerator(const std::string &setupFile) {
   commitment["Class"] = Class;
   commitment["m"] = m;
   commitment["n"] = n;
+  commitment["p"] = p;
+  commitment["g"] = g;
   commitment["RowA"] = rowA_x;
   commitment["ColA"] = colA_x;
   commitment["ValA"] = valA_x;
@@ -644,19 +647,27 @@ void commitmentGenerator(const std::string &setupFile) {
       std::cerr << "Error opening file for writing\n";
   }
 
-  ordered_json program_param;
-  program_param.clear();
-  program_param["Class"] = Class;
-  vector<vector<int64_t>> nonZeroA;
-  for(int64_t i = 0; i < nonZeroRowsA[0].size(); i++){
-    nonZeroA.push_back({nonZeroRowsA[0][i], nonZeroColsA[0][i]});
-  }
-  program_param["A"] = nonZeroA;
+
+
   vector<vector<int64_t>> nonZeroB;
   for(int64_t i = 0; i < nonZeroRowsB[0].size(); i++){
     nonZeroB.push_back({nonZeroRowsB[0][i], nonZeroColsB[0][i], nonZeroColsB[1][i]});
   }
+  ordered_json program_param;
+  program_param.clear();
+  program_param["Class"] = Class;
+  program_param["A"] = nonZeroColsA[0];
   program_param["B"] = nonZeroB;
+  program_param["rA"] = rowA[1];
+  program_param["cA"] = colA[1];
+  program_param["vA"] = valA[1];
+  program_param["rB"] = rowB[1];
+  program_param["cB"] = colB[1];
+  program_param["vB"] = valB[1];
+  program_param["rC"] = rowC[1];
+  program_param["cC"] = colC[1];
+  program_param["vC"] = valC[1];
+
 
   // Serialize JSON object to a string
   std::string program_paramString = program_param.dump();

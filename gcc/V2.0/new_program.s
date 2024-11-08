@@ -28,8 +28,7 @@ addi s2, s2, 11
 jal store_register_instances
 mul s2, s2, s4
 jal store_register_instances
-addi s2, s2, 0
-jal store_register_instances
+jal proofGenerator
 
 # 0 "" 2
  #NO_APP
@@ -53,38 +52,38 @@ jal store_register_instances
   a0_saved:    .word 0               # Temporary storage for the original value of a0
   last_space_instance:  .word 0      # Temporary storage for the latest instance value
 
-  x0_array:    .space 12   # Array for x0
-  x1_array:    .space 12   # Array for x1
-  x2_array:    .space 12   # Array for x2
-  x3_array:    .space 12   # Array for x3
-  x4_array:    .space 12   # Array for x4
-  x5_array:    .space 12   # Array for x5
-  x6_array:    .space 12   # Array for x6
-  x7_array:    .space 12   # Array for x7
-  x8_array:    .space 12   # Array for x8
-  x9_array:    .space 12   # Array for x9
-  x10_array:   .space 12   # Array for x10
-  x11_array:   .space 12   # Array for x11
-  x12_array:   .space 12   # Array for x12
-  x13_array:   .space 12   # Array for x13
-  x14_array:   .space 12   # Array for x14
-  x15_array:   .space 12   # Array for x15
-  x16_array:   .space 12   # Array for x16
-  x17_array:   .space 12   # Array for x17
-  x18_array:   .space 12   # Array for x18
-  x19_array:   .space 12   # Array for x19
-  x20_array:   .space 12   # Array for x20
-  x21_array:   .space 12   # Array for x21
-  x22_array:   .space 12   # Array for x22
-  x23_array:   .space 12   # Array for x23
-  x24_array:   .space 12   # Array for x24
-  x25_array:   .space 12   # Array for x25
-  x26_array:   .space 12   # Array for x26
-  x27_array:   .space 12   # Array for x27
-  x28_array:   .space 12   # Array for x28
-  x29_array:   .space 12   # Array for x29
-  x30_array:   .space 12   # Array for x30
-  x31_array:   .space 12   # Array for x31
+  x0_array:    .space 16 Array for x0
+  x1_array:    .space 16 Array for x1
+  x2_array:    .space 16 Array for x2
+  x3_array:    .space 16 Array for x3
+  x4_array:    .space 16 Array for x4
+  x5_array:    .space 16 Array for x5
+  x6_array:    .space 16 Array for x6
+  x7_array:    .space 16 Array for x7
+  x8_array:    .space 16 Array for x8
+  x9_array:    .space 16 Array for x9
+  x10_array:   .space 16 Array for x10
+  x11_array:   .space 16 Array for x11
+  x12_array:   .space 16 Array for x12
+  x13_array:   .space 16 Array for x13
+  x14_array:   .space 16 Array for x14
+  x15_array:   .space 16 Array for x15
+  x16_array:   .space 16 Array for x16
+  x17_array:   .space 16 Array for x17
+  x18_array:   .space 16 Array for x18
+  x19_array:   .space 16 Array for x19
+  x20_array:   .space 16 Array for x20
+  x21_array:   .space 16 Array for x21
+  x22_array:   .space 16 Array for x22
+  x23_array:   .space 16 Array for x23
+  x24_array:   .space 16 Array for x24
+  x25_array:   .space 16 Array for x25
+  x26_array:   .space 16 Array for x26
+  x27_array:   .space 16 Array for x27
+  x28_array:   .space 16 Array for x28
+  x29_array:   .space 16 Array for x29
+  x30_array:   .space 16 Array for x30
+  x31_array:   .space 16 Array for x31
 
       .text
       .globl store_register_instances

@@ -75,7 +75,8 @@ extern "C" int32_t x31_array[4];
 
 
 void proofGenerator() {
-  std::ifstream setupFileStream("data/setup.json");
+  vector<int64_t> z = {1,x18_array[0],x18_array[1],x18_array[2]};
+  std::ifstream setupFileStream("data/setup19.json");
   if (!setupFileStream.is_open()) {
       std::cerr << "Could not open the file!" << std::endl;
   }
@@ -112,8 +113,17 @@ void proofGenerator() {
   nlohmann::json paramJsonData;
   paramFileStream >> paramJsonData;
   paramFileStream.close();
-  vector<vector<int64_t>> nonZeroA = paramJsonData["A"].get<vector<vector<int64_t>>>();
+  vector<int64_t> nonZeroA = paramJsonData["A"].get<vector<int64_t>>();
   vector<vector<int64_t>> nonZeroB = paramJsonData["B"].get<vector<vector<int64_t>>>();
+  vector<int64_t> rowA = paramJsonData["rA"].get<vector<int64_t>>();
+  vector<int64_t> colA = paramJsonData["cA"].get<vector<int64_t>>();
+  vector<int64_t> valA = paramJsonData["vA"].get<vector<int64_t>>();
+  vector<int64_t> rowB = paramJsonData["rB"].get<vector<int64_t>>();
+  vector<int64_t> colB = paramJsonData["cB"].get<vector<int64_t>>();
+  vector<int64_t> valB = paramJsonData["vB"].get<vector<int64_t>>();
+  vector<int64_t> rowC = paramJsonData["rC"].get<vector<int64_t>>();
+  vector<int64_t> colC = paramJsonData["cC"].get<vector<int64_t>>();
+  vector<int64_t> valC = paramJsonData["vC"].get<vector<int64_t>>();
 
   std::ifstream classFileStream("data/class.json");
   if (!classFileStream.is_open()) {
@@ -145,12 +155,13 @@ void proofGenerator() {
   vector<vector<int64_t>> B(n, vector<int64_t>(n, 0ll));
   vector<vector<int64_t>> C(n, vector<int64_t>(n, 0ll));
 
+  int64_t rowMatA = n_i;
   for (const auto& entry : nonZeroA) {
-    int64_t row = entry[0];
-    int64_t col = entry[1];
+    rowMatA++;
+    int64_t col = entry;
     
     // Set the value in the matrix
-    A[row][col] = 1;
+    A[rowMatA][col] = 1;
   }
   for (const auto& entry : nonZeroB) {
     int64_t row = entry[0];
@@ -422,16 +433,16 @@ void proofGenerator() {
   Polynomial::printPolynomial(z_hat_x, "z_hat(x)");
 
   vector<int64_t> A_hat(2);
-  for (int64_t i = 0; i < nonZeroRowsA[0].size(); i++) {
-    vector<int64_t> buff_n = Polynomial::calculatePolynomial_r_alpha_x(rowA[1][i], H.size(), p);
-    int64_t eval = Polynomial::evaluatePolynomial(buff_n, rowA[1][i], p);
-    vector<int64_t> buff = Polynomial::calculatePolynomial_r_alpha_x(colA[1][i], H.size(), p);
-    eval = (eval * valA[1][i]) % p;
+  for (int64_t i = 0; i < nonZeroA.size(); i++) {
+    vector<int64_t> buff_n = Polynomial::calculatePolynomial_r_alpha_x(rowA[i], H.size(), p);
+    int64_t eval = Polynomial::evaluatePolynomial(buff_n, rowA[i], p);
+    vector<int64_t> buff = Polynomial::calculatePolynomial_r_alpha_x(colA[i], H.size(), p);
+    eval = (eval * valA[i]) % p;
     if (eval < 0) {
       eval += p;
     }
     buff = Polynomial::multiplyPolynomialByNumber(buff, eval, p);
-    buff = Polynomial::multiplyPolynomialByNumber(buff, Polynomial::calculatePolynomial_r_alpha_k(alpha, rowA[1][i], H.size(), p), p);
+    buff = Polynomial::multiplyPolynomialByNumber(buff, Polynomial::calculatePolynomial_r_alpha_k(alpha, rowA[i], H.size(), p), p);
     if (i > 0) {
       A_hat = Polynomial::addPolynomials(A_hat, buff, p);
     } else {
@@ -441,16 +452,16 @@ void proofGenerator() {
   Polynomial::printPolynomial(A_hat, "A_hat(x)");
 
   vector<int64_t> B_hat(2);
-  for (int64_t i = 0; i < nonZeroRowsB[0].size(); i++) {
-    vector<int64_t> buff_n = Polynomial::calculatePolynomial_r_alpha_x(rowB[1][i], H.size(), p);
-    int64_t eval = Polynomial::evaluatePolynomial(buff_n, rowB[1][i], p);
-    vector<int64_t> buff = Polynomial::calculatePolynomial_r_alpha_x(colB[1][i], H.size(), p);
-    eval = (eval * valB[1][i]) % p;
+  for (int64_t i = 0; i < nonZeroB[0].size(); i++) {
+    vector<int64_t> buff_n = Polynomial::calculatePolynomial_r_alpha_x(rowB[i], H.size(), p);
+    int64_t eval = Polynomial::evaluatePolynomial(buff_n, rowB[i], p);
+    vector<int64_t> buff = Polynomial::calculatePolynomial_r_alpha_x(colB[i], H.size(), p);
+    eval = (eval * valB[i]) % p;
     if (eval < 0) {
       eval += p;
     }
     buff = Polynomial::multiplyPolynomialByNumber(buff, eval, p);
-    buff = Polynomial::multiplyPolynomialByNumber(buff, Polynomial::calculatePolynomial_r_alpha_k(alpha, rowB[1][i], H.size(), p), p);
+    buff = Polynomial::multiplyPolynomialByNumber(buff, Polynomial::calculatePolynomial_r_alpha_k(alpha, rowB[i], H.size(), p), p);
     if (i > 0) {
       B_hat = Polynomial::addPolynomials(B_hat, buff, p);
     } else {
@@ -460,16 +471,16 @@ void proofGenerator() {
   Polynomial::printPolynomial(B_hat, "B_hat(x)");
   
   vector<int64_t> C_hat(2);
-  for (int64_t i = 0; i < nonZeroRowsC[0].size(); i++) {
-    vector<int64_t> buff_n = Polynomial::calculatePolynomial_r_alpha_x(rowC[1][i], H.size(), p);
-    int64_t eval = Polynomial::evaluatePolynomial(buff_n, rowC[1][i], p);
-    vector<int64_t> buff = Polynomial::calculatePolynomial_r_alpha_x(colC[1][i], H.size(), p);
-    eval = (eval * valC[1][i]) % p;
+  for (int64_t i = 0; i < n_g; i++) {
+    vector<int64_t> buff_n = Polynomial::calculatePolynomial_r_alpha_x(rowC[i], H.size(), p);
+    int64_t eval = Polynomial::evaluatePolynomial(buff_n, rowC[i], p);
+    vector<int64_t> buff = Polynomial::calculatePolynomial_r_alpha_x(colC[i], H.size(), p);
+    eval = (eval * valC[i]) % p;
     if (eval < 0) {
       eval += p;
     }
     buff = Polynomial::multiplyPolynomialByNumber(buff, eval, p);
-    buff = Polynomial::multiplyPolynomialByNumber(buff, Polynomial::calculatePolynomial_r_alpha_k(alpha, rowC[1][i], H.size(), p), p);
+    buff = Polynomial::multiplyPolynomialByNumber(buff, Polynomial::calculatePolynomial_r_alpha_k(alpha, rowC[i], H.size(), p), p);
     if (i > 0) {
       C_hat = Polynomial::addPolynomials(C_hat, buff, p);
     } else {
@@ -522,11 +533,11 @@ void proofGenerator() {
   vector<int64_t> C_hat_M_hat(H.size(), 0);
 
   // Loop through non-zero rows for matrix A and calculate the pified polynomial A_hat_M_hat
-  for (int64_t i = 0; i < nonZeroRowsA[0].size(); i++) {
-    vector<int64_t> buff_nA = Polynomial::calculatePolynomial_r_alpha_x(colA[1][i], H.size(), p);
+  for (int64_t i = 0; i < nonZeroA.size(); i++) {
+    vector<int64_t> buff_nA = Polynomial::calculatePolynomial_r_alpha_x(colA[i], H.size(), p);
     int64_t evalA = Polynomial::evaluatePolynomial(buff_nA, beta1, p);
-    vector<int64_t> buffA = Polynomial::calculatePolynomial_r_alpha_x(rowA[1][i], H.size(), p);
-    evalA = (evalA * valA[1][i]) % p;
+    vector<int64_t> buffA = Polynomial::calculatePolynomial_r_alpha_x(rowA[i], H.size(), p);
+    evalA = (evalA * valA[i]) % p;
     if (evalA < 0) {
       evalA += p;
     }
@@ -538,11 +549,11 @@ void proofGenerator() {
       A_hat_M_hat = buffA;
     }
   }
-  for (int64_t i = 0; i < nonZeroRowsB[0].size(); i++) {
-    vector<int64_t> buff_nB = Polynomial::calculatePolynomial_r_alpha_x(colB[1][i], H.size(), p);
+  for (int64_t i = 0; i < nonZeroB[0].size(); i++) {
+    vector<int64_t> buff_nB = Polynomial::calculatePolynomial_r_alpha_x(colB[i], H.size(), p);
     int64_t evalB = Polynomial::evaluatePolynomial(buff_nB, beta1, p);
-    vector<int64_t> buffB = Polynomial::calculatePolynomial_r_alpha_x(rowB[1][i], H.size(), p);
-    evalB = (evalB * valB[1][i]) % p;
+    vector<int64_t> buffB = Polynomial::calculatePolynomial_r_alpha_x(rowB[i], H.size(), p);
+    evalB = (evalB * valB[i]) % p;
     if (evalB < 0) {
       evalB += p;
     }
@@ -554,11 +565,11 @@ void proofGenerator() {
       B_hat_M_hat = buffB;
     }
   }
-  for (int64_t i = 0; i < nonZeroRowsC[0].size(); i++) {
-    vector<int64_t> buff_nC = Polynomial::calculatePolynomial_r_alpha_x(colC[1][i], H.size(), p);
+  for (int64_t i = 0; i < n_g; i++) {
+    vector<int64_t> buff_nC = Polynomial::calculatePolynomial_r_alpha_x(colC[i], H.size(), p);
     int64_t evalC = Polynomial::evaluatePolynomial(buff_nC, beta1, p);
-    vector<int64_t> buffC = Polynomial::calculatePolynomial_r_alpha_x(rowC[1][i], H.size(), p);
-    evalC = (evalC * valC[1][i]) % p;
+    vector<int64_t> buffC = Polynomial::calculatePolynomial_r_alpha_x(rowC[i], H.size(), p);
+    evalC = (evalC * valC[i]) % p;
     if (evalC < 0) {
       evalC += p;
     }
@@ -859,11 +870,4 @@ void proofGenerator() {
   removeFile("/proof.json");
   writeFile("/proof.json", output);
   */
-}
-
-
-int main() {
-  
-  proofGenerator();
-  return 0;
 }

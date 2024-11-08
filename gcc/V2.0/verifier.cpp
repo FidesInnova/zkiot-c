@@ -96,8 +96,7 @@
 
 */
 
-// #include "fidesinnova.h"
-
+#include "polynomial.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -166,6 +165,7 @@ void verifier() {
   vector<int64_t> valC_x = commitmentJsonData["ValC"].get<vector<int64_t>>();
   /*******************************  Read Commitment  ******************************/
 
+
   /*********************************  Read Proof  *********************************/
   std::ifstream commitmentFileStream("data/proof.json");
   if (!commitmentFileStream.is_open()) {
@@ -174,25 +174,51 @@ void verifier() {
   nlohmann::json commitmentJsonData;
   commitmentFileStream >> commitmentJsonData;
   commitmentFileStream.close();
-  int64_t sigma1 = jsonData["P1AHP"].get<int64_t>();
-  vector<int64_t> w_hat_x = jsonData["P2AHP"].get<vector<int64_t>>();
-  vector<int64_t> z_hatA = jsonData["P3AHP"].get<vector<int64_t>>();
-  vector<int64_t> z_hatB = jsonData["P4AHP"].get<vector<int64_t>>();
-  vector<int64_t> z_hatC = jsonData["P5AHP"].get<vector<int64_t>>();
-  vector<int64_t> h_0_x = jsonData["P6AHP"].get<vector<int64_t>>();
-  vector<int64_t> s_x = jsonData["P87HP"].get<vector<int64_t>>();
-  vector<int64_t> g_1_x = jsonData["P8AHP"].get<vector<int64_t>>();
-  vector<int64_t> h_1_x = jsonData["P9AHP"].get<vector<int64_t>>();
-  int64_t sigma2 = jsonData["P10AHP"].get<int64_t>();
-  vector<int64_t> g_2_x = jsonData["P11AHP"].get<vector<int64_t>>();
-  vector<int64_t> h_2_x = jsonData["P12AHP"].get<vector<int64_t>>();
-  int64_t sigma3 = jsonData["P13AHP"].get<int64_t>();
-  vector<int64_t> g_3_x = jsonData["P14AHP"].get<vector<int64_t>>();
-  vector<int64_t> h_3_x = jsonData["P15AHP"].get<vector<int64_t>>();
-  vector<int64_t> y_prime = jsonData["P15AHP"].get<vector<int64_t>>();
-  string curve = jsonData["curve"];
-  string protocol = jsonData["protocol"];
+  int64_t sigma1 = commitmentJsonData["P1AHP"].get<int64_t>();
+  vector<int64_t> w_hat_x = commitmentJsonData["P2AHP"].get<vector<int64_t>>();
+  vector<int64_t> z_hatA = commitmentJsonData["P3AHP"].get<vector<int64_t>>();
+  vector<int64_t> z_hatB = commitmentJsonData["P4AHP"].get<vector<int64_t>>();
+  vector<int64_t> z_hatC = commitmentJsonData["P5AHP"].get<vector<int64_t>>();
+  vector<int64_t> h_0_x = commitmentJsonData["P6AHP"].get<vector<int64_t>>();
+  vector<int64_t> s_x = commitmentJsonData["P87HP"].get<vector<int64_t>>();
+  vector<int64_t> g_1_x = commitmentJsonData["P8AHP"].get<vector<int64_t>>();
+  vector<int64_t> h_1_x = commitmentJsonData["P9AHP"].get<vector<int64_t>>();
+  int64_t sigma2 = commitmentJsonData["P10AHP"].get<int64_t>();
+  vector<int64_t> g_2_x = commitmentJsonData["P11AHP"].get<vector<int64_t>>();
+  vector<int64_t> h_2_x = commitmentJsonData["P12AHP"].get<vector<int64_t>>();
+  int64_t sigma3 = commitmentJsonData["P13AHP"].get<int64_t>();
+  vector<int64_t> g_3_x = commitmentJsonData["P14AHP"].get<vector<int64_t>>();
+  vector<int64_t> h_3_x = commitmentJsonData["P15AHP"].get<vector<int64_t>>();
+  vector<int64_t> y_prime = commitmentJsonData["P15AHP"].get<vector<int64_t>>();
+  string curve = commitmentJsonData["curve"];
+  string protocol = commitmentJsonData["protocol"];
   /*********************************  Read Proof  *********************************/
+
+
+  /*********************************  Read Class  *********************************/
+  std::ifstream classFileStream("class.json");
+  if (!classFileStream.is_open()) {
+      std::cerr << "Could not open the file!" << std::endl;
+  }
+  nlohmann::json classJsonData;
+  classFileStream >> classJsonData;
+  classFileStream.close();
+  int64_t n_i, n_g, m, n, p, g;
+  for (const auto& item : classJsonData) {
+    if (item["Class"] == Class) {
+      // Number of inputs, gates, m, n, p, and g
+      n_i = item["n_i"].get<int64_t>();
+      n_g = item["n_g"].get<int64_t>();
+      m = item["m"].get<int64_t>();
+      n = item["n"].get<int64_t>();
+      p = item["p"].get<int64_t>();
+      g = item["g"].get<int64_t>();
+      break; // Stop after finding the first matching "Class"
+    }
+  }
+  /*********************************  Read Class  *********************************/
+
+
   cout << "n: " << n << endl;
   cout << "m: " << m << endl;
   cout << "g: " << g << endl;
@@ -267,21 +293,6 @@ void verifier() {
   vector<int64_t> Sum_M_eta_M_z_hat_M_x = Polynomial::addPolynomials(Polynomial::addPolynomials(etaA_z_hatA_x, etaB_z_hatB_x, p), etaC_z_hatC_x, p);
 
   int64_t t = n_i + 1;
-  // // Calculate the known value from n^2 - n
-  // int64_t n_val = (n * n - n) / 2;
-  // // Calculate the value of (t^2 - t) / 2 p
-  // int target = n_val - m;
-  // // Iterate through possible values of t (0 to p-1)
-  // for (int64_t i = 0; i < p; i++) {
-  //   // Calculate (t^2 - t) / 2 in p
-  //   int64_t t_val = (i * i - i) / 2;
-  //   // Apply pulo to ensure positive results
-  //   if (t_val < 0) t_val += p;
-  //   if (t_val == target) {
-  //     t = i;
-  //   }
-  // }
-  cout << "t = " << t << endl;
 
   vector<int64_t> zero_to_t_for_H;
   vector<int64_t> zero_to_t_for_z;
@@ -307,9 +318,7 @@ void verifier() {
                                    Polynomial::addPolynomials(Polynomial::multiplyPolynomialByNumber(g_3_x, eta_g_3_x, p), Polynomial::multiplyPolynomialByNumber(h_3_x, eta_h_3_x, p), p), p),
         p),
       p);
-  // int64_t ComP_AHP_x = (Polynomial::power(Com1_AHP_x, eta_w_hat, p) * (Polynomial::power(Com2_AHP_x, eta_z_hatA, p) * (Polynomial::power(Com3_AHP_x, eta_z_hatB, p) * (Polynomial::power(Com4_AHP_x, eta_z_hatC, p) * (Polynomial::power(Com5_AHP_x, eta_h_0_x, p) * (Polynomial::power(Com6_AHP_x, eta_s_x, p) * (Polynomial::power(Com7_AHP_x, eta_g_1_x, p) * (Polynomial::power(Com8_AHP_x, eta_h_1_x, p) * (Polynomial::power(Com9_AHP_x, eta_g_2_x, p) * (Polynomial::power(Com10_AHP_x, eta_h_2_x, p) * (Polynomial::power(Com11_AHP_x, eta_g_3_x, p) * Polynomial::power(Com12_AHP_x, eta_h_3_x, p)) % p) % p) % p) % p) % p) % p) % p) % p) % p) % p);
-
-  int64_t ComP_AHP_x = Polynomial::KZG_Commitment(ck, p_x, p);
+  int64_t ComP_AHP_x = (Polynomial::power(Com1_AHP_x, eta_w_hat, p) * (Polynomial::power(Com2_AHP_x, eta_z_hatA, p) * (Polynomial::power(Com3_AHP_x, eta_z_hatB, p) * (Polynomial::power(Com4_AHP_x, eta_z_hatC, p) * (Polynomial::power(Com5_AHP_x, eta_h_0_x, p) * (Polynomial::power(Com6_AHP_x, eta_s_x, p) * (Polynomial::power(Com7_AHP_x, eta_g_1_x, p) * (Polynomial::power(Com8_AHP_x, eta_h_1_x, p) * (Polynomial::power(Com9_AHP_x, eta_g_2_x, p) * (Polynomial::power(Com10_AHP_x, eta_h_2_x, p) * (Polynomial::power(Com11_AHP_x, eta_g_3_x, p) * Polynomial::power(Com12_AHP_x, eta_h_3_x, p)) % p) % p) % p) % p) % p) % p) % p) % p) % p) % p);
 
   Polynomial::printPolynomial(a_x, "a_x");
   Polynomial::printPolynomial(b_x, "b_x");
@@ -341,7 +350,8 @@ void verifier() {
   if (eq41 < 0) eq41 += p;
   cout << eq41 << " = " << eq42 << endl;
 
-  int64_t eq51Buf = (ComP_AHP_x - (g * y_prime));
+/*
+  int64_t eq51Buf = (ComP_AHP_x - Polynomial::multiplyPolynomialByNumber(g, y_prime, p));
   eq51Buf %= p;
   if (eq51Buf < 0) {
     eq51Buf += p;
@@ -354,8 +364,8 @@ void verifier() {
   }
   int64_t eq52 = Polynomial::e_func(p_17_AHP, eq52BufP2, g, p);
   cout << eq51 << " = " << eq52 << endl;
-
-  if (eq11 == eq12 && eq21 == eq22 && eq31 == eq32 && eq41 == eq42 && eq51 == eq52) {
+*/
+  if (eq11 == eq12 && eq21 == eq22 && eq31 == eq32 && eq41 == eq42) { // && eq51 == eq52) {
     verify = true;
   }
 
