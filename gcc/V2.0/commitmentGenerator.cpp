@@ -88,6 +88,11 @@ using namespace std;
 
 std::vector<std::string> instructions;
 int64_t Class;
+string commitmentID;
+string IoT_Manufacturer_Name;
+string IoT_Device_Name;
+float Device_Hardware_Version;
+float Firmware_Version;
 
 // Function to read JSON config file and parse lines to read from assembly file
 std::pair<int64_t, int64_t> parseDeviceConfig(const std::string &configFile, nlohmann::json &config) {
@@ -105,6 +110,11 @@ std::pair<int64_t, int64_t> parseDeviceConfig(const std::string &configFile, nlo
   int64_t startLine = config["code_block"][0].get<int64_t>();
   int64_t endLine = config["code_block"][1].get<int64_t>();
   Class = config["Class"].get<int64_t>();
+  commitmentID = config["commitmentID"].get<string>();
+  IoT_Manufacturer_Name = config["IoT_Manufacturer_Name"].get<string>();
+  IoT_Device_Name = config["IoT_Device_Name"].get<string>();
+  Device_Hardware_Version = config["Device_Hardware_Version"].get<float>();
+  Firmware_Version = config["Firmware_Version"].get<float>();
 
   return {startLine, endLine};
 }

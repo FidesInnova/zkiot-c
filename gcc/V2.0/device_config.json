@@ -1,5 +1,6 @@
 {
   "Class": 19,
+  "commitmentID": "123456789",
   "IoT_Manufacturer_Name": "FidesInnova",
   "IoT_Device_Name": "test",
   "Device_Hardware_Version": 1,
