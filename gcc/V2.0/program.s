@@ -21,10 +21,10 @@ main:
 	li s2, 4
 	li s3, 5
 	li s4, 26
-mul s2, s2, s3
+mul s1, s2, s3
 addi s2, s2, 11
-mul s2, s2, s4
-mul s2, s3, s4
+mul s1, s2, s4
+mul s4, s3, s4
 
 # 0 "" 2
  #NO_APP
