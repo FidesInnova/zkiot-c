@@ -24,6 +24,7 @@ main:
 mul s2, s2, s3
 addi s2, s2, 11
 mul s2, s2, s4
+mul s2, s3, s4
 
 # 0 "" 2
  #NO_APP

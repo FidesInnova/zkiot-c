@@ -83,8 +83,20 @@ Read the Class and code_block from device_config.json to be used in the code and
 using ordered_json = nlohmann::ordered_json;
 #include <regex>
 #include <sstream>
+#include <unordered_map>
 
 using namespace std;
+
+// Map of RISC-V register aliases to x registers
+std::unordered_map<std::string, int> registerMap = {
+    {"zero", 0},  {"ra", 1},   {"sp", 2},   {"gp", 3},   {"tp", 4},
+    {"t0", 5},    {"t1", 6},   {"t2", 7},   {"s0", 8},   {"s1", 9},
+    {"a0", 10},   {"a1", 11},  {"a2", 12},  {"a3", 13},  {"a4", 14},
+    {"a5", 15},   {"a6", 16},  {"a7", 17},  {"s2", 18},  {"s3", 19},
+    {"s4", 20},   {"s5", 21},  {"s6", 22},  {"s7", 23},  {"s8", 24},
+    {"s9", 25},   {"s10", 26}, {"s11", 27}, {"t3", 28},  {"t4", 29},
+    {"t5", 30},   {"t6", 31}
+};
 
 std::vector<std::string> instructions;
 int64_t Class;
@@ -330,15 +342,15 @@ void commitmentGenerator(const std::string &setupFile) {
 
  for (const auto& instr : instructions) {
     std::stringstream ss(instr);
-    std::string operation, operationStr, leftStr, rightStr;
+    std::string opcode, rd, leftStr, rightStr;
     
-    ss >> operation >> operationStr;
+    ss >> opcode >> rd;
     ss >> leftStr >> rightStr;
     leftStr = Polynomial::trim(leftStr);
     rightStr = Polynomial::trim(rightStr);
     leftStr = Polynomial::removeCommas(leftStr);
     rightStr = Polynomial::removeCommas(rightStr);
-    // std::cout << "operation: " << operation << "\tleftInt: " << leftStr << "\trightInt: " << rightStr << "\n";
+    // std::cout << "opcode: " << opcode << "\tleftInt: " << leftStr << "\trightInt: " << rightStr << "\n";
   }
   cout << "Number of immediate instructions (n_i): " << n_i << endl;
   cout << "Number of general instructions (n_g): " << n_g << endl;
@@ -358,11 +370,11 @@ void commitmentGenerator(const std::string &setupFile) {
   // Fill matrices based on the instructions
   for (int64_t i = 0; i < n_g; i++) {
     std::stringstream ss(instructions[i]);
-    std::string operation, operationStr, leftStr, rightStr;
-    ss >> operation >> operationStr;
-    int64_t R = std::stoi(operationStr.substr(1));
+    std::string opcode, rd, leftStr, rightStr;
+    ss >> opcode >> rd;
+    int64_t R = std::stoi(rd.substr(1));
 
-    if (operation == "add" || operation == "addi" || operation == "mul") {
+    if (opcode == "add" || opcode == "addi" || opcode == "mul") {
       ss >> leftStr >> rightStr;
 
       // Remove commas
@@ -372,48 +384,47 @@ void commitmentGenerator(const std::string &setupFile) {
       leftStr = Polynomial::trim(leftStr);
       rightStr = Polynomial::trim(rightStr);
 
-      int64_t leftInt,rightInt;
-      ss >> leftStr >> rightStr;
+      int64_t leftInt, rightInt;
       
       C[1+n_i+i][1+n_i+i] = 1;
 
-      if (operation == "add" || operation == "addi") {
+      if (opcode == "add" || opcode == "addi") {
         A[1+n_i+i][0] = 1;
         if (std::isdigit(leftStr[0])) {
           leftInt = std::stoi(leftStr);
           B[1+n_i+i][0] = leftInt;
         }
         else {
-          B[1+n_i+i][1+i] = 1;
+          B[1+n_i+i][1 + registerMap[leftStr]] = 1;
         }
         if(std::isdigit(rightStr[0])){
           rightInt = std::stoi(rightStr);
           B[1+n_i+i][0] = rightInt;
         }
         else {
-          B[1+n_i+i][1+i] = 1;
+          B[1+n_i+i][1 + registerMap[rightStr]] = 1;
         }
 
-    } else if (operation == "mul") {
+    } else if (opcode == "mul") {
         if (std::isdigit(leftStr[0])) {
           leftInt = std::stoi(leftStr);
           A[1+n_i+i][0] = leftInt;
         }
         else {
-          A[1+n_i+i][1+i] = 1;
+          A[1+n_i+i][1 + registerMap[leftStr]] = 1;
         }
         if (std::isdigit(rightStr[0])) {
           rightInt = std::stoi(rightStr);
           B[1+n_i+i][0] = rightInt;
         }
         else {
-          B[1+n_i+i][1+i] = 1;
+          B[1+n_i+i][1 + registerMap[rightStr]] = 1;
         }
       }
     }
     
     else {
-      cout << "!!! Undefined instruction in the defiend Line range !!!\n" << operation << endl;
+      cout << "!!! Undefined instruction in the defiend Line range !!!\n" << opcode << endl;
       std::exit(0);
     }
   }
@@ -691,7 +702,7 @@ void commitmentGenerator(const std::string &setupFile) {
 }
 
 int main() {
-  std::string configFile = "device_config.json", setupFile = "setup3.json", assemblyFile = "program.s", newAssemblyFile = "new_program.s";
+  std::string configFile = "device_config.json", setupFile = "data/setup3.json", assemblyFile = "program.s", newAssemblyFile = "program_new.s";
 
   // TODO: Remove the hard coded file names and use the inputs from user
 
