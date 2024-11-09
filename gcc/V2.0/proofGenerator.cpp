@@ -40,42 +40,44 @@ using namespace std;
 int64_t b = 2;
 
 // Declare the arrays from assembly as external variables
-extern "C" int32_t x0_array[4];
-extern "C" int32_t x1_array[4];
-extern "C" int32_t x2_array[4];
-extern "C" int32_t x3_array[4];
-extern "C" int32_t x4_array[4];
-extern "C" int32_t x5_array[4];
-extern "C" int32_t x6_array[4];
-extern "C" int32_t x7_array[4];
-extern "C" int32_t x8_array[4];
-extern "C" int32_t x9_array[4];
-extern "C" int32_t x10_array[4];
-extern "C" int32_t x11_array[4];
-extern "C" int32_t x12_array[4];
-extern "C" int32_t x13_array[4];
-extern "C" int32_t x14_array[4];
-extern "C" int32_t x15_array[4];
-extern "C" int32_t x16_array[4];
-extern "C" int32_t x17_array[4];
-extern "C" int32_t x18_array[4];
-extern "C" int32_t x19_array[4];
-extern "C" int32_t x20_array[4];
-extern "C" int32_t x21_array[4];
-extern "C" int32_t x22_array[4];
-extern "C" int32_t x23_array[4];
-extern "C" int32_t x24_array[4];
-extern "C" int32_t x25_array[4];
-extern "C" int32_t x26_array[4];
-extern "C" int32_t x27_array[4];
-extern "C" int32_t x28_array[4];
-extern "C" int32_t x29_array[4];
-extern "C" int32_t x30_array[4];
-extern "C" int32_t x31_array[4];
-
+extern "C" int32_t x0_array[];
+extern "C" int32_t x1_array[];
+extern "C" int32_t x2_array[];
+extern "C" int32_t x3_array[];
+extern "C" int32_t x4_array[];
+extern "C" int32_t x5_array[];
+extern "C" int32_t x6_array[];
+extern "C" int32_t x7_array[];
+extern "C" int32_t x8_array[];
+extern "C" int32_t x9_array[];
+extern "C" int32_t x10_array[];
+extern "C" int32_t x11_array[];
+extern "C" int32_t x12_array[];
+extern "C" int32_t x13_array[];
+extern "C" int32_t x14_array[];
+extern "C" int32_t x15_array[];
+extern "C" int32_t x16_array[];
+extern "C" int32_t x17_array[];
+extern "C" int32_t x18_array[];
+extern "C" int32_t x19_array[];
+extern "C" int32_t x20_array[];
+extern "C" int32_t x21_array[];
+extern "C" int32_t x22_array[];
+extern "C" int32_t x23_array[];
+extern "C" int32_t x24_array[];
+extern "C" int32_t x25_array[];
+extern "C" int32_t x26_array[];
+extern "C" int32_t x27_array[];
+extern "C" int32_t x28_array[];
+extern "C" int32_t x29_array[];
+extern "C" int32_t x30_array[];
+extern "C" int32_t x31_array[];
 
 void proofGenerator() {
-  vector<int64_t> z = {1,x18_array[0],x18_array[1],x18_array[2]};
+  vector<int64_t> z = {1, x0_array[0], x1_array[0], x2_array[0], x3_array[0], x4_array[0], x5_array[0], x6_array[0], x7_array[0], x8_array[0], x9_array[0],
+                          x10_array[0], x11_array[0], x12_array[0], x13_array[0], x14_array[0], x15_array[0], x16_array[0], x17_array[0], x18_array[0], x19_array[0],
+                          x20_array[0], x21_array[0], x22_array[0], x23_array[0], x24_array[0], x25_array[0], x26_array[0], x27_array[0], x28_array[0], x29_array[0], 
+                          x30_array[0], x31_array[0]};
   std::ifstream setupFileStream("data/setup19.json");
   if (!setupFileStream.is_open()) {
       std::cerr << "Could not open the file!" << std::endl;
