@@ -59,7 +59,7 @@ int64_t Polynomial::pInverse(int64_t a, int64_t p) {
 //   return randomNumber;
 // }
 
-int64_t generateRandomNumber(const std::vector<int64_t>& H, int64_t mod) {
+int64_t Polynomial::generateRandomNumber(const std::vector<int64_t>& H, int64_t mod) {
     std::mt19937_64 rng(std::random_device{}());  // Use random_device to seed the generator
     std::uniform_int_distribution<int64_t> dist(0, mod - 1);
     

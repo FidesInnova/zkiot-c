@@ -38,116 +38,156 @@ using ordered_json = nlohmann::ordered_json;
 using namespace std;
 
 int64_t b = 2;
-
+extern "C" void store_register_instances();
 // Declare the arrays from assembly as external variables
-extern "C" int32_t x0_array[];
-extern "C" int32_t x1_array[];
-extern "C" int32_t x2_array[];
-extern "C" int32_t x3_array[];
-extern "C" int32_t x4_array[];
-extern "C" int32_t x5_array[];
-extern "C" int32_t x6_array[];
-extern "C" int32_t x7_array[];
-extern "C" int32_t x8_array[];
-extern "C" int32_t x9_array[];
-extern "C" int32_t x10_array[];
-extern "C" int32_t x11_array[];
-extern "C" int32_t x12_array[];
-extern "C" int32_t x13_array[];
-extern "C" int32_t x14_array[];
-extern "C" int32_t x15_array[];
-extern "C" int32_t x16_array[];
-extern "C" int32_t x17_array[];
-extern "C" int32_t x18_array[];
-extern "C" int32_t x19_array[];
-extern "C" int32_t x20_array[];
-extern "C" int32_t x21_array[];
-extern "C" int32_t x22_array[];
-extern "C" int32_t x23_array[];
-extern "C" int32_t x24_array[];
-extern "C" int32_t x25_array[];
-extern "C" int32_t x26_array[];
-extern "C" int32_t x27_array[];
-extern "C" int32_t x28_array[];
-extern "C" int32_t x29_array[];
-extern "C" int32_t x30_array[];
-extern "C" int32_t x31_array[];
+extern "C" int32_t x0_array[1];
+extern "C" int32_t x1_array[1];
+extern "C" int32_t x2_array[1];
+extern "C" int32_t x3_array[1];
+extern "C" int32_t x4_array[1];
+extern "C" int32_t x5_array[1];
+extern "C" int32_t x6_array[1];
+extern "C" int32_t x7_array[1];
+extern "C" int32_t x8_array[1];
+extern "C" int32_t x9_array[1];
+extern "C" int32_t x10_array[1];
+extern "C" int32_t x11_array[1];
+extern "C" int32_t x12_array[1];
+extern "C" int32_t x13_array[1];
+extern "C" int32_t x14_array[1];
+extern "C" int32_t x15_array[1];
+extern "C" int32_t x16_array[1];
+extern "C" int32_t x17_array[1];
+extern "C" int32_t x18_array[5];
+extern "C" int32_t x19_array[1];
+extern "C" int32_t x20_array[1];
+extern "C" int32_t x21_array[1];
+extern "C" int32_t x22_array[1];
+extern "C" int32_t x23_array[1];
+extern "C" int32_t x24_array[1];
+extern "C" int32_t x25_array[1];
+extern "C" int32_t x26_array[1];
+extern "C" int32_t x27_array[1];
+extern "C" int32_t x28_array[1];
+extern "C" int32_t x29_array[1];
+extern "C" int32_t x30_array[1];
+extern "C" int32_t x31_array[1];
 
 void proofGenerator() {
-  vector<int64_t> z = {1, x0_array[0], x1_array[0], x2_array[0], x3_array[0], x4_array[0], x5_array[0], x6_array[0], x7_array[0], x8_array[0], x9_array[0],
-                          x10_array[0], x11_array[0], x12_array[0], x13_array[0], x14_array[0], x15_array[0], x16_array[0], x17_array[0], x18_array[0], x19_array[0],
-                          x20_array[0], x21_array[0], x22_array[0], x23_array[0], x24_array[0], x25_array[0], x26_array[0], x27_array[0], x28_array[0], x29_array[0], 
-                          x30_array[0], x31_array[0]};
-  std::ifstream setupFileStream("data/setup19.json");
-  if (!setupFileStream.is_open()) {
-      std::cerr << "Could not open the file!" << std::endl;
-  }
-  nlohmann::json setupJsonData;
-  setupFileStream >> setupJsonData;
-  setupFileStream.close();
-  int64_t Class = setupJsonData["Class"].get<int64_t>();
-  vector<int64_t> ck = setupJsonData["ck"].get<vector<int64_t>>();
-  int64_t vk = setupJsonData["vk"].get<int64_t>();
+  cout << x18_array[0] << endl;
+  // vector<int64_t> z = {1, x0_array[0], x1_array[0], x2_array[0], x3_array[0], x4_array[0], x5_array[0], x6_array[0], x7_array[0], x8_array[0], x9_array[0],
+  //                         x10_array[0], x11_array[0], x12_array[0], x13_array[0], x14_array[0], x15_array[0], x16_array[0], x17_array[0], x18_array[0], x19_array[0],
+  //                         x20_array[0], x21_array[0], x22_array[0], x23_array[0], x24_array[0], x25_array[0], x26_array[0], x27_array[0], x28_array[0], x29_array[0], 
+  //                         x30_array[0], x31_array[0]};
+  vector<int64_t> z = {1, 4, 20, 31, 806, 20956};
+  // std::ifstream setupFileStream("data/setup3.json");
+  // if (!setupFileStream.is_open()) {
+  //     std::cerr << "Could not open the setup3.json file!" << std::endl;
+  // }
+  // nlohmann::json setupJsonData;
+  // setupFileStream >> setupJsonData;
+  // setupFileStream.close();
+  // int64_t Class = setupJsonData["Class"].get<int64_t>();
+  // vector<int64_t> ck = setupJsonData["ck"].get<vector<int64_t>>();
+  // int64_t vk = setupJsonData["vk"].get<int64_t>();
 
-  std::ifstream commitmentFileStream("data/program_commitment.json");
-  if (!commitmentFileStream.is_open()) {
-      std::cerr << "Could not open the file!" << std::endl;
-  }
-  nlohmann::json commitmentJsonData;
-  commitmentFileStream >> commitmentJsonData;
-  commitmentFileStream.close();
-  vector<int64_t> rowA_x = commitmentJsonData["RowA"].get<vector<int64_t>>();
-  vector<int64_t> colA_x = commitmentJsonData["ColA"].get<vector<int64_t>>();
-  vector<int64_t> valA_x = commitmentJsonData["ValA"].get<vector<int64_t>>();
-  vector<int64_t> rowB_x = commitmentJsonData["RowB"].get<vector<int64_t>>();
-  vector<int64_t> colB_x = commitmentJsonData["ColB"].get<vector<int64_t>>();
-  vector<int64_t> valB_x = commitmentJsonData["ValB"].get<vector<int64_t>>();
-  vector<int64_t> rowC_x = commitmentJsonData["RowC"].get<vector<int64_t>>();
-  vector<int64_t> colC_x = commitmentJsonData["ColC"].get<vector<int64_t>>();
-  vector<int64_t> valC_x = commitmentJsonData["ValC"].get<vector<int64_t>>();
+  // std::ifstream commitmentFileStream("~/zkiot_c_source/gcc/V2.0/data/program_commitment.json");
+  // if (!commitmentFileStream.is_open()) {
+  //     std::cerr << "Could not open the program_commitment.json file!" << std::endl;
+  // }
+  // nlohmann::json commitmentJsonData;
+  // commitmentFileStream >> commitmentJsonData;
+  // commitmentFileStream.close();
+  // vector<int64_t> rowA_x = commitmentJsonData["RowA"].get<vector<int64_t>>();
+  // vector<int64_t> colA_x = commitmentJsonData["ColA"].get<vector<int64_t>>();
+  // vector<int64_t> valA_x = commitmentJsonData["ValA"].get<vector<int64_t>>();
+  // vector<int64_t> rowB_x = commitmentJsonData["RowB"].get<vector<int64_t>>();
+  // vector<int64_t> colB_x = commitmentJsonData["ColB"].get<vector<int64_t>>();
+  // vector<int64_t> valB_x = commitmentJsonData["ValB"].get<vector<int64_t>>();
+  // vector<int64_t> rowC_x = commitmentJsonData["RowC"].get<vector<int64_t>>();
+  // vector<int64_t> colC_x = commitmentJsonData["ColC"].get<vector<int64_t>>();
+  // vector<int64_t> valC_x = commitmentJsonData["ValC"].get<vector<int64_t>>();
 
   
 
-  std::ifstream paramFileStream("data/program_param.json");
-  if (!paramFileStream.is_open()) {
-      std::cerr << "Could not open the file!" << std::endl;
-  }
-  nlohmann::json paramJsonData;
-  paramFileStream >> paramJsonData;
-  paramFileStream.close();
-  vector<int64_t> nonZeroA = paramJsonData["A"].get<vector<int64_t>>();
-  vector<vector<int64_t>> nonZeroB = paramJsonData["B"].get<vector<vector<int64_t>>>();
-  vector<int64_t> rowA = paramJsonData["rA"].get<vector<int64_t>>();
-  vector<int64_t> colA = paramJsonData["cA"].get<vector<int64_t>>();
-  vector<int64_t> valA = paramJsonData["vA"].get<vector<int64_t>>();
-  vector<int64_t> rowB = paramJsonData["rB"].get<vector<int64_t>>();
-  vector<int64_t> colB = paramJsonData["cB"].get<vector<int64_t>>();
-  vector<int64_t> valB = paramJsonData["vB"].get<vector<int64_t>>();
-  vector<int64_t> rowC = paramJsonData["rC"].get<vector<int64_t>>();
-  vector<int64_t> colC = paramJsonData["cC"].get<vector<int64_t>>();
-  vector<int64_t> valC = paramJsonData["vC"].get<vector<int64_t>>();
+  // std::ifstream paramFileStream("~/zkiot_c_source/gcc/V2.0/data/program_param.json");
+  // if (!paramFileStream.is_open()) {
+  //     std::cerr << "Could not open the program_param.json file!" << std::endl;
+  // }
+  // nlohmann::json paramJsonData;
+  // paramFileStream >> paramJsonData;
+  // paramFileStream.close();
+  // vector<int64_t> nonZeroA = paramJsonData["A"].get<vector<int64_t>>();
+  // vector<vector<int64_t>> nonZeroB = paramJsonData["B"].get<vector<vector<int64_t>>>();
+  // vector<int64_t> rowA = paramJsonData["rA"].get<vector<int64_t>>();
+  // vector<int64_t> colA = paramJsonData["cA"].get<vector<int64_t>>();
+  // vector<int64_t> valA = paramJsonData["vA"].get<vector<int64_t>>();
+  // vector<int64_t> rowB = paramJsonData["rB"].get<vector<int64_t>>();
+  // vector<int64_t> colB = paramJsonData["cB"].get<vector<int64_t>>();
+  // vector<int64_t> valB = paramJsonData["vB"].get<vector<int64_t>>();
+  // vector<int64_t> rowC = paramJsonData["rC"].get<vector<int64_t>>();
+  // vector<int64_t> colC = paramJsonData["cC"].get<vector<int64_t>>();
+  // vector<int64_t> valC = paramJsonData["vC"].get<vector<int64_t>>();
 
-  std::ifstream classFileStream("data/class.json");
-  if (!classFileStream.is_open()) {
-      std::cerr << "Could not open the file!" << std::endl;
-  }
-  nlohmann::json classJsonData;
-  classFileStream >> classJsonData;
-  classFileStream.close();
+  // std::ifstream classFileStream("data/class.json");
+  // if (!classFileStream.is_open()) {
+  //     std::cerr << "Could not open the file!" << std::endl;
+  // }
+  // nlohmann::json classJsonData;
+  // classFileStream >> classJsonData;
+  // classFileStream.close();
+  // int64_t n_i, n_g, m, n, p, g;
+  // for (const auto& item : classJsonData) {
+  //   if (item["Class"] == Class) {
+  //     // Number of inputs, gates, m, n, p, and g
+  //     n_i = item["n_i"].get<int64_t>();
+  //     n_g = item["n_g"].get<int64_t>();
+  //     m = item["m"].get<int64_t>();
+  //     n = item["n"].get<int64_t>();
+  //     p = item["p"].get<int64_t>();
+  //     g = item["g"].get<int64_t>();
+
+  //     break; // Stop after finding the first matching "Class"
+  //   }
+  // }
+
+
+
+
+  int64_t Class = 3;
+  vector<int64_t> ck = {11,1309,155771,75218,559337,1106584,774458,1531168,950324,641049,760386,1534921,1396931,81010,1248585,889367,100450,205303,934563,443811,785558,1173747,375250,1018404,350964,1485012,492723,1571123,670006,849627,406353,1363019,1080445,1020559,607409,113868,123724,1296588,1566761,150928,1177222,788775,1556570,616520,1198077,1592199,1499729,565725};
+  int64_t vk = 1309;
+  vector<int64_t> rowA_x = {469905,454730,902750,1066695,147929,664621,100821,739930};
+  vector<int64_t> colA_x = {852571,161650,1543130,388105,25447,115593,41803,1423853};
+  vector<int64_t> valA_x = {45582,805822,1515001,845780,376464,555047,619759,350157};
+  vector<int64_t> rowB_x = {207638,1648400,628166,1004557,70602,512634,138616,336768};
+  vector<int64_t> colB_x = {696691,681295,508950,970277,590324,1035579,1484980,602991};
+  vector<int64_t> valB_x = {597622,1323143,17995,122272,1142736,702189,63198,1027496};
+  vector<int64_t> rowC_x = {469905,454730,902750,1066695,147929,664621,100821,739930};
+  vector<int64_t> colC_x = {469905,454730,902750,1066695,147929,664621,100821,739930};
+  vector<int64_t> valC_x = {1083027,544916,467855,1126753,525698,1158417,1188860,435354};
+
+  vector<int64_t> nonZeroA = {19,0,19,19};
+  vector<vector<int64_t>> nonZeroB = {{33,20,1},{34,0,11},{34,19,1},{35,21,1},{36,21,1}};
+  vector<int64_t> rowA = {1190739,1632256,159545,899305,373750,668759,747302,1444226};
+  vector<int64_t> colA = {1195510,1,1195510,1195510,373750,668759,747302,1444226};
+  vector<int64_t> valA = {78649,1088607,1609535,944507,0,0,0,0};
+  vector<int64_t> rowB = {1190739,1632256,1632256,159545,899305,668759,747302,1444226};
+  vector<int64_t> colB = {1536124,1,1195510,1669124,1669124,668759,747302,1444226};
+  vector<int64_t> valB = {1640009,226430,1640009,949756,324772,0,0,0};
+  vector<int64_t> rowC = {1190739,1632256,159545,899305,373750,668759,747302,1444226};
+  vector<int64_t> colC = {1190739,1632256,159545,899305,373750,668759,747302,1444226};
+  vector<int64_t> valC = {1495917,1550025,1582341,679291,0,0,0,0};
+
   int64_t n_i, n_g, m, n, p, g;
-  for (const auto& item : classJsonData) {
-    if (item["Class"] == Class) {
-      // Number of inputs, gates, m, n, p, and g
-      n_i = item["n_i"].get<int64_t>();
-      n_g = item["n_g"].get<int64_t>();
-      m = item["m"].get<int64_t>();
-      n = item["n"].get<int64_t>();
-      p = item["p"].get<int64_t>();
-      g = item["g"].get<int64_t>();
+  n_i = 32;
+  n_g = 4;
+  m = 8;
+  n = 37;
+  p = 1678321;
+  g = 11;
 
-      break; // Stop after finding the first matching "Class"
-    }
-  }
+
 
   int64_t t = n_i + 1;
 
@@ -158,22 +198,20 @@ void proofGenerator() {
   vector<vector<int64_t>> C(n, vector<int64_t>(n, 0ll));
 
   int64_t rowMatA = n_i;
-  for (const auto& entry : nonZeroA) {
-    rowMatA++;
-    int64_t col = entry;
-    
+  for (int64_t i = 0; i < nonZeroA.size(); i++) {
+    int64_t col = nonZeroA[i];
     // Set the value in the matrix
-    A[rowMatA][col] = 1;
+    A[i][col] = 1;
   }
-  for (const auto& entry : nonZeroB) {
-    int64_t row = entry[0];
-    int64_t col = entry[1];
-    int64_t val = entry[2];
+  for (int64_t i = 0; i < nonZeroB.size(); i++) {
+    int64_t row = nonZeroB[i][0];
+    int64_t col = nonZeroB[i][1];
+    int64_t val = nonZeroB[i][2];
     
     // Set the value in the matrix
     B[row][col] = val;
   }
-  for(int64_t i = n; i > n - n_g; i--) {
+  for(int64_t i = (n - n_g); i < n; i++) {
     // Set the value in the matrix
     C[i][i] = 1;
   }
@@ -181,7 +219,7 @@ void proofGenerator() {
   Polynomial::printMatrix(B, "B");
   Polynomial::printMatrix(C, "C");
 
-  vector<int64_t> z;
+  // vector<int64_t> z;
 
   vector<int64_t> H;
   int64_t w, g_n;
@@ -217,7 +255,9 @@ void proofGenerator() {
   vector<vector<int64_t>> Az(n, vector<int64_t>(1, 0));
   vector<vector<int64_t>> Bz(n, vector<int64_t>(1, 0));
   vector<vector<int64_t>> Cz(n, vector<int64_t>(1, 0));
-  // Matrix multiplication with pulo
+  cout << "n_i: " << n_i << endl;
+  
+  // Matrix multiplication with modulo
   for (int64_t i = 0; i < n; i++) {
     for (int64_t j = 0; j < 1; j++) {
       for (int64_t k = 0; k < n; k++) {
@@ -227,19 +267,19 @@ void proofGenerator() {
       }
     }
   }
-  cout << "Matrice Az under pulo " << p << " is: ";
+  cout << "Matrice Az under modulo " << p << " is: ";
   for (int64_t i = 0; i < n; i++) {
     cout << Az[i][0] << " ";
   }
   cout << endl;
 
-  cout << "Matrice Bz under pulo " << p << " is: ";
+  cout << "Matrice Bz under modulo " << p << " is: ";
   for (int64_t i = 0; i < n; i++) {
     cout << Bz[i][0] << " ";
   }
   cout << endl;
 
-  cout << "Matrice Cz under pulo " << p << " is: ";
+  cout << "Matrice Cz under modulo " << p << " is: ";
   for (int64_t i = 0; i < n; i++) {
     cout << Cz[i][0] << " ";
   }
@@ -333,7 +373,7 @@ void proofGenerator() {
       // Apply pulus to keep the number within the bounds
       w_bar_denominator[i] %= p;
 
-      // // If result becomes negative, convert it to a positive equivalent under pulo
+      // // If result becomes negative, convert it to a positive equivalent under modulo
       if (w_bar_denominator[i] < 0) {
         w_bar_denominator[i] += p;
       }
@@ -794,82 +834,35 @@ void proofGenerator() {
     "Firmware_Version": float,
     "code_block": 64-bit Array,
   */
+  ordered_json proof;
+  proof.clear();
+  proof["P1AHP"] = sigma1;
+  proof["P2AHP"] = w_hat_x;
+  proof["P3AHP"] = z_hatA;
+  proof["P4AHP"] = z_hatB;
+  proof["P5AHP"] = z_hatC;
+  proof["P6AHP"] = h_0_x;
+  proof["P7AHP"] = s_x;
+  proof["P8AHP"] = g_1_x;
+  proof["P9AHP"] = h_1_x;
+  proof["P10AHP"] = sigma2;
+  proof["P11AHP"] = g_2_x;
+  proof["P12AHP"] = h_2_x;
+  proof["P13AHP"] = sigma3;
+  proof["P14AHP"] = g_3_x;
+  proof["P15AHP"] = h_3_x;
+  proof["P16AHP"] = y_prime;
+  proof["P17AHP"] = p_17_AHP;
 
+  cout << "\n\n\n\n" << proof << "\n\n\n\n";
 
-
-  //create a Json document to store proof-realated data
-  /*
-  DynamicJsonDocument doc(2048);
-  JsonArray jsonArray;
-  jsonArray = doc.createNestedArray("P1AHP");
-  jsonArray.add(sigma1);
-  jsonArray = doc.createNestedArray("P2AHP");
-  for (int64_t value : w_hat_x) {
-    jsonArray.add(value);
+  std::string proofString = proof.dump();
+  std::ofstream proofFile("data/proof.json");
+  if (proofFile.is_open()) {
+      proofFile << proofString;
+      proofFile.close();
+      std::cout << "JSON data has been written to proof.json\n";
+  } else {
+      std::cerr << "Error opening file for writing proof.json\n";
   }
-  jsonArray = doc.createNestedArray("P3AHP");
-  for (int64_t value : z_hatA) {
-    jsonArray.add(value);
-  }
-  jsonArray = doc.createNestedArray("P4AHP");
-  for (int64_t value : z_hatB) {
-    jsonArray.add(value);
-  }
-  jsonArray = doc.createNestedArray("P5AHP");
-  for (int64_t value : z_hatC) {
-    jsonArray.add(value);
-  }
-  jsonArray = doc.createNestedArray("P6AHP");
-  for (int64_t value : h_0_x) {
-    jsonArray.add(value);
-  }
-  jsonArray = doc.createNestedArray("P7AHP");
-  for (int64_t value : s_x) {
-    jsonArray.add(value);
-  }
-  jsonArray = doc.createNestedArray("P8AHP");
-  for (int64_t value : g_1_x) {
-    jsonArray.add(value);
-  }
-  jsonArray = doc.createNestedArray("P9AHP");
-  for (int64_t value : h_1_x) {
-    jsonArray.add(value);
-  }
-  jsonArray = doc.createNestedArray("P10AHP");
-  jsonArray.add(sigma2);
-  jsonArray = doc.createNestedArray("P11AHP");
-  for (int64_t value : g_2_x) {
-    jsonArray.add(value);
-  }
-  jsonArray = doc.createNestedArray("P12AHP");
-  for (int64_t value : h_2_x) {
-    jsonArray.add(value);
-  }
-  jsonArray = doc.createNestedArray("P13AHP");
-  jsonArray.add(sigma3);
-  jsonArray = doc.createNestedArray("P14AHP");
-  for (int64_t value : g_3_x) {
-    jsonArray.add(value);
-  }
-  jsonArray = doc.createNestedArray("P15AHP");
-  for (int64_t value : h_3_x) {
-    jsonArray.add(value);
-  }
-  jsonArray = doc.createNestedArray("P16AHP");
-  jsonArray.add(y_prime);
-  jsonArray = doc.createNestedArray("P17AHP");
-  jsonArray.add(p_17_AHP);
-
-  jsonArray = doc.createNestedArray("P18AHP");
-  for (int64_t value : z) {
-    jsonArray.add(value);
-  }
-  jsonArray = doc.createNestedArray("ComP_AHP_x");
-  jsonArray.add(ComP_AHP_x);
-
-  String output;
-  serializeJson(doc, output);
-  removeFile("/proof.json");
-  writeFile("/proof.json", output);
-  */
 }

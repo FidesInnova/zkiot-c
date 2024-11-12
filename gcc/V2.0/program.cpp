@@ -11,6 +11,8 @@ int main() {
         "mul s2, s2, s3\n"
         "addi s2, s2, 11\n"
         "mul s2, s2, s4\n"
+        "mul s2, s2, s4\n"
     );
+    proofGenerator();
     return 0;
 }

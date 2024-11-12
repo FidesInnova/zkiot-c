@@ -23318,16 +23318,10 @@ main:
 	li s2, 4
 li s3, 5
 li s4, 26
-jal store_register_instances
 mul s2, s2, s3
-la t0, x18_array
-sw x18, 4(t0)
 addi s2, s2, 11
-sw x18, 8(t0)
 mul s2, s2, s4
-sw x18, 12(t0)
 mul s2, s2, s4
-sw x18, 16(t0)
 
 # 0 "" 2
  #NO_APP
@@ -73134,48 +73128,3 @@ DW.ref.__gxx_personality_v0:
 	.globl	__gxx_personality_v0
 	.ident	"GCC: () 14.2.0"
 	.section	.note.GNU-stack,"",@progbits
-#### Subroutine Code (`store_registers.s`)
-
-        .data
-x0_array:    .space 4   # Array for x0
-x1_array:    .space 4   # Array for x1
-x2_array:    .space 4   # Array for x2
-x3_array:    .space 4   # Array for x3
-x4_array:    .space 4   # Array for x4
-x5_array:    .space 4   # Array for x5
-x6_array:    .space 4   # Array for x6
-x7_array:    .space 4   # Array for x7
-x8_array:    .space 4   # Array for x8
-x9_array:    .space 4   # Array for x9
-x10_array:    .space 4   # Array for x10
-x11_array:    .space 4   # Array for x11
-x12_array:    .space 4   # Array for x12
-x13_array:    .space 4   # Array for x13
-x14_array:    .space 4   # Array for x14
-x15_array:    .space 4   # Array for x15
-x16_array:    .space 4   # Array for x16
-x17_array:    .space 4   # Array for x17
-x18_array:    .space 20   # Array for x18
-x19_array:    .space 4   # Array for x19
-x20_array:    .space 4   # Array for x20
-x21_array:    .space 4   # Array for x21
-x22_array:    .space 4   # Array for x22
-x23_array:    .space 4   # Array for x23
-x24_array:    .space 4   # Array for x24
-x25_array:    .space 4   # Array for x25
-x26_array:    .space 4   # Array for x26
-x27_array:    .space 4   # Array for x27
-x28_array:    .space 4   # Array for x28
-x29_array:    .space 4   # Array for x29
-x30_array:    .space 4   # Array for x30
-x31_array:    .space 4   # Array for x31
-
-    .text
-      .globl store_register_instances
-  store_register_instances:
-      # Store each register's value in its respective array
-      la t0, x18_array
-      sw x0, 0(t0)            # Store x0 in x0_array at index given by a0
-      
-      ret                            # Return from function
-

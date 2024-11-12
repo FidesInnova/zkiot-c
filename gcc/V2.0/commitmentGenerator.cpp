@@ -173,7 +173,7 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
   int64_t index = 0;
 
   vector<int64_t> spaceSize(32, 4);
-  
+  vector<int64_t> rdList;
   while (std::getline(assemblyFileStream, line)) {
     // Insert variables before the specified lines
     if (currentLineNumber == startLine) {
@@ -185,7 +185,9 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
       rd = Polynomial::trim(rd);
       rd = Polynomial::removeCommas(rd);
       instructions.push_back(line);
-      newAssemblyFileStream << "sw x" << std::to_string(registerMap[rd]) << ", x" << std::to_string(registerMap[rd]) << "_array(" + std::to_string(spaceSize[registerMap[rd]]) + ")\n";
+      rdList.push_back(registerMap[rd]);
+      newAssemblyFileStream << "la t0, x" << std::to_string(registerMap[rd]) << "_array" << endl;
+      newAssemblyFileStream << "sw x" << std::to_string(registerMap[rd]) << ", " << std::to_string(spaceSize[registerMap[rd]]) << "(t0)" << endl;
       spaceSize[registerMap[rd]] += 4;
     }
     else if(currentLineNumber > startLine && currentLineNumber <= endLine){
@@ -196,11 +198,16 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
       rd = Polynomial::trim(rd);
       rd = Polynomial::removeCommas(rd);
       instructions.push_back(line);
-      newAssemblyFileStream << "sw x" << std::to_string(registerMap[rd]) << ", x" << std::to_string(registerMap[rd]) << "_array(" + std::to_string(spaceSize[registerMap[rd]]) + ")\n";
+      rdList.push_back(registerMap[rd]);
+      newAssemblyFileStream << "la t0, x" << std::to_string(registerMap[rd]) << "_array" << endl;
+      newAssemblyFileStream << "sw x" << std::to_string(registerMap[rd]) << ", " << std::to_string(spaceSize[registerMap[rd]]) << "(t0)\n";
       spaceSize[registerMap[rd]] += 4;
     }
     else if (currentLineNumber == endLine + 1){
-      newAssemblyFileStream << "jal proofGenerator\n";
+      for(int64_t i = 0; i < n_i; i++) {
+        
+      }
+      newAss << rdList
       newAssemblyFileStream << line << std::endl;
     }
     else {
@@ -212,47 +219,79 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
 
   std::string assemblyCode = "#### Subroutine Code (`store_registers.s`)\n\n";
   assemblyCode +=
-  "```assembly\n"
   "        .data\n";
   for (int i = 0; i < 32; i++) {
     assemblyCode += "x" + std::to_string(i) + "_array:    .space " + std::to_string(spaceSize[i]) + "   # Array for x" + std::to_string(i) + "\n";
   }
-  "\n    .text"
+  assemblyCode += "z_array:    .space " + std::to_string((n_i + n_g + 1) * 4) + "   # Array for z\n";
+
+  assemblyCode += "\n    .text\n"
   "      .globl store_register_instances\n"
   "  store_register_instances:\n"
-  "      # Store each register's value in its respective array\n"
-  "      sw x0, x0_array(0)            # Store x0 in x0_array at index given by a0\n"
-  "      sw x1, x1_array(0)            # Store x1 in x1_array at index given by a0\n"
-  "      sw x2, x2_array(0)            # Store x2 in x2_array at index given by a0\n"
-  "      sw x3, x3_array(0)            # Store x3 in x3_array at index given by a0\n"
-  "      sw x4, x4_array(0)            # Store x4 in x4_array at index given by a0\n"
-  "      sw x5, x5_array(0)            # Store x5 in x5_array at index given by a0\n"
-  "      sw x6, x6_array(0)            # Store x6 in x6_array at index given by a0\n"
-  "      sw x7, x7_array(0)            # Store x7 in x7_array at index given by a0\n"
-  "      sw x8, x8_array(0)            # Store x8 in x8_array at index given by a0\n"
-  "      sw x9, x9_array(0)            # Store x9 in x9_array at index given by a0\n"
-  "      sw x10, x10_array(0)          # Store x10 in x10_array at index given by a0\n"
-  "      sw x11, x11_array(0)          # Store x11 in x11_array at index given by a0\n"
-  "      sw x12, x12_array(0)          # Store x12 in x12_array at index given by a0\n"
-  "      sw x13, x13_array(0)          # Store x13 in x13_array at index given by a0\n"
-  "      sw x14, x14_array(0)          # Store x14 in x14_array at index given by a0\n"
-  "      sw x15, x15_array(0)          # Store x15 in x15_array at index given by a0\n"
-  "      sw x16, x16_array(0)          # Store x16 in x16_array at index given by a0\n"
-  "      sw x17, x17_array(0)          # Store x17 in x17_array at index given by a0\n"
-  "      sw x18, x18_array(0)          # Store x18 in x18_array at index given by a0\n"
-  "      sw x19, x19_array(0)          # Store x19 in x19_array at index given by a0\n"
-  "      sw x20, x20_array(0)          # Store x20 in x20 array at index given by a0\n"
-  "      sw x21, x21_array(0)          # Store x21 in x21_array at index given by a0\n"
-  "      sw x22, x22_array(0)          # Store x22 in x22_array at index given by a0\n"
-  "      sw x23, x23_array(0)          # Store x23 in x23_array at index given by a0\n"
-  "      sw x24, x24_array(0)          # Store x24 in x24_array at index given by a0\n"
-  "      sw x25, x25_array(0)          # Store x25 in x25_array at index given by a0\n"
-  "      sw x26, x26_array(0)          # Store x26 in x26_array at index given by a0\n"
-  "      sw x27, x27_array(0)          # Store x27 in x27_array at index given by a0\n"
-  "      sw x28, x28_array(0)          # Store x28 in x28_array at index given by a0\n"
-  "      sw x29, x29_array(0)          # Store x29 in x29_array at index given by a0\n"
-  "      sw x30, x30_array(0)          # Store x30 in x30_array at index given by a0\n"
-  "      sw x31, x31_array(0)          # Store x31 in x31_array at index given by a0\n"
+  "      # Store each register's value in its respective array\n""      la t0, x0_array\n"
+  "      sw x0, 0(t0)            # Store x0 in x0_array\n"
+  "      la t0, x1_array\n"
+  "      sw x1, 0(t0)            # Store x1 in x1_array\n"
+  "      la t0, x2_array\n"
+  "      sw x2, 0(t0)            # Store x2 in x2_array\n"
+  "      la t0, x3_array\n"
+  "      sw x3, 0(t0)            # Store x3 in x3_array\n"
+  "      la t0, x4_array\n"
+  "      sw x4, 0(t0)            # Store x4 in x4_array\n"
+  "      la t0, x5_array\n"
+  "      sw x5, 0(t0)            # Store x5 in x5_array\n"
+  "      la t0, x6_array\n"
+  "      sw x6, 0(t0)            # Store x6 in x6_array\n"
+  "      la t0, x7_array\n"
+  "      sw x7, 0(t0)            # Store x7 in x7_array\n"
+  "      la t0, x8_array\n"
+  "      sw x8, 0(t0)            # Store x8 in x8_array\n"
+  "      la t0, x9_array\n"
+  "      sw x9, 0(t0)            # Store x9 in x9_array\n"
+  "      la t0, x10_array\n"
+  "      sw x10, 0(t0)           # Store x10 in x10_array\n"
+  "      la t0, x11_array\n"
+  "      sw x11, 0(t0)           # Store x11 in x11_array\n"
+  "      la t0, x12_array\n"
+  "      sw x12, 0(t0)           # Store x12 in x12_array\n"
+  "      la t0, x13_array\n"
+  "      sw x13, 0(t0)           # Store x13 in x13_array\n"
+  "      la t0, x14_array\n"
+  "      sw x14, 0(t0)           # Store x14 in x14_array\n"
+  "      la t0, x15_array\n"
+  "      sw x15, 0(t0)           # Store x15 in x15_array\n"
+  "      la t0, x16_array\n"
+  "      sw x16, 0(t0)           # Store x16 in x16_array\n"
+  "      la t0, x17_array\n"
+  "      sw x17, 0(t0)           # Store x17 in x17_array\n"
+  "      la t0, x18_array\n"
+  "      sw x18, 0(t0)           # Store x18 in x18_array\n"
+  "      la t0, x19_array\n"
+  "      sw x19, 0(t0)           # Store x19 in x19_array\n"
+  "      la t0, x20_array\n"
+  "      sw x20, 0(t0)           # Store x20 in x20_array\n"
+  "      la t0, x21_array\n"
+  "      sw x21, 0(t0)           # Store x21 in x21_array\n"
+  "      la t0, x22_array\n"
+  "      sw x22, 0(t0)           # Store x22 in x22_array\n"
+  "      la t0, x23_array\n"
+  "      sw x23, 0(t0)           # Store x23 in x23_array\n"
+  "      la t0, x24_array\n"
+  "      sw x24, 0(t0)           # Store x24 in x24_array\n"
+  "      la t0, x25_array\n"
+  "      sw x25, 0(t0)           # Store x25 in x25_array\n"
+  "      la t0, x26_array\n"
+  "      sw x26, 0(t0)           # Store x26 in x26_array\n"
+  "      la t0, x27_array\n"
+  "      sw x27, 0(t0)           # Store x27 in x27_array\n"
+  "      la t0, x28_array\n"
+  "      sw x28, 0(t0)           # Store x28 in x28_array\n"
+  "      la t0, x29_array\n"
+  "      sw x29, 0(t0)           # Store x29 in x29_array\n"
+  "      la t0, x30_array\n"
+  "      sw x30, 0(t0)           # Store x30 in x30_array\n"
+  "      la t0, x31_array\n"
+  "      sw x31, 0(t0)           # Store x31 in x31_array\n"
   "      \n"
   "      ret                            # Return from function\n";
 
@@ -637,8 +676,6 @@ void commitmentGenerator(const std::string &setupFile) {
   } else {
       std::cerr << "Error opening file for writing\n";
   }
-
-
 
   vector<vector<int64_t>> nonZeroB;
   for(int64_t i = 0; i < nonZeroRowsB[0].size(); i++){
