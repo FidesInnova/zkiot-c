@@ -236,7 +236,7 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
       newAssemblyFileStream << "sw t0, 0(a0)" << endl;
       for(int64_t i = 0; i < n_i; i++) {
         newAssemblyFileStream << "la a1, x" << std::to_string(i) << "_array" << endl;
-        newAssemblyFileStream << "lw t0, 0(" << std::to_string(i) << ")" << endl;
+        newAssemblyFileStream << "lw t0, 0(a1)" << endl;
         newAssemblyFileStream << "sw t0, " << std::to_string((i+1)*4) << "(a0)" << endl;
       }
       vector<int64_t> spaceSizeZ(32, 4);
@@ -244,14 +244,14 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
         spaceSizeZ[rdList[i]] += 4;
         if(spaceSizeZ[rdList[i]] != spaceSize[rdList[i]]) {
           newAssemblyFileStream << "la a1, x" << std::to_string(rdList[i]) << "_array" << endl;
-          newAssemblyFileStream << "lw t0, " << std::to_string(spaceSizeZ[rdList[i]]-4) << "(" << std::to_string(rdList[i]) << ")" << endl;
+          newAssemblyFileStream << "lw t0, " << std::to_string(spaceSizeZ[rdList[i]]-4) << "(a1)" << endl;
           newAssemblyFileStream << "sw t0, " << std::to_string((n_i+i+1)*4) << "(a0)" << endl;
         }
       }
       for(int64_t i = 0; i < n_g; i++) {
         if(spaceSizeZ[rdList[i]] == spaceSize[rdList[i]]) {
           newAssemblyFileStream << "la a1, x" << std::to_string(rdList[i]) << "_array" << endl;
-          newAssemblyFileStream << "lw t0, " << std::to_string(spaceSizeZ[rdList[i]]-4) << "(" << std::to_string(rdList[i]) << ")" << endl;
+          newAssemblyFileStream << "lw t0, " << std::to_string(spaceSizeZ[rdList[i]]-4) << "(a1)" << endl;
           newAssemblyFileStream << "sw t0, " << std::to_string((n_i+n_g+i)*4) << "(a0)" << endl;
           spaceSizeZ[rdList[i]] += 4;
         }

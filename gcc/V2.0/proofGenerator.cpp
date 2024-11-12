@@ -75,7 +75,7 @@ extern "C" int32_t x31_array[1];
 extern "C" int32_t z[];
 
 void proofGenerator() {
-  cout << x18_array[0] << endl;
+  cout << "z = " << z << endl;
   // vector<int64_t> z = {1, x0_array[0], x1_array[0], x2_array[0], x3_array[0], x4_array[0], x5_array[0], x6_array[0], x7_array[0], x8_array[0], x9_array[0],
   //                         x10_array[0], x11_array[0], x12_array[0], x13_array[0], x14_array[0], x15_array[0], x16_array[0], x17_array[0], x18_array[0], x19_array[0],
   //                         x20_array[0], x21_array[0], x22_array[0], x23_array[0], x24_array[0], x25_array[0], x26_array[0], x27_array[0], x28_array[0], x29_array[0], 
