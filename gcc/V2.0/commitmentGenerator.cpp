@@ -98,6 +98,8 @@ std::unordered_map<std::string, int> registerMap = {
     {"t5", 30},   {"t6", 31}
 };
 
+int64_t n_i, n_g, m, n, p, g;
+
 std::vector<std::string> instructions;
 int64_t Class;
 string commitmentID;
@@ -127,6 +129,30 @@ std::pair<int64_t, int64_t> parseDeviceConfig(const std::string &configFile, nlo
   IoT_Device_Name = config["IoT_Device_Name"].get<string>();
   Device_Hardware_Version = config["Device_Hardware_Version"].get<float>();
   Firmware_Version = config["Firmware_Version"].get<float>();
+
+
+
+  std::ifstream classFileStream("class.json");
+  if (!classFileStream.is_open()) {
+      std::cerr << "Could not open the file!" << std::endl;
+  }
+  nlohmann::json classJsonData;
+  classFileStream >> classJsonData;
+  classFileStream.close();
+  for (const auto& item : classJsonData) {
+    if (item["Class"] == Class) {
+      // Number of inputs, gates, m, n, p, and g
+      n_i = item["n_i"].get<int64_t>();
+      n_g = item["n_g"].get<int64_t>();
+      m = item["m"].get<int64_t>();
+      n = item["n"].get<int64_t>();
+      p = item["p"].get<int64_t>();
+      g = item["g"].get<int64_t>();
+
+      std::cout << "n_i: " << n_i << ", n_g: " << n_g << std::endl;
+      break; // Stop after finding the first matching "Class"
+    }
+  }
 
   return {startLine, endLine};
 }
@@ -203,11 +229,33 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
       newAssemblyFileStream << "sw x" << std::to_string(registerMap[rd]) << ", " << std::to_string(spaceSize[registerMap[rd]]) << "(t0)\n";
       spaceSize[registerMap[rd]] += 4;
     }
+
     else if (currentLineNumber == endLine + 1){
+      newAssemblyFileStream << "la a0, z_array" << endl;
+      newAssemblyFileStream << "li t0, 1" << endl;
+      newAssemblyFileStream << "sw t0, 0(a0)" << endl;
       for(int64_t i = 0; i < n_i; i++) {
-        
+        newAssemblyFileStream << "la a1, x" << std::to_string(i) << "_array" << endl;
+        newAssemblyFileStream << "lw t0, 0(" << std::to_string(i) << ")" << endl;
+        newAssemblyFileStream << "sw t0, " << std::to_string((i+1)*4) << "(a0)" << endl;
       }
-      newAss << rdList
+      vector<int64_t> spaceSizeZ(32, 4);
+      for(int64_t i = 0; i < n_g; i++){
+        spaceSizeZ[rdList[i]] += 4;
+        if(spaceSizeZ[rdList[i]] != spaceSize[rdList[i]]) {
+          newAssemblyFileStream << "la a1, x" << std::to_string(rdList[i]) << "_array" << endl;
+          newAssemblyFileStream << "lw t0, " << std::to_string(spaceSizeZ[rdList[i]]-4) << "(" << std::to_string(rdList[i]) << ")" << endl;
+          newAssemblyFileStream << "sw t0, " << std::to_string((n_i+i+1)*4) << "(a0)" << endl;
+        }
+      }
+      for(int64_t i = 0; i < n_g; i++) {
+        if(spaceSizeZ[rdList[i]] == spaceSize[rdList[i]]) {
+          newAssemblyFileStream << "la a1, x" << std::to_string(rdList[i]) << "_array" << endl;
+          newAssemblyFileStream << "lw t0, " << std::to_string(spaceSizeZ[rdList[i]]-4) << "(" << std::to_string(rdList[i]) << ")" << endl;
+          newAssemblyFileStream << "sw t0, " << std::to_string((n_i+n_g+i)*4) << "(a0)" << endl;
+          spaceSizeZ[rdList[i]] += 4;
+        }
+      }
       newAssemblyFileStream << line << std::endl;
     }
     else {
@@ -327,28 +375,6 @@ void commitmentGenerator(const std::string &setupFile) {
   int64_t vk = setupJsonData["vk"].get<int64_t>();
 
   
-  std::ifstream classFileStream("class.json");
-  if (!classFileStream.is_open()) {
-      std::cerr << "Could not open the file!" << std::endl;
-  }
-  nlohmann::json classJsonData;
-  classFileStream >> classJsonData;
-  classFileStream.close();
-  int64_t n_i, n_g, m, n, p, g;
-  for (const auto& item : classJsonData) {
-    if (item["Class"] == Class) {
-      // Number of inputs, gates, m, n, p, and g
-      n_i = item["n_i"].get<int64_t>();
-      n_g = item["n_g"].get<int64_t>();
-      m = item["m"].get<int64_t>();
-      n = item["n"].get<int64_t>();
-      p = item["p"].get<int64_t>();
-      g = item["g"].get<int64_t>();
-
-      std::cout << "n_i: " << n_i << ", n_g: " << n_g << std::endl;
-      break; // Stop after finding the first matching "Class"
-    }
-  }
 
 
  for (const auto& instr : instructions) {

@@ -72,6 +72,7 @@ extern "C" int32_t x28_array[1];
 extern "C" int32_t x29_array[1];
 extern "C" int32_t x30_array[1];
 extern "C" int32_t x31_array[1];
+extern "C" int32_t z[];
 
 void proofGenerator() {
   cout << x18_array[0] << endl;
@@ -79,7 +80,7 @@ void proofGenerator() {
   //                         x10_array[0], x11_array[0], x12_array[0], x13_array[0], x14_array[0], x15_array[0], x16_array[0], x17_array[0], x18_array[0], x19_array[0],
   //                         x20_array[0], x21_array[0], x22_array[0], x23_array[0], x24_array[0], x25_array[0], x26_array[0], x27_array[0], x28_array[0], x29_array[0], 
   //                         x30_array[0], x31_array[0]};
-  vector<int64_t> z = {1, 4, 20, 31, 806, 20956};
+  // vector<int64_t> z = {1, 4, 20, 31, 806, 20956};
   // std::ifstream setupFileStream("data/setup3.json");
   // if (!setupFileStream.is_open()) {
   //     std::cerr << "Could not open the setup3.json file!" << std::endl;
