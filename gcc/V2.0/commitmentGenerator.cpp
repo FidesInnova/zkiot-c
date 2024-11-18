@@ -1,79 +1,3 @@
-/*
-  Read the directory that containing program.s, device_config.json, and setup.json
-
-  program.s
-    .file "program.cpp"
-    .option nopic
-    .attribute arch, "rv32i2p1_m2p0_a2p1_f2p2_d2p2_c2p0_zicsr2p0_zifencei2p0"
-    .attribute unaligned_access, 0
-    .attribute stack_align, 16
-    .text
-    .align  1
-    .globl  main
-    .type main, @function
-  main:
-  .LFB0:
-    .cfi_startproc
-    addi  sp,sp,-32
-    .cfi_def_cfa_offset 32
-    sw  ra,28(sp)
-    sw  s0,24(sp)
-    .cfi_offset 1, -4
-    .cfi_offset 8, -8
-    addi  s0,sp,32
-    .cfi_def_cfa 8, 0
-    li  a5,297
-    sw  a5,-20(s0)
-    j .L2
-  .L3:
-    lw  a5,-20(s0)
-    addi  a5,a5,383
-    sw  a5,-20(s0)
-  .L2:
-    lw  a4,-20(s0)
-    li  a5,8192
-    addi  a5,a5,1807
-    ble a4,a5,.L3
-    li  a5,0
-    mv  a0,a5
-    lw  ra,28(sp)
-    .cfi_restore 1
-    lw  s0,24(sp)
-    .cfi_restore 8
-    .cfi_def_cfa 2, 32
-    addi  sp,sp,32
-    .cfi_def_cfa_offset 0
-    jr  ra
-    .cfi_endproc
-  .LFE0:
-    .size main, .-main
-    .ident  "GCC: (g04696df09) 14.2.0"
-    .section  .note.GNU-stack,"",@progbits
-
-
-Read the Class and code_block from device_config.json to be used in the code and pass all parameters to the program_commitment.json.
-  device_config.json
-  {
-    "Class": 32-bit Integer,
-    "IoT_Manufacturer_Name": String,
-    "IoT_Device_Name": String,
-    "Device_Hardware_Version": float,
-    "Firmware_Version": float,
-    "code_block": 64-bit Array
-  }
-
-
-  setup.json
-  {
-    "Class":  32-bit Integer,
-    "ck": 64-bit Integer Array,
-    "vk": 64-bit Integer
-  }
-
-*/
-
-// #include "fidesinnova.h"
-
 #include "polynomial.h"
 #include <iostream>
 #include <fstream>
@@ -100,13 +24,15 @@ std::unordered_map<std::string, int> registerMap = {
 
 int64_t n_i, n_g, m, n, p, g;
 
+std::string configFile = "device_config.json", setupFile = "data/setup2.json", assemblyFile = "program.s", newAssemblyFile = "program_new.s";
+
 std::vector<std::string> instructions;
 int64_t Class;
 string commitmentID;
 string IoT_Manufacturer_Name;
 string IoT_Device_Name;
-float Device_Hardware_Version;
-float Firmware_Version;
+string Device_Hardware_Version;
+string Firmware_Version;
 
 // Function to read JSON config file and parse lines to read from assembly file
 std::pair<int64_t, int64_t> parseDeviceConfig(const std::string &configFile, nlohmann::json &config) {
@@ -125,10 +51,10 @@ std::pair<int64_t, int64_t> parseDeviceConfig(const std::string &configFile, nlo
   int64_t endLine = config["code_block"][1].get<int64_t>();
   Class = config["Class"].get<int64_t>();
   commitmentID = config["commitmentID"].get<string>();
-  IoT_Manufacturer_Name = config["IoT_Manufacturer_Name"].get<string>();
-  IoT_Device_Name = config["IoT_Device_Name"].get<string>();
-  Device_Hardware_Version = config["Device_Hardware_Version"].get<float>();
-  Firmware_Version = config["Firmware_Version"].get<float>();
+  IoT_Manufacturer_Name = config["iot_manufacturer_name"].get<string>();
+  IoT_Device_Name = config["iot_device_name"].get<string>();
+  Device_Hardware_Version = config["device_hardware_version"].get<string>();
+  Firmware_Version = config["firmware_version"].get<string>();
 
 
 
@@ -139,20 +65,13 @@ std::pair<int64_t, int64_t> parseDeviceConfig(const std::string &configFile, nlo
   nlohmann::json classJsonData;
   classFileStream >> classJsonData;
   classFileStream.close();
-  for (const auto& item : classJsonData) {
-    if (item["Class"] == Class) {
-      // Number of inputs, gates, m, n, p, and g
-      n_i = item["n_i"].get<int64_t>();
-      n_g = item["n_g"].get<int64_t>();
-      m = item["m"].get<int64_t>();
-      n = item["n"].get<int64_t>();
-      p = item["p"].get<int64_t>();
-      g = item["g"].get<int64_t>();
-
-      std::cout << "n_i: " << n_i << ", n_g: " << n_g << std::endl;
-      break; // Stop after finding the first matching "Class"
-    }
-  }
+  string class_value = to_string(Class); // Convert integer to string class
+  n_g = classJsonData[class_value]["n_g"].get<int64_t>();
+  n_i = classJsonData[class_value]["n_i"].get<int64_t>();
+  n   = classJsonData[class_value]["n"].get<int64_t>();
+  m   = classJsonData[class_value]["m"].get<int64_t>();
+  p   = classJsonData[class_value]["p"].get<int64_t>();
+  g   = classJsonData[class_value]["g"].get<int64_t>();
 
   return {startLine, endLine};
 }
@@ -235,6 +154,7 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
       newAssemblyFileStream << "li t0, 1" << endl;
       newAssemblyFileStream << "sw t0, 0(a0)" << endl;
       for(int64_t i = 0; i < n_i; i++) {
+        newAssemblyFileStream << "la a0, z_array" << endl;
         newAssemblyFileStream << "la a1, x" << std::to_string(i) << "_array" << endl;
         newAssemblyFileStream << "lw t0, 0(a1)" << endl;
         newAssemblyFileStream << "sw t0, " << std::to_string((i+1)*4) << "(a0)" << endl;
@@ -265,13 +185,13 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
     ++currentLineNumber;
   }
 
-  std::string assemblyCode = "#### Subroutine Code (`store_registers.s`)\n\n";
+  std::string assemblyCode = ".section .data\n.global z_array\nz_array:    .space " + std::to_string((n_i + n_g + 1) * 4) + "   # Array for z\n";
+  assemblyCode += "#### Subroutine Code (`store_registers.s`)\n\n";
   assemblyCode +=
   "        .data\n";
   for (int i = 0; i < 32; i++) {
     assemblyCode += "x" + std::to_string(i) + "_array:    .space " + std::to_string(spaceSize[i]) + "   # Array for x" + std::to_string(i) + "\n";
   }
-  assemblyCode += "z_array:    .space " + std::to_string((n_i + n_g + 1) * 4) + "   # Array for z\n";
 
   assemblyCode += "\n    .text\n"
   "      .globl store_register_instances\n"
@@ -363,7 +283,7 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
 }
 
 
-void commitmentGenerator(const std::string &setupFile) {
+void commitmentGenerator() {
   std::ifstream setupFileStream(setupFile);
   if (!setupFileStream.is_open()) {
       std::cerr << "Could not open the file!" << std::endl;
@@ -387,7 +307,7 @@ void commitmentGenerator(const std::string &setupFile) {
     rightStr = Polynomial::trim(rightStr);
     leftStr = Polynomial::removeCommas(leftStr);
     rightStr = Polynomial::removeCommas(rightStr);
-    // std::cout << "opcode: " << opcode << "\tleftInt: " << leftStr << "\trightInt: " << rightStr << "\n";
+    cout << "opcode: " << opcode << "\tleftStr: " << leftStr << "\trightStr: " << rightStr << "\n";
   }
   cout << "Number of immediate instructions (n_i): " << n_i << endl;
   cout << "Number of general instructions (n_g): " << n_g << endl;
@@ -404,20 +324,24 @@ void commitmentGenerator(const std::string &setupFile) {
   vector<vector<int64_t>> B(n, vector<int64_t>(n, 0ll));
   vector<vector<int64_t>> C(n, vector<int64_t>(n, 0ll));
 
+  vector<int64_t> rd_latest_used(32, 0);
   // Fill matrices based on the instructions
   for (int64_t i = 0; i < n_g; i++) {
     std::stringstream ss(instructions[i]);
     std::string opcode, rd, leftStr, rightStr;
     ss >> opcode >> rd;
-    int64_t R = std::stoi(rd.substr(1));
+    int64_t li = 0;
+    int64_t ri = 0;
 
     if (opcode == "add" || opcode == "addi" || opcode == "mul") {
       ss >> leftStr >> rightStr;
 
       // Remove commas
+      rd = Polynomial::removeCommas(rd);
       leftStr = Polynomial::removeCommas(leftStr);
       rightStr = Polynomial::removeCommas(rightStr);
       // Trim spaces
+      rd = Polynomial::trim(rd);
       leftStr = Polynomial::trim(leftStr);
       rightStr = Polynomial::trim(rightStr);
 
@@ -432,14 +356,26 @@ void commitmentGenerator(const std::string &setupFile) {
           B[1+n_i+i][0] = leftInt;
         }
         else {
-          B[1+n_i+i][1 + registerMap[leftStr]] = 1;
+          if(rd_latest_used[registerMap[leftStr]] == 0){
+            li = (registerMap[leftStr] + 1);
+          }
+          else {
+            li = rd_latest_used[registerMap[leftStr]];
+          }
+          B[1+n_i+i][li] = 1;
         }
         if(std::isdigit(rightStr[0])){
           rightInt = std::stoi(rightStr);
           B[1+n_i+i][0] = rightInt;
         }
         else {
-          B[1+n_i+i][1 + registerMap[rightStr]] = 1;
+          if(rd_latest_used[registerMap[rightStr]] == 0){
+            ri = (registerMap[rightStr] + 1);
+          }
+          else {
+            ri = rd_latest_used[registerMap[rightStr]];
+          }
+          B[1+n_i+i][ri] = 1;
         }
 
     } else if (opcode == "mul") {
@@ -448,14 +384,26 @@ void commitmentGenerator(const std::string &setupFile) {
           A[1+n_i+i][0] = leftInt;
         }
         else {
-          A[1+n_i+i][1 + registerMap[leftStr]] = 1;
+          if(rd_latest_used[registerMap[leftStr]] == 0){
+            li = (registerMap[leftStr] + 1);
+          }
+          else {
+            li = rd_latest_used[registerMap[leftStr]];
+          }
+          A[1+n_i+i][li] = 1;
         }
         if (std::isdigit(rightStr[0])) {
           rightInt = std::stoi(rightStr);
           B[1+n_i+i][0] = rightInt;
         }
         else {
-          B[1+n_i+i][1 + registerMap[rightStr]] = 1;
+          if(rd_latest_used[registerMap[rightStr]] == 0){
+            ri = (registerMap[rightStr] + 1);
+          }
+          else {
+            ri = rd_latest_used[registerMap[rightStr]];
+          }
+          B[1+n_i+i][ri] = 1;
         }
       }
     }
@@ -464,6 +412,7 @@ void commitmentGenerator(const std::string &setupFile) {
       cout << "!!! Undefined instruction in the defiend Line range !!!\n" << opcode << endl;
       std::exit(0);
     }
+    rd_latest_used[registerMap[rd]] = (1 + n_i + i);
   }
 
   Polynomial::printMatrix(A, "A");
@@ -655,8 +604,8 @@ void commitmentGenerator(const std::string &setupFile) {
     "Class": 32-bit Integer,
     "IoT_Manufacturer_Name": String,
     "IoT_Device_Name": String,
-    "Device_Hardware_Version": float,
-    "Firmware_Version": float,
+    "Device_Hardware_Version": String,
+    "Firmware_Version": String,
     "code_block": 64-bit Array
   }
 // TODO: Add commitmentID to the program_commitment.json.
@@ -667,10 +616,10 @@ void commitmentGenerator(const std::string &setupFile) {
   ordered_json commitment;
   commitment.clear();
   commitment["commitmentID"] = commitmentID;
-  commitment["IoT_Manufacturer_Name"] = IoT_Manufacturer_Name;
-  commitment["IoT_Device_Name"] = IoT_Device_Name;
-  commitment["Device_Hardware_Version"] = Device_Hardware_Version;
-  commitment["Firmware_Version"] = Firmware_Version;
+  commitment["iot_manufacturer_name"] = IoT_Manufacturer_Name;
+  commitment["iot_device_name"] = IoT_Device_Name;
+  commitment["device_hardware_version"] = Device_Hardware_Version;
+  commitment["firmware_version"] = Firmware_Version;
   commitment["Class"] = Class;
   commitment["m"] = m;
   commitment["n"] = n;
@@ -679,17 +628,14 @@ void commitmentGenerator(const std::string &setupFile) {
   commitment["RowA"] = rowA_x;
   commitment["ColA"] = colA_x;
   commitment["ValA"] = valA_x;
-
   commitment["RowB"] = rowB_x;
   commitment["ColB"] = colB_x;
   commitment["ValB"] = valB_x;
-
   commitment["RowC"] = rowC_x;
   commitment["ColC"] = colC_x;
   commitment["ValC"] = valC_x;
-  
   commitment["Curve"] = "bn128";
-  commitment["PolynomialCommitment"] = "KZG";
+  commitment["polynomial_commitment"] = "KZG";
 
   // Serialize JSON object to a string
   std::string commitmentString = commitment.dump();
@@ -737,8 +683,6 @@ void commitmentGenerator(const std::string &setupFile) {
 }
 
 int main() {
-  std::string configFile = "device_config.json", setupFile = "data/setup3.json", assemblyFile = "program.s", newAssemblyFile = "program_new.s";
-
   // TODO: Remove the hard coded file names and use the inputs from user
 
   // std::string configFile, setupFile, assemblyFile, newAssemblyFile;
@@ -760,50 +704,6 @@ int main() {
   std::cout << "Modified assembly file saved as: " << newAssemblyFile << std::endl;
 
   // TODO: update this part to be dynamic
-  commitmentGenerator(setupFile);
+  commitmentGenerator();
   return 0;
 }
-
-
-// Strore Matrix A and B in the program_param.json
-// {
-//   "A": [col1,col2,col3,...],
-//   "B": [[row,col,val],[row,col,val],[row,col,val],...]
-// }
-
-
-/*
-Read program.s and insert assembly macro SaveReg() before and after the instructions block which is specified by the code_block in the device_config.json file
-Example code_block: 37-39
-Also, add proofgen macro in assembly at the end of the last instuction and store it in program_new.s.
-
-program.s   
-36 JMP            
-37 Add        
-38 Mul        
-39 Add        
-40 BEQ      
-41 BEG      
-42 Mul      
-43 SHL   
-
-program_new.s
-36 JMP 
-37 saveRegX()
-38 Add        
-37 saveRegW0()
-39 Mul        
-37 saveRegW1()
-40 Add
-41 saveRegY()
-42 proofGen()
-43 BEQ      
-44 BEG      
-45 Mul      
-46 SHL   
-
-            
-*/
-
-
-

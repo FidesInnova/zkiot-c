@@ -38,49 +38,50 @@ using ordered_json = nlohmann::ordered_json;
 using namespace std;
 
 int64_t b = 2;
-extern "C" void store_register_instances();
+extern void store_register_instances();
 // Declare the arrays from assembly as external variables
-extern "C" int32_t x0_array[1];
-extern "C" int32_t x1_array[1];
-extern "C" int32_t x2_array[1];
-extern "C" int32_t x3_array[1];
-extern "C" int32_t x4_array[1];
-extern "C" int32_t x5_array[1];
-extern "C" int32_t x6_array[1];
-extern "C" int32_t x7_array[1];
-extern "C" int32_t x8_array[1];
-extern "C" int32_t x9_array[1];
-extern "C" int32_t x10_array[1];
-extern "C" int32_t x11_array[1];
-extern "C" int32_t x12_array[1];
-extern "C" int32_t x13_array[1];
-extern "C" int32_t x14_array[1];
-extern "C" int32_t x15_array[1];
-extern "C" int32_t x16_array[1];
-extern "C" int32_t x17_array[1];
-extern "C" int32_t x18_array[5];
-extern "C" int32_t x19_array[1];
-extern "C" int32_t x20_array[1];
-extern "C" int32_t x21_array[1];
-extern "C" int32_t x22_array[1];
-extern "C" int32_t x23_array[1];
-extern "C" int32_t x24_array[1];
-extern "C" int32_t x25_array[1];
-extern "C" int32_t x26_array[1];
-extern "C" int32_t x27_array[1];
-extern "C" int32_t x28_array[1];
-extern "C" int32_t x29_array[1];
-extern "C" int32_t x30_array[1];
-extern "C" int32_t x31_array[1];
-extern "C" int32_t z[];
+extern int32_t x0_array[];
+extern int32_t x1_array[];
+extern int32_t x2_array[];
+extern int32_t x3_array[];
+extern int32_t x4_array[];
+extern int32_t x5_array[];
+extern int32_t x6_array[];
+extern int32_t x7_array[];
+extern int32_t x8_array[];
+extern int32_t x9_array[];
+extern int32_t x10_array[];
+extern int32_t x11_array[];
+extern int32_t x12_array[];
+extern int32_t x13_array[];
+extern int32_t x14_array[];
+extern int32_t x15_array[];
+extern int32_t x16_array[];
+extern int32_t x17_array[];
+extern int32_t x18_array[];
+extern int32_t x19_array[];
+extern int32_t x20_array[];
+extern int32_t x21_array[];
+extern int32_t x22_array[];
+extern int32_t x23_array[];
+extern int32_t x24_array[];
+extern int32_t x25_array[];
+extern int32_t x26_array[];
+extern int32_t x27_array[];
+extern int32_t x28_array[];
+extern int32_t x29_array[];
+extern int32_t x30_array[];
+extern int32_t x31_array[];
 
 void proofGenerator() {
-  cout << "z = " << z << endl;
-  // vector<int64_t> z = {1, x0_array[0], x1_array[0], x2_array[0], x3_array[0], x4_array[0], x5_array[0], x6_array[0], x7_array[0], x8_array[0], x9_array[0],
-  //                         x10_array[0], x11_array[0], x12_array[0], x13_array[0], x14_array[0], x15_array[0], x16_array[0], x17_array[0], x18_array[0], x19_array[0],
-  //                         x20_array[0], x21_array[0], x22_array[0], x23_array[0], x24_array[0], x25_array[0], x26_array[0], x27_array[0], x28_array[0], x29_array[0], 
-  //                         x30_array[0], x31_array[0]};
-  // vector<int64_t> z = {1, 4, 20, 31, 806, 20956};
+extern int32_t z_array[];
+  cout << "\n\n\n\n*** Start proof generation ***" << endl;
+  vector<int64_t> z;
+  for(int64_t i = 0; i < z_array.size(); i++) {
+    cout << "z_array" << "[" << i << "] = " << z_array[i] % p << endl;
+    z.push_back(z_array[i] % p);
+  }
+
   // std::ifstream setupFileStream("data/setup3.json");
   // if (!setupFileStream.is_open()) {
   //     std::cerr << "Could not open the setup3.json file!" << std::endl;
@@ -152,10 +153,11 @@ void proofGenerator() {
   //   }
   // }
 
+  // TheArch->TheSol: MAke sure b <n_g in the proof generation phase.
 
 
 
-  int64_t Class = 3;
+  int64_t Class = 2;
   vector<int64_t> ck = {11,1309,155771,75218,559337,1106584,774458,1531168,950324,641049,760386,1534921,1396931,81010,1248585,889367,100450,205303,934563,443811,785558,1173747,375250,1018404,350964,1485012,492723,1571123,670006,849627,406353,1363019,1080445,1020559,607409,113868,123724,1296588,1566761,150928,1177222,788775,1556570,616520,1198077,1592199,1499729,565725};
   int64_t vk = 1309;
   vector<int64_t> rowA_x = {469905,454730,902750,1066695,147929,664621,100821,739930};
@@ -202,12 +204,12 @@ void proofGenerator() {
   for (int64_t i = 0; i < nonZeroA.size(); i++) {
     int64_t col = nonZeroA[i];
     // Set the value in the matrix
-    A[i][col] = 1;
+    A[i + n_i + 1][col] = 1;
   }
   for (int64_t i = 0; i < nonZeroB.size(); i++) {
-    int64_t row = nonZeroB[i][0];
-    int64_t col = nonZeroB[i][1];
-    int64_t val = nonZeroB[i][2];
+    int64_t row = nonZeroB[i + n_i + 1][0];
+    int64_t col = nonZeroB[i + n_i + 1][1];
+    int64_t val = nonZeroB[i + n_i + 1][2];
     
     // Set the value in the matrix
     B[row][col] = val;
@@ -837,6 +839,14 @@ void proofGenerator() {
   */
   ordered_json proof;
   proof.clear();
+  proof.clear(); 
+  proof["commitmentID"] = commitmentID;
+  proof["IoT_Manufacturer_Name"] = IoT_Manufacturer_Name;
+  proof["IoT_Device_Name"] = IoT_Device_Name;
+  proof["Device_Hardware_Version"] = Device_Hardware_Version;
+  proof["Firmware_Version"] = Firmware_Version;
+  proof["Class"] = Class;
+  proof["code_block"] = code_block;
   proof["P1AHP"] = sigma1;
   proof["P2AHP"] = w_hat_x;
   proof["P3AHP"] = z_hatA;
@@ -856,6 +866,10 @@ void proofGenerator() {
   proof["P17AHP"] = p_17_AHP;
 
   cout << "\n\n\n\n" << proof << "\n\n\n\n";
+
+  for(int64_t i = 0; i < 6; i++) {
+    cout << "z" << "[" << i << "] = " << z[i] << endl;
+  }
 
   std::string proofString = proof.dump();
   std::ofstream proofFile("data/proof.json");

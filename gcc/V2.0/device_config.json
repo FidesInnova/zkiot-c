@@ -1,9 +1,9 @@
 {
-  "Class": 3,
+  "Class": 2,
   "commitmentID": "123456789",
-  "IoT_Manufacturer_Name": "FidesInnova",
-  "IoT_Device_Name": "test",
-  "Device_Hardware_Version": 1,
-  "Firmware_Version": 2,
-  "code_block": [23256, 23259] 
+  "iot_manufacturer_name": "FidesInnova",
+  "iot_device_name": "test",
+  "device_hardware_version": "1",
+  "firmware_version": "2",
+  "code_block": [26283, 26286] 
 }
