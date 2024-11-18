@@ -38,7 +38,7 @@ using ordered_json = nlohmann::ordered_json;
 using namespace std;
 
 int64_t b = 2;
-extern void store_register_instances();
+extern "C" void store_register_instances();
 // Declare the arrays from assembly as external variables
 extern int32_t x0_array[];
 extern int32_t x1_array[];
@@ -74,14 +74,7 @@ extern int32_t x30_array[];
 extern int32_t x31_array[];
 
 void proofGenerator() {
-extern int32_t z_array[];
   cout << "\n\n\n\n*** Start proof generation ***" << endl;
-  vector<int64_t> z;
-  for(int64_t i = 0; i < z_array.size(); i++) {
-    cout << "z_array" << "[" << i << "] = " << z_array[i] % p << endl;
-    z.push_back(z_array[i] % p);
-  }
-
   // std::ifstream setupFileStream("data/setup3.json");
   // if (!setupFileStream.is_open()) {
   //     std::cerr << "Could not open the setup3.json file!" << std::endl;
@@ -157,40 +150,128 @@ extern int32_t z_array[];
 
 
 
-  int64_t Class = 2;
-  vector<int64_t> ck = {11,1309,155771,75218,559337,1106584,774458,1531168,950324,641049,760386,1534921,1396931,81010,1248585,889367,100450,205303,934563,443811,785558,1173747,375250,1018404,350964,1485012,492723,1571123,670006,849627,406353,1363019,1080445,1020559,607409,113868,123724,1296588,1566761,150928,1177222,788775,1556570,616520,1198077,1592199,1499729,565725};
-  int64_t vk = 1309;
-  vector<int64_t> rowA_x = {469905,454730,902750,1066695,147929,664621,100821,739930};
-  vector<int64_t> colA_x = {852571,161650,1543130,388105,25447,115593,41803,1423853};
-  vector<int64_t> valA_x = {45582,805822,1515001,845780,376464,555047,619759,350157};
-  vector<int64_t> rowB_x = {207638,1648400,628166,1004557,70602,512634,138616,336768};
-  vector<int64_t> colB_x = {696691,681295,508950,970277,590324,1035579,1484980,602991};
-  vector<int64_t> valB_x = {597622,1323143,17995,122272,1142736,702189,63198,1027496};
-  vector<int64_t> rowC_x = {469905,454730,902750,1066695,147929,664621,100821,739930};
-  vector<int64_t> colC_x = {469905,454730,902750,1066695,147929,664621,100821,739930};
-  vector<int64_t> valC_x = {1083027,544916,467855,1126753,525698,1158417,1188860,435354};
+  cout << "Enter the content of program_commitment.json file! (end input with Ctrl+D or Ctrl+Z)" << endl;
+  string commitmentJsonInput;
+  string commitmentJsonLines;
+  while (getline(cin, commitmentJsonLines)) {
+    if (commitmentJsonLines.empty()) break;
+    commitmentJsonInput += commitmentJsonLines + "\n";
+  }
+  nlohmann::json commitmentJsonData = nlohmann::json::parse(commitmentJsonInput);
+  int64_t Class = commitmentJsonData["Class"].get<int64_t>();
+  string commitmentID = commitmentJsonData["commitmentID"].get<string>();
+  string IoT_Device_Name = commitmentJsonData["iot_device_name"].get<string>();
+  string Firmware_Version = commitmentJsonData["firmware_version"].get<string>();
+  string IoT_Manufacturer_Name = commitmentJsonData["iot_manufacturer_name"].get<string>();
+  string Device_Hardware_Version = commitmentJsonData["device_hardware_version"].get<string>();
+  vector<int64_t> rowA_x = commitmentJsonData["RowA"].get<vector<int64_t>>();
+  vector<int64_t> colA_x = commitmentJsonData["ColA"].get<vector<int64_t>>();
+  vector<int64_t> valA_x = commitmentJsonData["ValA"].get<vector<int64_t>>();
+  vector<int64_t> rowB_x = commitmentJsonData["RowB"].get<vector<int64_t>>();
+  vector<int64_t> colB_x = commitmentJsonData["ColB"].get<vector<int64_t>>();
+  vector<int64_t> valB_x = commitmentJsonData["ValB"].get<vector<int64_t>>();
+  vector<int64_t> rowC_x = commitmentJsonData["RowC"].get<vector<int64_t>>();
+  vector<int64_t> colC_x = commitmentJsonData["ColC"].get<vector<int64_t>>();
+  vector<int64_t> valC_x = commitmentJsonData["ValC"].get<vector<int64_t>>();
 
-  vector<int64_t> nonZeroA = {19,0,19,19};
-  vector<vector<int64_t>> nonZeroB = {{33,20,1},{34,0,11},{34,19,1},{35,21,1},{36,21,1}};
-  vector<int64_t> rowA = {1190739,1632256,159545,899305,373750,668759,747302,1444226};
-  vector<int64_t> colA = {1195510,1,1195510,1195510,373750,668759,747302,1444226};
-  vector<int64_t> valA = {78649,1088607,1609535,944507,0,0,0,0};
-  vector<int64_t> rowB = {1190739,1632256,1632256,159545,899305,668759,747302,1444226};
-  vector<int64_t> colB = {1536124,1,1195510,1669124,1669124,668759,747302,1444226};
-  vector<int64_t> valB = {1640009,226430,1640009,949756,324772,0,0,0};
-  vector<int64_t> rowC = {1190739,1632256,159545,899305,373750,668759,747302,1444226};
-  vector<int64_t> colC = {1190739,1632256,159545,899305,373750,668759,747302,1444226};
-  vector<int64_t> valC = {1495917,1550025,1582341,679291,0,0,0,0};
 
+
+
+  cout << "Enter the content of program_param.json file! (end input with Ctrl+D or Ctrl+Z)" << endl;
+  string paramJsonInput;
+  string paramJsonLines;
+  while (getline(cin, paramJsonLines)) {
+    if (paramJsonLines.empty()) break;
+    paramJsonInput += paramJsonLines + "\n";
+  }
+  nlohmann::json paramJsonData = nlohmann::json::parse(paramJsonInput);
+  vector<int64_t> nonZeroA = paramJsonData["A"].get<vector<int64_t>>();
+  vector<vector<int64_t>> nonZeroB = paramJsonData["B"].get<vector<vector<int64_t>>>();
+  vector<int64_t> rowA = paramJsonData["rA"].get<vector<int64_t>>();
+  vector<int64_t> colA = paramJsonData["cA"].get<vector<int64_t>>();
+  vector<int64_t> valA = paramJsonData["vA"].get<vector<int64_t>>();
+  vector<int64_t> rowB = paramJsonData["rB"].get<vector<int64_t>>();
+  vector<int64_t> colB = paramJsonData["cB"].get<vector<int64_t>>();
+  vector<int64_t> valB = paramJsonData["vB"].get<vector<int64_t>>();
+  vector<int64_t> rowC = paramJsonData["rC"].get<vector<int64_t>>();
+  vector<int64_t> colC = paramJsonData["cC"].get<vector<int64_t>>();
+  vector<int64_t> valC = paramJsonData["vC"].get<vector<int64_t>>();
+
+
+  cout << "Enter the content of class.json file! (end input with Ctrl+D or Ctrl+Z)" << endl;
+  string classJsonInput;
+  string classJsonLines;
+  while (getline(cin, classJsonLines)) {
+    if (classJsonLines.empty()) break;
+    classJsonInput += classJsonLines + "\n";
+  }
+  nlohmann::json classJsonData = nlohmann::json::parse(classJsonInput);
   int64_t n_i, n_g, m, n, p, g;
-  n_i = 32;
-  n_g = 4;
-  m = 8;
-  n = 37;
-  p = 1678321;
-  g = 11;
+  string class_value = to_string(Class); // Convert integer to string class
+  n_g = classJsonData[class_value]["n_g"].get<int64_t>();
+  n_i = classJsonData[class_value]["n_i"].get<int64_t>();
+  n   = classJsonData[class_value]["n"].get<int64_t>();
+  m   = classJsonData[class_value]["m"].get<int64_t>();
+  p   = classJsonData[class_value]["p"].get<int64_t>();
+  g   = classJsonData[class_value]["g"].get<int64_t>();
 
 
+  cout << "Enter the content of setup" << class_value << ".json file! (end input with Ctrl+D or Ctrl+Z)" << endl;
+  string setupJsonInput;
+  string setupJsonLines;
+  while (getline(cin, setupJsonLines)) {
+    if (setupJsonLines.empty()) break;
+    setupJsonInput += setupJsonLines + "\n";
+  }
+  nlohmann::json setupJsonData = nlohmann::json::parse(setupJsonInput);
+  // try {
+  //     cout << "Parsed JSON: " << setupJsonData.dump(4) << endl; // Pretty print
+  // } catch (nlohmann::json::parse_error& e) {
+  //     cerr << "Invalid JSON: " << e.what() << endl;
+  // }
+  vector<int64_t> ck = setupJsonData["ck"].get<vector<int64_t>>();
+  int64_t vk = setupJsonData["vk"].get<int64_t>();
+
+  // int64_t Class = 2;
+  // vector<int64_t> ck = {11,1309,155771,75218,559337,1106584,774458,1531168,950324,641049,760386,1534921,1396931,81010,1248585,889367,100450,205303,934563,443811,785558,1173747,375250,1018404,350964,1485012,492723,1571123,670006,849627,406353,1363019,1080445,1020559,607409,113868,123724,1296588,1566761,150928,1177222,788775,1556570,616520,1198077,1592199,1499729,565725};
+  // int64_t vk = 1309;
+  // vector<int64_t> rowA_x = {469905,454730,902750,1066695,147929,664621,100821,739930};
+  // vector<int64_t> colA_x = {852571,161650,1543130,388105,25447,115593,41803,1423853};
+  // vector<int64_t> valA_x = {45582,805822,1515001,845780,376464,555047,619759,350157};
+  // vector<int64_t> rowB_x = {207638,1648400,628166,1004557,70602,512634,138616,336768};
+  // vector<int64_t> colB_x = {696691,681295,508950,970277,590324,1035579,1484980,602991};
+  // vector<int64_t> valB_x = {597622,1323143,17995,122272,1142736,702189,63198,1027496};
+  // vector<int64_t> rowC_x = {469905,454730,902750,1066695,147929,664621,100821,739930};
+  // vector<int64_t> colC_x = {469905,454730,902750,1066695,147929,664621,100821,739930};
+  // vector<int64_t> valC_x = {1083027,544916,467855,1126753,525698,1158417,1188860,435354};
+
+  // vector<int64_t> nonZeroA = {19,0,19,19};
+  // vector<vector<int64_t>> nonZeroB = {{33,20,1},{34,0,11},{34,19,1},{35,21,1},{36,21,1}};
+  // vector<int64_t> rowA = {1190739,1632256,159545,899305,373750,668759,747302,1444226};
+  // vector<int64_t> colA = {1195510,1,1195510,1195510,373750,668759,747302,1444226};
+  // vector<int64_t> valA = {78649,1088607,1609535,944507,0,0,0,0};
+  // vector<int64_t> rowB = {1190739,1632256,1632256,159545,899305,668759,747302,1444226};
+  // vector<int64_t> colB = {1536124,1,1195510,1669124,1669124,668759,747302,1444226};
+  // vector<int64_t> valB = {1640009,226430,1640009,949756,324772,0,0,0};
+  // vector<int64_t> rowC = {1190739,1632256,159545,899305,373750,668759,747302,1444226};
+  // vector<int64_t> colC = {1190739,1632256,159545,899305,373750,668759,747302,1444226};
+  // vector<int64_t> valC = {1495917,1550025,1582341,679291,0,0,0,0};
+
+  // int64_t n_i, n_g, m, n, p, g;
+  // n_i = 32;
+  // n_g = 4;
+  // m = 8;
+  // n = 37;
+  // p = 1678321;
+  // g = 11;
+
+
+  extern int32_t z_array[36];
+  vector<int64_t> z;
+  for(int64_t i = 0; i < (1 + n_i + n_g); i++) {
+    cout << "z_array" << "[" << i << "] = " << z_array[i] % p << endl;
+    z.push_back(z_array[i] % p);
+  }
 
   int64_t t = n_i + 1;
 
@@ -841,12 +922,12 @@ extern int32_t z_array[];
   proof.clear();
   proof.clear(); 
   proof["commitmentID"] = commitmentID;
-  proof["IoT_Manufacturer_Name"] = IoT_Manufacturer_Name;
-  proof["IoT_Device_Name"] = IoT_Device_Name;
-  proof["Device_Hardware_Version"] = Device_Hardware_Version;
-  proof["Firmware_Version"] = Firmware_Version;
+  proof["iot_manufacturer_name"] = IoT_Manufacturer_Name;
+  proof["iot_device_name"] = IoT_Device_Name;
+  proof["device_hardware_version"] = Device_Hardware_Version;
+  proof["firmware_version"] = Firmware_Version;
   proof["Class"] = Class;
-  proof["code_block"] = code_block;
+  // proof["code_block"] = code_block;
   proof["P1AHP"] = sigma1;
   proof["P2AHP"] = w_hat_x;
   proof["P3AHP"] = z_hatA;

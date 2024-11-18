@@ -638,7 +638,7 @@ void commitmentGenerator() {
   commitment["polynomial_commitment"] = "KZG";
 
   // Serialize JSON object to a string
-  std::string commitmentString = commitment.dump();
+  std::string commitmentString = commitment.dump(4);
   // Write JSON object to a file
   std::ofstream commitmentFile("data/program_commitment.json");
   if (commitmentFile.is_open()) {
@@ -670,7 +670,7 @@ void commitmentGenerator() {
 
 
   // Serialize JSON object to a string
-  std::string program_paramString = program_param.dump();
+  std::string program_paramString = program_param.dump(4);
   // Write JSON object to a file
   std::ofstream program_paramFile("data/program_param.json");
   if (program_paramFile.is_open()) {
