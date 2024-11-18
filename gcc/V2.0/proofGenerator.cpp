@@ -224,46 +224,8 @@ void proofGenerator() {
     setupJsonInput += setupJsonLines + "\n";
   }
   nlohmann::json setupJsonData = nlohmann::json::parse(setupJsonInput);
-  // try {
-  //     cout << "Parsed JSON: " << setupJsonData.dump(4) << endl; // Pretty print
-  // } catch (nlohmann::json::parse_error& e) {
-  //     cerr << "Invalid JSON: " << e.what() << endl;
-  // }
   vector<int64_t> ck = setupJsonData["ck"].get<vector<int64_t>>();
   int64_t vk = setupJsonData["vk"].get<int64_t>();
-
-  // int64_t Class = 2;
-  // vector<int64_t> ck = {11,1309,155771,75218,559337,1106584,774458,1531168,950324,641049,760386,1534921,1396931,81010,1248585,889367,100450,205303,934563,443811,785558,1173747,375250,1018404,350964,1485012,492723,1571123,670006,849627,406353,1363019,1080445,1020559,607409,113868,123724,1296588,1566761,150928,1177222,788775,1556570,616520,1198077,1592199,1499729,565725};
-  // int64_t vk = 1309;
-  // vector<int64_t> rowA_x = {469905,454730,902750,1066695,147929,664621,100821,739930};
-  // vector<int64_t> colA_x = {852571,161650,1543130,388105,25447,115593,41803,1423853};
-  // vector<int64_t> valA_x = {45582,805822,1515001,845780,376464,555047,619759,350157};
-  // vector<int64_t> rowB_x = {207638,1648400,628166,1004557,70602,512634,138616,336768};
-  // vector<int64_t> colB_x = {696691,681295,508950,970277,590324,1035579,1484980,602991};
-  // vector<int64_t> valB_x = {597622,1323143,17995,122272,1142736,702189,63198,1027496};
-  // vector<int64_t> rowC_x = {469905,454730,902750,1066695,147929,664621,100821,739930};
-  // vector<int64_t> colC_x = {469905,454730,902750,1066695,147929,664621,100821,739930};
-  // vector<int64_t> valC_x = {1083027,544916,467855,1126753,525698,1158417,1188860,435354};
-
-  // vector<int64_t> nonZeroA = {19,0,19,19};
-  // vector<vector<int64_t>> nonZeroB = {{33,20,1},{34,0,11},{34,19,1},{35,21,1},{36,21,1}};
-  // vector<int64_t> rowA = {1190739,1632256,159545,899305,373750,668759,747302,1444226};
-  // vector<int64_t> colA = {1195510,1,1195510,1195510,373750,668759,747302,1444226};
-  // vector<int64_t> valA = {78649,1088607,1609535,944507,0,0,0,0};
-  // vector<int64_t> rowB = {1190739,1632256,1632256,159545,899305,668759,747302,1444226};
-  // vector<int64_t> colB = {1536124,1,1195510,1669124,1669124,668759,747302,1444226};
-  // vector<int64_t> valB = {1640009,226430,1640009,949756,324772,0,0,0};
-  // vector<int64_t> rowC = {1190739,1632256,159545,899305,373750,668759,747302,1444226};
-  // vector<int64_t> colC = {1190739,1632256,159545,899305,373750,668759,747302,1444226};
-  // vector<int64_t> valC = {1495917,1550025,1582341,679291,0,0,0,0};
-
-  // int64_t n_i, n_g, m, n, p, g;
-  // n_i = 32;
-  // n_g = 4;
-  // m = 8;
-  // n = 37;
-  // p = 1678321;
-  // g = 11;
 
 
   extern int32_t z_array[36];
@@ -272,35 +234,49 @@ void proofGenerator() {
     cout << "z_array" << "[" << i << "] = " << z_array[i] % p << endl;
     z.push_back(z_array[i] % p);
   }
+  cout << "\n\n" << endl;
+  for(int64_t i = 0; i < (1 + n_i + n_g); i++) {
+    cout << "z" << "[" << i << "] = " << z[i] << endl;
+  }
 
   int64_t t = n_i + 1;
 
-
+  cout << "Initialize matrices A, B, C" << endl;
   // Initialize matrices A, B, C
   vector<vector<int64_t>> A(n, vector<int64_t>(n, 0ll));
   vector<vector<int64_t>> B(n, vector<int64_t>(n, 0ll));
   vector<vector<int64_t>> C(n, vector<int64_t>(n, 0ll));
 
+  cout << "rowMatA" << endl;
   int64_t rowMatA = n_i;
   for (int64_t i = 0; i < nonZeroA.size(); i++) {
     int64_t col = nonZeroA[i];
-    // Set the value in the matrix
+    // Set the value in the matrix A
     A[i + n_i + 1][col] = 1;
   }
-  for (int64_t i = 0; i < nonZeroB.size(); i++) {
-    int64_t row = nonZeroB[i + n_i + 1][0];
-    int64_t col = nonZeroB[i + n_i + 1][1];
-    int64_t val = nonZeroB[i + n_i + 1][2];
-    
-    // Set the value in the matrix
+  Polynomial::printMatrix(A, "A");
+  
+
+  for (const auto& entry : nonZeroB) {
+    int64_t row = entry[0];
+    int64_t col = entry[1];
+    int64_t val = entry[2];
+    // Set the value in the matrix B
     B[row][col] = val;
   }
+  // for (int64_t i = 0; i < nonZeroB.size(); i++) {
+  //   int64_t row = nonZeroB[i + n_i + 1][0];
+  //   int64_t col = nonZeroB[i + n_i + 1][1];
+  //   int64_t val = nonZeroB[i + n_i + 1][2];    
+  //   // Set the value in the matrix
+  //   B[row][col] = val;
+  // }
+  Polynomial::printMatrix(B, "B");
+
   for(int64_t i = (n - n_g); i < n; i++) {
-    // Set the value in the matrix
+    // Set the value in the matrix C
     C[i][i] = 1;
   }
-  Polynomial::printMatrix(A, "A");
-  Polynomial::printMatrix(B, "B");
   Polynomial::printMatrix(C, "C");
 
   // vector<int64_t> z;
@@ -948,17 +924,14 @@ void proofGenerator() {
 
   cout << "\n\n\n\n" << proof << "\n\n\n\n";
 
-  for(int64_t i = 0; i < 6; i++) {
-    cout << "z" << "[" << i << "] = " << z[i] << endl;
-  }
 
-  std::string proofString = proof.dump();
-  std::ofstream proofFile("data/proof.json");
-  if (proofFile.is_open()) {
-      proofFile << proofString;
-      proofFile.close();
-      std::cout << "JSON data has been written to proof.json\n";
-  } else {
-      std::cerr << "Error opening file for writing proof.json\n";
-  }
+  // std::string proofString = proof.dump();
+  // std::ofstream proofFile("data/proof.json");
+  // if (proofFile.is_open()) {
+  //     proofFile << proofString;
+  //     proofFile.close();
+  //     std::cout << "JSON data has been written to proof.json\n";
+  // } else {
+  //     std::cerr << "Error opening file for writing proof.json\n";
+  // }
 }

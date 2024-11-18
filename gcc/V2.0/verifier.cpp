@@ -208,18 +208,13 @@ void verifier() {
   classFileStream >> classJsonData;
   classFileStream.close();
   int64_t n_i, n_g, m, n, p, g;
-  for (const auto& item : classJsonData) {
-    if (item["Class"] == Class) {
-      // Number of inputs, gates, m, n, p, and g
-      n_i = item["n_i"].get<int64_t>();
-      n_g = item["n_g"].get<int64_t>();
-      m = item["m"].get<int64_t>();
-      n = item["n"].get<int64_t>();
-      p = item["p"].get<int64_t>();
-      g = item["g"].get<int64_t>();
-      break; // Stop after finding the first matching "Class"
-    }
-  }
+  string class_value = to_string(Class); // Convert integer to string class
+  n_g = classJsonData[class_value]["n_g"].get<int64_t>();
+  n_i = classJsonData[class_value]["n_i"].get<int64_t>();
+  n   = classJsonData[class_value]["n"].get<int64_t>();
+  m   = classJsonData[class_value]["m"].get<int64_t>();
+  p   = classJsonData[class_value]["p"].get<int64_t>();
+  g   = classJsonData[class_value]["g"].get<int64_t>();
   /*********************************  Read Class  *********************************/
 
 
