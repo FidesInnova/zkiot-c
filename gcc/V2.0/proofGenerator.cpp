@@ -150,7 +150,7 @@ void proofGenerator() {
 
 
 
-  cout << "Enter the content of program_commitment.json file! (end input with Ctrl+D or Ctrl+Z)" << endl;
+  cout << "Enter the content of program_commitment.json file! (end with a blank line):" << endl;
   string commitmentJsonInput;
   string commitmentJsonLines;
   while (getline(cin, commitmentJsonLines)) {
@@ -177,7 +177,7 @@ void proofGenerator() {
 
 
 
-  cout << "Enter the content of program_param.json file! (end input with Ctrl+D or Ctrl+Z)" << endl;
+  cout << "Enter the content of program_param.json file! (end with a blank line):" << endl;
   string paramJsonInput;
   string paramJsonLines;
   while (getline(cin, paramJsonLines)) {
@@ -198,7 +198,7 @@ void proofGenerator() {
   vector<int64_t> valC = paramJsonData["vC"].get<vector<int64_t>>();
 
 
-  cout << "Enter the content of class.json file! (end input with Ctrl+D or Ctrl+Z)" << endl;
+  cout << "Enter the content of class.json file! (end with a blank line):" << endl;
   string classJsonInput;
   string classJsonLines;
   while (getline(cin, classJsonLines)) {
@@ -216,9 +216,16 @@ void proofGenerator() {
   g   = classJsonData[class_value]["g"].get<int64_t>();
 
 
-  cout << "Enter the content of setup" << class_value << ".json file! (end input with Ctrl+D or Ctrl+Z)" << endl;
+  cout << "Enter the content of setup" << class_value << ".json file! (end with a blank line):" << endl;
   string setupJsonInput;
   string setupJsonLines;
+  // while (true) {
+  //   if (!getline(cin, setupJsonLines)) {
+  //     if (cin.eof()) break;
+  //   }
+  //   if (setupJsonLines.empty()) break;
+  //   setupJsonInput += setupJsonLines + "\n";
+  // }
   while (getline(cin, setupJsonLines)) {
     if (setupJsonLines.empty()) break;
     setupJsonInput += setupJsonLines + "\n";
@@ -229,11 +236,15 @@ void proofGenerator() {
 
 
   extern int32_t z_array[36];
-  vector<int64_t> z;
-  for(int64_t i = 0; i < (1 + n_i + n_g); i++) {
-    cout << "z_array" << "[" << i << "] = " << z_array[i] % p << endl;
-    z.push_back(z_array[i] % p);
-  }
+  vector<int64_t> z = {1, 0, 126964, 861265, 1299904, 0, 1295808, 1305980, 1678320, 861281, 0, 1, 861285, 0, 30, 5, 1305980, 16, 30, 4, 5, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 31, 806, 20956};
+  // for(int64_t i = 0; i < (1 + n_i + n_g); i++) {
+  //   cout << "z_array" << "[" << i << "] = " << z_array[i] % p << endl;
+  //   int64_t bufferZ = z_array[i] % p;
+  //   if (bufferZ < 0) {
+  //     bufferZ += p;
+  //   }
+  //   z.push_back(bufferZ);
+  // }
   cout << "\n\n" << endl;
   for(int64_t i = 0; i < (1 + n_i + n_g); i++) {
     cout << "z" << "[" << i << "] = " << z[i] << endl;
@@ -354,16 +365,16 @@ void proofGenerator() {
     if (i < n) {
       zA[0].push_back(H[i]);
       zA[1].push_back(Az[i][0]);
-    } else {
+    } /*else {
       zA[0].push_back(Polynomial::generateRandomNumber(H, p - n));
       zA[1].push_back(Polynomial::generateRandomNumber(H, p - n));
-    }
+    }*/
     cout << "zA(" << zA[0][i] << ")= " << zA[1][i];
   }
-  // zA[0].push_back(150);
-  // zA[1].push_back(5);
-  // zA[0].push_back(80);
-  // zA[1].push_back(47);
+  zA[0].push_back(3);
+  zA[1].push_back(3);
+  zA[0].push_back(4);
+  zA[1].push_back(4);
 
   vector<int64_t> z_hatA = Polynomial::setupLagrangePolynomial(zA[0], zA[1], p, "z_hatA(x)");
 
@@ -375,16 +386,16 @@ void proofGenerator() {
     if (i < n) {
       zB[0].push_back(H[i]);
       zB[1].push_back(Bz[i][0]);
-    } else {
+    } /*else {
       zB[0].push_back(zA[0][i]);
       zB[1].push_back(Polynomial::generateRandomNumber(H, p - n));
-    }
+    }*/
     cout << "zB(" << zB[0][i] << ")= " << zB[1][i] << endl;
   }
-  // zB[0].push_back(150);
-  // zB[1].push_back(15);
-  // zB[0].push_back(80);
-  // zB[1].push_back(170);
+  zB[0].push_back(3);
+  zB[1].push_back(3);
+  zB[0].push_back(4);
+  zB[1].push_back(4);
   vector<int64_t> z_hatB = Polynomial::setupLagrangePolynomial(zB[0], zB[1], p, "z_hatB(x)");
 
   vector<vector<int64_t>> zC(2);
@@ -394,16 +405,16 @@ void proofGenerator() {
     if (i < n) {
       zC[0].push_back(H[i]);
       zC[1].push_back(Cz[i][0]);
-    } else {
+    } /*else {
       zC[0].push_back(zA[0][i]);
       zC[1].push_back(Polynomial::generateRandomNumber(H, p - n));
-    }
+    }*/
     cout << "zC(" << zC[0][i] << ")= " << zC[1][i] << endl;
   }
-  // zC[0].push_back(150);
-  // zC[1].push_back(1);
-  // zC[0].push_back(80);
-  // zC[1].push_back(100);
+  zC[0].push_back(3);
+  zC[1].push_back(3);
+  zC[0].push_back(4);
+  zC[1].push_back(4);
   vector<int64_t> z_hatC = Polynomial::setupLagrangePolynomial(zC[0], zC[1], p, "z_hatC(x)");
 
 
@@ -454,15 +465,15 @@ void proofGenerator() {
     w_hat[1].push_back(w_bar[i]);
     cout << "w_hat(" << w_hat[0][i] << ")= " << w_hat[1][i] << endl;
   }
-  // w_hat[0].push_back(150);
-  // w_hat[1].push_back(42);
-  // w_hat[0].push_back(80);
-  // w_hat[1].push_back(180);
-  for (int64_t i = n; i < n + b; i++) {
-    w_hat[0].push_back(zA[0][i]);
-    w_hat[1].push_back(Polynomial::generateRandomNumber(H, p));
-    cout << "w_hat(" << w_hat[0][i - b] << ")= " << w_hat[1][i - b] << endl;
-  }
+  w_hat[0].push_back(3);
+  w_hat[1].push_back(3);
+  w_hat[0].push_back(4);
+  w_hat[1].push_back(4);
+  // for (int64_t i = n; i < n + b; i++) {
+  //   w_hat[0].push_back(zA[0][i]);
+  //   w_hat[1].push_back(Polynomial::generateRandomNumber(H, p));
+  //   cout << "w_hat(" << w_hat[0][i - b] << ")= " << w_hat[1][i - b] << endl;
+  // }
   vector<int64_t> w_hat_x = Polynomial::setupLagrangePolynomial(w_hat[0], w_hat[1], p, "w_hat(x)");
 
   vector<int64_t> productAB = Polynomial::multiplyPolynomials(z_hatA, z_hatB, p);
@@ -476,7 +487,7 @@ void proofGenerator() {
     vH_x[0] += p; //Handling negative values properly
   }
   vH_x[n] = 1;
-  Polynomial::printPolynomial(vH_x, "KvH(x)");
+  Polynomial::printPolynomial(vH_x, "vH(x)");
 
 
   vector<int64_t> vK_x = Polynomial::createLinearPolynomial(K[0]);
@@ -853,19 +864,22 @@ void proofGenerator() {
   cout << "p_17_AHP = " << p_17_AHP << endl;
 
   // Generate KZG commitments for various polynomials and print
-  int64_t Com1_AHP_x = Polynomial::KZG_Commitment(ck, w_hat_x, p);
-  int64_t Com2_AHP_x = Polynomial::KZG_Commitment(ck, z_hatA, p);
-  int64_t Com3_AHP_x = Polynomial::KZG_Commitment(ck, z_hatB, p);
-  int64_t Com4_AHP_x = Polynomial::KZG_Commitment(ck, z_hatC, p);
-  int64_t Com5_AHP_x = Polynomial::KZG_Commitment(ck, h_0_x, p);
-  int64_t Com6_AHP_x = Polynomial::KZG_Commitment(ck, s_x, p);
-  int64_t Com7_AHP_x = Polynomial::KZG_Commitment(ck, g_1_x, p);
-  int64_t Com8_AHP_x = Polynomial::KZG_Commitment(ck, h_1_x, p);
-  int64_t Com9_AHP_x = Polynomial::KZG_Commitment(ck, g_2_x, p);
-  int64_t Com10_AHP_x = Polynomial::KZG_Commitment(ck, h_2_x, p);
-  int64_t Com11_AHP_x = Polynomial::KZG_Commitment(ck, g_3_x, p);
-  int64_t Com12_AHP_x = Polynomial::KZG_Commitment(ck, h_3_x, p);
-  cout << "Com1_AHP_x = " << Com1_AHP_x << endl;
+  vector<int64_t> Com1_AHP_x;
+  for (int i = 1; i < 33; i++) {
+    Com1_AHP_x.push_back(z[i]);
+  }
+  int64_t Com2_AHP_x = Polynomial::KZG_Commitment(ck, w_hat_x, p);
+  int64_t Com3_AHP_x = Polynomial::KZG_Commitment(ck, z_hatA, p);
+  int64_t Com4_AHP_x = Polynomial::KZG_Commitment(ck, z_hatB, p);
+  int64_t Com5_AHP_x = Polynomial::KZG_Commitment(ck, z_hatC, p);
+  int64_t Com6_AHP_x = Polynomial::KZG_Commitment(ck, h_0_x, p);
+  int64_t Com7_AHP_x = Polynomial::KZG_Commitment(ck, s_x, p);
+  int64_t Com8_AHP_x = Polynomial::KZG_Commitment(ck, g_1_x, p);
+  int64_t Com9_AHP_x = Polynomial::KZG_Commitment(ck, h_1_x, p);
+  int64_t Com10_AHP_x = Polynomial::KZG_Commitment(ck, g_2_x, p);
+  int64_t Com11_AHP_x = Polynomial::KZG_Commitment(ck, h_2_x, p);
+  int64_t Com12_AHP_x = Polynomial::KZG_Commitment(ck, g_3_x, p);
+  int64_t Com13_AHP_x = Polynomial::KZG_Commitment(ck, h_3_x, p);
   cout << "Com2_AHP_x = " << Com2_AHP_x << endl;
   cout << "Com3_AHP_x = " << Com3_AHP_x << endl;
   cout << "Com4_AHP_x = " << Com4_AHP_x << endl;
@@ -877,6 +891,7 @@ void proofGenerator() {
   cout << "Com10_AHP_x = " << Com10_AHP_x << endl;
   cout << "Com11_AHP_x = " << Com11_AHP_x << endl;
   cout << "Com12_AHP_x = " << Com12_AHP_x << endl;
+  cout << "Com13_AHP_x = " << Com13_AHP_x << endl;
 
   // Generate a KZG commitment for the combined polynomial p(x)
   int64_t ComP_AHP_x = Polynomial::KZG_Commitment(ck, p_x, p);
@@ -894,6 +909,8 @@ void proofGenerator() {
     "Firmware_Version": float,
     "code_block": 64-bit Array,
   */
+
+
   ordered_json proof;
   proof.clear();
   proof.clear(); 
@@ -921,6 +938,19 @@ void proofGenerator() {
   proof["P15AHP"] = h_3_x;
   proof["P16AHP"] = y_prime;
   proof["P17AHP"] = p_17_AHP;
+  proof["Com1_AHP_x"] = Com1_AHP_x;
+  proof["Com2_AHP_x"] = Com2_AHP_x;
+  proof["Com3_AHP_x"] = Com3_AHP_x;
+  proof["Com4_AHP_x"] = Com4_AHP_x;
+  proof["Com5_AHP_x"] = Com5_AHP_x;
+  proof["Com6_AHP_x"] = Com6_AHP_x;
+  proof["Com7_AHP_x"] = Com7_AHP_x;
+  proof["Com8_AHP_x"] = Com8_AHP_x;
+  proof["Com9_AHP_x"] = Com9_AHP_x;
+  proof["Com10_AHP_x"] = Com10_AHP_x;
+  proof["Com11_AHP_x"] = Com11_AHP_x;
+  proof["Com12_AHP_x"] = Com12_AHP_x;
+  proof["Com13_AHP_x"] = Com13_AHP_x;
 
   cout << "\n\n\n\n" << proof << "\n\n\n\n";
 

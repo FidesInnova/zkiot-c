@@ -134,8 +134,8 @@ void verifier() {
   int64_t eta_h_3_x = 63;   // a random number  based on s_x
 
   /*********************************  Read Setup  *********************************/
-  cout << "openning data/setup3.json" << endl;
-  std::ifstream setupFileStream("data/setup3.json");
+  cout << "openning data/setup2.json" << endl;
+  std::ifstream setupFileStream("data/setup2.json");
   if (!setupFileStream.is_open()) {
       std::cerr << "Could not open the file!" << std::endl;
   }
@@ -193,6 +193,20 @@ void verifier() {
   vector<int64_t> g_3_x = proofJsonData["P14AHP"].get<vector<int64_t>>();
   vector<int64_t> h_3_x = proofJsonData["P15AHP"].get<vector<int64_t>>();
   int64_t y_prime = proofJsonData["P16AHP"].get<int64_t>();
+
+  vector<int64_t> Com1_AHP_x = proofJsonData["Com1_AHP_x"].get<vector<int64_t>>();;
+  int64_t Com2_AHP_x = proofJsonData["Com2_AHP_x"].get<int64_t>();
+  int64_t Com3_AHP_x = proofJsonData["Com3_AHP_x"].get<int64_t>();
+  int64_t Com4_AHP_x = proofJsonData["Com4_AHP_x"].get<int64_t>();
+  int64_t Com5_AHP_x = proofJsonData["Com5_AHP_x"].get<int64_t>();
+  int64_t Com6_AHP_x = proofJsonData["Com6_AHP_x"].get<int64_t>();
+  int64_t Com7_AHP_x = proofJsonData["Com7_AHP_x"].get<int64_t>();
+  int64_t Com8_AHP_x = proofJsonData["Com8_AHP_x"].get<int64_t>();
+  int64_t Com9_AHP_x = proofJsonData["Com9_AHP_x"].get<int64_t>();
+  int64_t Com10_AHP_x = proofJsonData["Com10_AHP_x"].get<int64_t>();
+  int64_t Com11_AHP_x = proofJsonData["Com11_AHP_x"].get<int64_t>();
+  int64_t Com12_AHP_x = proofJsonData["Com12_AHP_x"].get<int64_t>();
+  int64_t Com13_AHP_x = proofJsonData["Com13_AHP_x"].get<int64_t>();
   // string curve = proofJsonData["curve"];
   // string protocol = proofJsonData["protocol"];
   /*********************************  Read Proof  *********************************/
@@ -292,12 +306,14 @@ void verifier() {
   vector<int64_t> Sum_M_eta_M_z_hat_M_x = Polynomial::addPolynomials(Polynomial::addPolynomials(etaA_z_hatA_x, etaB_z_hatB_x, p), etaC_z_hatC_x, p);
 
   int64_t t = n_i + 1;
-  vector<int64_t> z = {1, 4};
-  vector<int64_t> zero_to_t_for_H;
   vector<int64_t> zero_to_t_for_z;
+  zero_to_t_for_z.push_back(1);
+  for (int i = 0; i < 31; i++) {
+    zero_to_t_for_z.push_back(Com1_AHP_x[i]);
+  }
+  vector<int64_t> zero_to_t_for_H;
   for (int64_t i = 0; i < t; i++) {
     zero_to_t_for_H.push_back(H[i]);
-    zero_to_t_for_z.push_back(z[i]);
   }
 
   vector<int64_t> polyX_HAT_H = Polynomial::setupLagrangePolynomial(zero_to_t_for_H, zero_to_t_for_z, p, "x_hat(h)");

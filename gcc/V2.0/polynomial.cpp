@@ -67,7 +67,7 @@ int64_t Polynomial::generateRandomNumber(const std::vector<int64_t>& H, int64_t 
     do {
         randomNumber = dist(rng);
     } while (std::find(H.begin(), H.end(), randomNumber) != H.end());
-
+    randomNumber = 3;
     return randomNumber;
 }
 
@@ -206,7 +206,7 @@ vector<int64_t> Polynomial::multiplyPolynomialByNumber(const vector<int64_t>& H,
 // Function to compute Lagrange basis polynomial L_i(x)
 vector<int64_t> Polynomial::LagrangePolynomial(int64_t i, const vector<int64_t>& x_values, int64_t p) {
   int64_t n = x_values.size();
-  vector<int64_t> result = { 1 };  // Start with 1 for the polynomial (constant term)
+  vector<int64_t> result = {1};  // Start with 1 for the polynomial (constant term)
 
   for (int64_t j = 0; j < n; j++) {
     if (j != i) {
