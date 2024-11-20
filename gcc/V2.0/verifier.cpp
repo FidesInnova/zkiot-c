@@ -308,7 +308,7 @@ void verifier() {
   int64_t t = n_i + 1;
   vector<int64_t> zero_to_t_for_z;
   zero_to_t_for_z.push_back(1);
-  for (int i = 0; i < 31; i++) {
+  for (int i = 0; i < 32; i++) {
     zero_to_t_for_z.push_back(Com1_AHP_x[i]);
   }
   vector<int64_t> zero_to_t_for_H;
