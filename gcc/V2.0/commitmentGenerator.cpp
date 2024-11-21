@@ -24,7 +24,7 @@ std::unordered_map<std::string, int> registerMap = {
 
 int64_t n_i, n_g, m, n, p, g;
 
-std::string configFile = "device_config.json", setupFile = "data/setup2.json", assemblyFile = "program.s", newAssemblyFile = "program_new.s";
+std::string configFile = "device_config.json", setupFile, assemblyFile = "program.s", newAssemblyFile = "program_new.s";
 
 std::vector<std::string> instructions;
 int64_t Class;
@@ -284,6 +284,9 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
 
 
 void commitmentGenerator() {
+  setupFile = "data/setup";
+  setupFile += to_string(Class);
+  setupFile += ".json";
   std::ifstream setupFileStream(setupFile);
   if (!setupFileStream.is_open()) {
       std::cerr << "Could not open the file!" << std::endl;
