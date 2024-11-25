@@ -898,8 +898,8 @@ extern "C" void proofGenerator() {
   cout << "Com13_AHP_x = " << Com13_AHP_x << endl;
 
   // Generate a KZG commitment for the combined polynomial p(x)
-  int64_t ComP_AHP_x = Polynomial::KZG_Commitment(ck, p_x, p);
-  cout << "ComP_AHP = " << ComP_AHP_x << endl;
+  // int64_t ComP_AHP_x = Polynomial::KZG_Commitment(ck, p_x, p);
+  // cout << "ComP_AHP = " << ComP_AHP_x << endl;
 
 
 
@@ -955,6 +955,7 @@ extern "C" void proofGenerator() {
   proof["Com11_AHP_x"] = Com11_AHP_x;
   proof["Com12_AHP_x"] = Com12_AHP_x;
   proof["Com13_AHP_x"] = Com13_AHP_x;
+  // proof["ComP_AHP_x"] = ComP_AHP_x;
 
   cout << "\n\n\n\n" << proof << "\n\n\n\n";
 

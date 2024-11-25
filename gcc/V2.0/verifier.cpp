@@ -133,20 +133,6 @@ void verifier() {
   int64_t eta_g_3_x = 25;   // a random number  based on s_x
   int64_t eta_h_3_x = 63;   // a random number  based on s_x
 
-  /*********************************  Read Setup  *********************************/
-  cout << "openning data/setup2.json" << endl;
-  std::ifstream setupFileStream("data/setup2.json");
-  if (!setupFileStream.is_open()) {
-      std::cerr << "Could not open the file!" << std::endl;
-  }
-  nlohmann::json setupJsonData;
-  setupFileStream >> setupJsonData;
-  setupFileStream.close();
-  int64_t Class = setupJsonData["Class"].get<int64_t>();
-  vector<int64_t> ck = setupJsonData["ck"].get<vector<int64_t>>();
-  int64_t vk = setupJsonData["vk"].get<int64_t>();
-  /*********************************  Read Setup  *********************************/
-
   /*******************************  Read Commitment  ******************************/
   cout << "openning data/program_commitment.json" << endl;
   std::ifstream commitmentFileStream("data/program_commitment.json");
@@ -156,6 +142,7 @@ void verifier() {
   nlohmann::json commitmentJsonData;
   commitmentFileStream >> commitmentJsonData;
   commitmentFileStream.close();
+  int64_t Class = commitmentJsonData["Class"].get<int64_t>();
   vector<int64_t> rowA_x = commitmentJsonData["RowA"].get<vector<int64_t>>();
   vector<int64_t> colA_x = commitmentJsonData["ColA"].get<vector<int64_t>>();
   vector<int64_t> valA_x = commitmentJsonData["ValA"].get<vector<int64_t>>();
@@ -166,6 +153,23 @@ void verifier() {
   vector<int64_t> colC_x = commitmentJsonData["ColC"].get<vector<int64_t>>();
   vector<int64_t> valC_x = commitmentJsonData["ValC"].get<vector<int64_t>>();
   /*******************************  Read Commitment  ******************************/
+
+
+  /*********************************  Read Setup  *********************************/
+  cout << "openning data/setup" << to_string(Class) << ".json" << endl;
+  string setupFileName = "data/setup";
+  setupFileName += to_string(Class);
+  setupFileName += ".json";
+  std::ifstream setupFileStream(setupFileName);
+  if (!setupFileStream.is_open()) {
+      std::cerr << "Could not open the file!" << std::endl;
+  }
+  nlohmann::json setupJsonData;
+  setupFileStream >> setupJsonData;
+  setupFileStream.close();
+  vector<int64_t> ck = setupJsonData["ck"].get<vector<int64_t>>();
+  int64_t vk = setupJsonData["vk"].get<int64_t>();
+  /*********************************  Read Setup  *********************************/
 
 
   /*********************************  Read Proof  *********************************/
@@ -193,8 +197,9 @@ void verifier() {
   vector<int64_t> g_3_x = proofJsonData["P14AHP"].get<vector<int64_t>>();
   vector<int64_t> h_3_x = proofJsonData["P15AHP"].get<vector<int64_t>>();
   int64_t y_prime = proofJsonData["P16AHP"].get<int64_t>();
+  int64_t p_17_AHP = proofJsonData["P17AHP"].get<int64_t>();
 
-  vector<int64_t> Com1_AHP_x = proofJsonData["Com1_AHP_x"].get<vector<int64_t>>();;
+  vector<int64_t> Com1_AHP_x = proofJsonData["Com1_AHP_x"].get<vector<int64_t>>();
   int64_t Com2_AHP_x = proofJsonData["Com2_AHP_x"].get<int64_t>();
   int64_t Com3_AHP_x = proofJsonData["Com3_AHP_x"].get<int64_t>();
   int64_t Com4_AHP_x = proofJsonData["Com4_AHP_x"].get<int64_t>();
@@ -207,6 +212,7 @@ void verifier() {
   int64_t Com11_AHP_x = proofJsonData["Com11_AHP_x"].get<int64_t>();
   int64_t Com12_AHP_x = proofJsonData["Com12_AHP_x"].get<int64_t>();
   int64_t Com13_AHP_x = proofJsonData["Com13_AHP_x"].get<int64_t>();
+  // int64_t ComP_AHP_x = proofJsonData["ComP_AHP_x"].get<int64_t>();
   // string curve = proofJsonData["curve"];
   // string protocol = proofJsonData["protocol"];
   /*********************************  Read Proof  *********************************/
@@ -333,7 +339,8 @@ void verifier() {
                                    Polynomial::addPolynomials(Polynomial::multiplyPolynomialByNumber(g_3_x, eta_g_3_x, p), Polynomial::multiplyPolynomialByNumber(h_3_x, eta_h_3_x, p), p), p),
         p),
       p);
-  // int64_t ComP_AHP_x = (Polynomial::power(Com1_AHP_x, eta_w_hat, p) * (Polynomial::power(Com2_AHP_x, eta_z_hatA, p) * (Polynomial::power(Com3_AHP_x, eta_z_hatB, p) * (Polynomial::power(Com4_AHP_x, eta_z_hatC, p) * (Polynomial::power(Com5_AHP_x, eta_h_0_x, p) * (Polynomial::power(Com6_AHP_x, eta_s_x, p) * (Polynomial::power(Com7_AHP_x, eta_g_1_x, p) * (Polynomial::power(Com8_AHP_x, eta_h_1_x, p) * (Polynomial::power(Com9_AHP_x, eta_g_2_x, p) * (Polynomial::power(Com10_AHP_x, eta_h_2_x, p) * (Polynomial::power(Com11_AHP_x, eta_g_3_x, p) * Polynomial::power(Com12_AHP_x, eta_h_3_x, p)) % p) % p) % p) % p) % p) % p) % p) % p) % p) % p);
+      
+  int64_t ComP_AHP_x = (Polynomial::power(Com2_AHP_x, eta_w_hat, p) * (Polynomial::power(Com3_AHP_x, eta_z_hatA, p) * (Polynomial::power(Com4_AHP_x, eta_z_hatB, p) * (Polynomial::power(Com5_AHP_x, eta_z_hatC, p) * (Polynomial::power(Com6_AHP_x, eta_h_0_x, p) * (Polynomial::power(Com7_AHP_x, eta_s_x, p) * (Polynomial::power(Com8_AHP_x, eta_g_1_x, p) * (Polynomial::power(Com9_AHP_x, eta_h_1_x, p) * (Polynomial::power(Com10_AHP_x, eta_g_2_x, p) * (Polynomial::power(Com11_AHP_x, eta_h_2_x, p) * (Polynomial::power(Com12_AHP_x, eta_g_3_x, p) * Polynomial::power(Com13_AHP_x, eta_h_3_x, p)) % p) % p) % p) % p) % p) % p) % p) % p) % p) % p);
 
   Polynomial::printPolynomial(a_x, "a_x");
   Polynomial::printPolynomial(b_x, "b_x");
@@ -365,9 +372,8 @@ void verifier() {
   if (eq41 < 0) eq41 += p;
   cout << eq41 << " = " << eq42 << endl;
 
-/*
-  int64_t eq51Buf = (ComP_AHP_x - Polynomial::multiplyPolynomialByNumber(g, y_prime, p));
-  eq51Buf %= p;
+
+  int64_t eq51Buf = (ComP_AHP_x - (g * y_prime)) % p;
   if (eq51Buf < 0) {
     eq51Buf += p;
   }
@@ -379,7 +385,7 @@ void verifier() {
   }
   int64_t eq52 = Polynomial::e_func(p_17_AHP, eq52BufP2, g, p);
   cout << eq51 << " = " << eq52 << endl;
-*/
+
   if (eq11 == eq12 && eq21 == eq22 && eq31 == eq32 && eq41 == eq42) { // && eq51 == eq52) {
     verify = true;
   }
