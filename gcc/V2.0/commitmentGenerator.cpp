@@ -176,6 +176,7 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
           spaceSizeZ[rdList[i]] += 4;
         }
       }
+      newAssemblyFileStream << "call proofGenerator\n";
       newAssemblyFileStream << line << std::endl;
     }
     else {

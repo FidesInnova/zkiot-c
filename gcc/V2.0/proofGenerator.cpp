@@ -73,7 +73,7 @@ extern int32_t x29_array[];
 extern int32_t x30_array[];
 extern int32_t x31_array[];
 
-void proofGenerator() {
+extern "C" void proofGenerator() {
   cout << "\n\n\n\n*** Start proof generation ***" << endl;
   // std::ifstream setupFileStream("data/setup3.json");
   // if (!setupFileStream.is_open()) {
@@ -236,16 +236,17 @@ void proofGenerator() {
 
 
   extern int32_t z_array[];
-  vector<int64_t> z;
-  // vector<int64_t> z = {1, 0, 126964, 861265, 1299904, 0, 1295808, 1305980, 1678320, 861281, 0, 1, 861285, 0, 30, 5, 1305980, 16, 30, 4, 5, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 31, 806, 20956};
-  for(int64_t i = 0; i < (1 + n_i + n_g); i++) {
-    cout << "z_array" << "[" << i << "] = " << z_array[i] % p << endl;
-    int64_t bufferZ = z_array[i] % p;
-    if (bufferZ < 0) {
-      bufferZ += p;
-    }
-    z.push_back(bufferZ);
-  }
+  vector<int64_t> z = {1, 0, 126964, 861265, 1299904, 0, 1295808, 1305980, 1678320, 861281, 0, 1, 861285, 0, 30, 5, 1305980, 16, 30, 4, 5, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 31, 806, 20956};
+
+  // vector<int64_t> z;
+  // for(int64_t i = 0; i < (1 + n_i + n_g); i++) {
+  //   cout << "z_array" << "[" << i << "] = " << z_array[i] % p << endl;
+  //   int64_t bufferZ = z_array[i] % p;
+  //   if (bufferZ < 0) {
+  //     bufferZ += p;
+  //   }
+  //   z.push_back(bufferZ);
+  // }
   cout << "\n\n" << endl;
   cout << "z" << "[";
   for(int64_t i = 0; i < (1 + n_i + n_g); i++) {
@@ -363,8 +364,8 @@ void proofGenerator() {
 
   vector<vector<int64_t>> zA(2);
   cout << "zA(x):" << endl;
-  for (int64_t i = 0; i < n + b; i++) {
-  // for (int64_t i = 0; i < n; i++) {
+  // for (int64_t i = 0; i < n + b; i++) {
+  for (int64_t i = 0; i < n; i++) {
     if (i < n) {
       zA[0].push_back(H[i]);
       zA[1].push_back(Az[i][0]);
@@ -372,7 +373,7 @@ void proofGenerator() {
       zA[0].push_back(Polynomial::generateRandomNumber(H, p - n));
       zA[1].push_back(Polynomial::generateRandomNumber(H, p - n));
     }*/
-    cout << "zA(" << zA[0][i] << ")= " << zA[1][i];
+    cout << "zA(" << zA[0][i] << ")= " << zA[1][i] << endl;
   }
   zA[0].push_back(3);
   zA[1].push_back(3);
@@ -384,8 +385,8 @@ void proofGenerator() {
 
   vector<vector<int64_t>> zB(2);
   cout << "zB(x):" << endl;
-  for (int64_t i = 0; i < n + b; i++) {
-  // for (int64_t i = 0; i < n; i++) {
+  // for (int64_t i = 0; i < n + b; i++) {
+  for (int64_t i = 0; i < n; i++) {
     if (i < n) {
       zB[0].push_back(H[i]);
       zB[1].push_back(Bz[i][0]);
@@ -403,8 +404,8 @@ void proofGenerator() {
 
   vector<vector<int64_t>> zC(2);
   cout << "zC(x):";
-  for (int64_t i = 0; i < n + b; i++) {
-  // for (int64_t i = 0; i < n; i++) {
+  // for (int64_t i = 0; i < n + b; i++) {
+  for (int64_t i = 0; i < n; i++) {
     if (i < n) {
       zC[0].push_back(H[i]);
       zC[1].push_back(Cz[i][0]);
@@ -568,7 +569,7 @@ void proofGenerator() {
   Polynomial::printPolynomial(A_hat, "A_hat(x)");
 
   vector<int64_t> B_hat(2);
-  for (int64_t i = 0; i < nonZeroB[0].size(); i++) {
+  for (int64_t i = 0; i < nonZeroB.size(); i++) {
     vector<int64_t> buff_n = Polynomial::calculatePolynomial_r_alpha_x(rowB[i], H.size(), p);
     int64_t eval = Polynomial::evaluatePolynomial(buff_n, rowB[i], p);
     vector<int64_t> buff = Polynomial::calculatePolynomial_r_alpha_x(colB[i], H.size(), p);
@@ -665,7 +666,7 @@ void proofGenerator() {
       A_hat_M_hat = buffA;
     }
   }
-  for (int64_t i = 0; i < nonZeroB[0].size(); i++) {
+  for (int64_t i = 0; i < nonZeroB.size(); i++) {
     vector<int64_t> buff_nB = Polynomial::calculatePolynomial_r_alpha_x(colB[i], H.size(), p);
     int64_t evalB = Polynomial::evaluatePolynomial(buff_nB, beta1, p);
     vector<int64_t> buffB = Polynomial::calculatePolynomial_r_alpha_x(rowB[i], H.size(), p);
