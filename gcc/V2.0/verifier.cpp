@@ -366,7 +366,7 @@ void verifier() {
   if (eq31 < 0) eq31 += p;
   cout << eq31 << " = " << eq32 << endl;
 
-  int64_t eq41 = (Polynomial::evaluatePolynomial(z_hatA, beta1, p) * Polynomial::evaluatePolynomial(z_hatB, beta1, p) - Polynomial::evaluatePolynomial(z_hatC, beta1, p));
+  int64_t eq41 = (((Polynomial::evaluatePolynomial(z_hatA, beta1, p) * Polynomial::evaluatePolynomial(z_hatB, beta1, p)) % p) - Polynomial::evaluatePolynomial(z_hatC, beta1, p));
   int64_t eq42 = (Polynomial::evaluatePolynomial(h_0_x, beta1, p) * Polynomial::evaluatePolynomial(vH_x, beta1, p)) % p;
   eq41 %= p;
   if (eq41 < 0) eq41 += p;

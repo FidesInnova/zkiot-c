@@ -160,6 +160,8 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
         newAssemblyFileStream << "sw t0, " << std::to_string((i+1)*4) << "(a0)" << endl;
       }
       vector<int64_t> spaceSizeZ(32, 4);
+      vector<int64_t> yList;
+      
       for(int64_t i = 0; i < n_g; i++){
         spaceSizeZ[rdList[i]] += 4;
         if(spaceSizeZ[rdList[i]] != spaceSize[rdList[i]]) {
@@ -167,14 +169,17 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
           newAssemblyFileStream << "lw t0, " << std::to_string(spaceSizeZ[rdList[i]]-4) << "(a1)" << endl;
           newAssemblyFileStream << "sw t0, " << std::to_string((n_i+i+1)*4) << "(a0)" << endl;
         }
-      }
-      for(int64_t i = 0; i < n_g; i++) {
-        if(spaceSizeZ[rdList[i]] == spaceSize[rdList[i]]) {
-          newAssemblyFileStream << "la a1, x" << std::to_string(rdList[i]) << "_array" << endl;
-          newAssemblyFileStream << "lw t0, " << std::to_string(spaceSizeZ[rdList[i]]-4) << "(a1)" << endl;
-          newAssemblyFileStream << "sw t0, " << std::to_string((n_i+n_g+i)*4) << "(a0)" << endl;
-          spaceSizeZ[rdList[i]] += 4;
+        else {
+          yList.push_back(rdList[i]);
         }
+      }
+      for(int64_t i = 0; i < yList.size(); i++) {
+        // if(spaceSizeZ[rdList[i]] == spaceSize[rdList[i]]) {
+          newAssemblyFileStream << "la a1, x" << std::to_string(yList[i]) << "_array" << endl;
+          newAssemblyFileStream << "lw t0, " << std::to_string(spaceSizeZ[yList[i]]-4) << "(a1)" << endl;
+          newAssemblyFileStream << "sw t0, " << std::to_string((n_i+n_g+i-yList.size()+1)*4) << "(a0)" << endl;
+        //   spaceSizeZ[rdList[i]] += 4;
+        // }
       }
       newAssemblyFileStream << "call proofGenerator\n";
       newAssemblyFileStream << line << std::endl;
