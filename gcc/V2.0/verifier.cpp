@@ -340,7 +340,9 @@ void verifier() {
         p),
       p);
       
-  int64_t ComP_AHP_x = (Polynomial::power(Com2_AHP_x, eta_w_hat, p) * (Polynomial::power(Com3_AHP_x, eta_z_hatA, p) * (Polynomial::power(Com4_AHP_x, eta_z_hatB, p) * (Polynomial::power(Com5_AHP_x, eta_z_hatC, p) * (Polynomial::power(Com6_AHP_x, eta_h_0_x, p) * (Polynomial::power(Com7_AHP_x, eta_s_x, p) * (Polynomial::power(Com8_AHP_x, eta_g_1_x, p) * (Polynomial::power(Com9_AHP_x, eta_h_1_x, p) * (Polynomial::power(Com10_AHP_x, eta_g_2_x, p) * (Polynomial::power(Com11_AHP_x, eta_h_2_x, p) * (Polynomial::power(Com12_AHP_x, eta_g_3_x, p) * Polynomial::power(Com13_AHP_x, eta_h_3_x, p)) % p) % p) % p) % p) % p) % p) % p) % p) % p) % p);
+  int64_t ComP_AHP_x = ((Com2_AHP_x * eta_w_hat) % p + (Com3_AHP_x * eta_z_hatA) % p + (Com4_AHP_x * eta_z_hatB) % p + (Com5_AHP_x * eta_z_hatC) % p + (Com6_AHP_x * eta_h_0_x) % p + (Com7_AHP_x * eta_s_x) % p + (Com8_AHP_x * eta_g_1_x) % p + (Com9_AHP_x * eta_h_1_x) % p + (Com10_AHP_x * eta_g_2_x) % p + (Com11_AHP_x * eta_h_2_x) % p + (Com12_AHP_x * eta_g_3_x) % p + (Com13_AHP_x * eta_h_3_x) % p) % p;
+  cout << "ComP_AHP_x = " << ComP_AHP_x << endl;
+  
 
   Polynomial::printPolynomial(a_x, "a_x");
   Polynomial::printPolynomial(b_x, "b_x");
@@ -386,7 +388,7 @@ void verifier() {
   int64_t eq52 = Polynomial::e_func(p_17_AHP, eq52BufP2, g, p);
   cout << eq51 << " = " << eq52 << endl;
 
-  if (eq11 == eq12 && eq21 == eq22 && eq31 == eq32 && eq41 == eq42) { // && eq51 == eq52) {
+  if (eq11 == eq12 && eq21 == eq22 && eq31 == eq32 && eq41 == eq42 && eq51 == eq52) {
     verify = true;
   }
 
