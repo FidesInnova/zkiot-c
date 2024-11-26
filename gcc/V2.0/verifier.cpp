@@ -140,7 +140,7 @@ void verifier() {
 
   
 
-  int64_t z_random = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 22, p), p);
+  int64_t x_prime = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 22, p), p);
 
   int64_t alpha = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 0, p), p);
   int64_t etaA = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 1, p), p);
@@ -149,7 +149,7 @@ void verifier() {
 
   int64_t beta1 = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 8, p), p);
   int64_t beta2 = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 9, p), p);
-  int64_t beta3 = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 10, p), p);
+  int64_t beta3 = Polynomial::generateRandomNumber({0}, p);
 
   int64_t eta_w_hat = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 10, p), p);
   int64_t eta_z_hatA = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 11, p), p);
@@ -274,6 +274,7 @@ void verifier() {
   cout << "beta3 = " << beta3 << endl;
   cout << "sigma3 = " << sigma3 << endl;
 
+  cout << "\n\n\n";
   int64_t eq11 = (Polynomial::evaluatePolynomial(h_3_x, beta3, p) * Polynomial::evaluatePolynomial(vK_x, beta3, p)) % p;
   int64_t eq12 = (Polynomial::evaluatePolynomial(a_x, beta3, p) - ((Polynomial::evaluatePolynomial(b_x, beta3, p) * (beta3 * Polynomial::evaluatePolynomial(g_3_x, beta3, p) + (sigma3 * Polynomial::pInverse(m, p)) % p)))) % p;
   eq12 %= p;
@@ -305,7 +306,7 @@ void verifier() {
   }
   int64_t eq51 = Polynomial::e_func(eq51Buf, g, g, p);
 
-  int64_t eq52BufP2 = (vk - (g * z_random)) % p;
+  int64_t eq52BufP2 = (vk - (g * x_prime)) % p;
   if (eq52BufP2 < 0) {
     eq52BufP2 += p;
   }

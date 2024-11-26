@@ -37,6 +37,9 @@ public:
   // Function to generate a random number in p
   static int64_t generateRandomNumber(const vector<int64_t>& H, int64_t p);
 
+  // Function to generate a random polynomial
+  static vector<int64_t> generateRandomPolynomial(size_t numTerms, size_t maxDegree, int64_t p);
+
   // Add two polynomials with p arithmetic
   static vector<int64_t> addPolynomials(const vector<int64_t>& poly1, const vector<int64_t>& poly2, int64_t p);
 

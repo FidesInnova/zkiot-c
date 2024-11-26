@@ -25,6 +25,7 @@
 #include <cstring>
 #include <vector>
 #include <cinttypes>
+#include <set>
 
 
 int64_t Polynomial::power(int64_t base, int64_t exponent, int64_t p) {
@@ -92,6 +93,29 @@ int64_t Polynomial::generateRandomNumber(const std::vector<int64_t>& H, int64_t 
     } while (std::find(H.begin(), H.end(), randomNumber) != H.end());
     randomNumber = 3;
     return randomNumber;
+}
+
+// Function to generate a random polynomial
+vector<int64_t> Polynomial::generateRandomPolynomial(size_t numTerms, size_t maxDegree, int64_t p) {
+    vector<int64_t> polynomial(maxDegree + 1, 0); // Initialize polynomial with zeros
+
+    // Generate random indices for the non-zero terms
+    set<size_t> indices;
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<size_t> dis(0, maxDegree);
+
+    while (indices.size() < numTerms) {
+        indices.insert(dis(gen));
+    }
+
+    // Fill the polynomial with random values at the chosen indices
+    for (size_t index : indices) {
+        polynomial[index] = dis(gen) % p;
+        if (polynomial[index] < 0) polynomial[index] += p;
+    }
+
+    return polynomial;
 }
 
 // Add two polynomials with p arithmetic

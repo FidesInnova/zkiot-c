@@ -487,19 +487,20 @@ extern "C" void proofGenerator() {
   vector<int64_t> h_0_x = Polynomial::dividePolynomials(zAzB_zC, vH_x, p)[0];
   Polynomial::printPolynomial(h_0_x, "h0(x)");
 
-  // vector<int64_t> s_x = generateRandomPolynomial(n, (2*n)+b-1, p);
-  vector<int64_t> s_x = { 115, 3, 0, 0, 20, 1, 0, 17, 101, 0, 5 };
+  vector<int64_t> s_x = Polynomial::generateRandomPolynomial(n, (2*n)+b-1, p);
+  // vector<int64_t> s_x = { 115, 3, 0, 0, 20, 1, 0, 17, 101, 0, 5 };
   Polynomial::printPolynomial(s_x, "s(x)");
 
   int64_t sigma1 = Polynomial::sumOfEvaluations(s_x, H, p);
   cout << "sigma1 = " << sigma1 << endl;
 
   int64_t alpha = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 0, p), p);
-  int64_t etaA = 2;
-  int64_t etaB = 30;
-  int64_t etaC = 100;
-  int64_t beta1 = 22;  // int64_t beta1 = hashAndExtractLower4Bytes(s_x[8], p);
-  int64_t beta2 = 80;  // int64_t beta2 = hashAndExtractLower4Bytes(s_x[9], p);
+  int64_t etaA = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 1, p), p);
+  int64_t etaB = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 2, p), p);
+  int64_t etaC = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 3, p), p);
+
+  int64_t beta1 = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 8, p), p);
+  int64_t beta2 = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 9, p), p);
 
 
   cout << "alpha = " << alpha << endl;
@@ -804,18 +805,18 @@ extern "C" void proofGenerator() {
   Polynomial::printPolynomial(h_3_x, "h3(x)");
 
   // Define random values based on s_x
-  int64_t eta_w_hat = 1;    // a random number  based on s_x
-  int64_t eta_z_hatA = 4;   // a random number  based on s_x
-  int64_t eta_z_hatB = 10;  // a random number  based on s_x
-  int64_t eta_z_hatC = 8;   // a random number  based on s_x
-  int64_t eta_h_0_x = 32;   // a random number  based on s_x
-  int64_t eta_s_x = 45;     // a random number  based on s_x
-  int64_t eta_g_1_x = 92;   // a random number  based on s_x
-  int64_t eta_h_1_x = 11;   // a random number  based on s_x
-  int64_t eta_g_2_x = 1;    // a random number  based on s_x
-  int64_t eta_h_2_x = 5;    // a random number  based on s_x
-  int64_t eta_g_3_x = 25;   // a random number  based on s_x
-  int64_t eta_h_3_x = 63;   // a random number  based on s_x
+  int64_t eta_w_hat = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 10, p), p);
+  int64_t eta_z_hatA = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 11, p), p);
+  int64_t eta_z_hatB = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 12, p), p);
+  int64_t eta_z_hatC = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 13, p), p);
+  int64_t eta_h_0_x = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 14, p), p);
+  int64_t eta_s_x = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 15, p), p);
+  int64_t eta_g_1_x = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 16, p), p);
+  int64_t eta_h_1_x = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 17, p), p);
+  int64_t eta_g_2_x = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 18, p), p);
+  int64_t eta_h_2_x = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 19, p), p);
+  int64_t eta_g_3_x = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 20, p), p);
+  int64_t eta_h_3_x = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 21, p), p);
 
   // Initialize the polynomial p(x) by performing several polynomial operations and print
   vector<int64_t> p_x =
@@ -830,15 +831,14 @@ extern "C" void proofGenerator() {
         p),
       p);
   Polynomial::printPolynomial(p_x, "p(x)");
-
-  // Choose a random value for z
-  int64_t z_random = 2;
-  int64_t y_prime = Polynomial::evaluatePolynomial(p_x, z_random, p);
+  
+  int64_t x_prime = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 22, p), p);
+  int64_t y_prime = Polynomial::evaluatePolynomial(p_x, x_prime, p);
   cout << "y_prime = " << y_prime << endl;
 
   // p(x) - y'  =>  p(x)  !!!!!!!
   vector<int64_t> q_xBuf;
-  q_xBuf.push_back(p - z_random);
+  q_xBuf.push_back(p - x_prime);
   q_xBuf.push_back(1);
   Polynomial::printPolynomial(q_xBuf, "div = ");
 
