@@ -1,30 +1,17 @@
-/*
-  Read the setup.json and program_param.json from flash of the RISC-V microcontroller
+// Copyright 2024 FidesInnova.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-  setup.json
-  {
-    "Class":  32-bit Integer,
-    "ck": 64-bit Integer Array,
-    "vk": 64-bit Integer
-  }
-
-  
-  program_param.json
-  {
-    "Class":  32-bit Integer,
-    "A": 64-bit Integer Array,
-    "B": 64-bit Integer Array<64-bit Integer Array>
-  }
-
-  
-  program_param.json
-  {
-    "Class":  32-bit Integer,
-    "A": 64-bit Integer Array,
-    "B": 64-bit Integer Array<64-bit Integer Array>
-  }
-
-*/
 
 #include "fidesinnova.h"
 #include <iostream>
@@ -34,10 +21,10 @@
 #include "json.hpp"
 using ordered_json = nlohmann::ordered_json;
 #include <regex>
+#include <random>
 
 using namespace std;
 
-int64_t b = 2;
 extern "C" void store_register_instances();
 // Declare the arrays from assembly as external variables
 extern int32_t x0_array[];
@@ -215,6 +202,12 @@ extern "C" void proofGenerator() {
   p   = classJsonData[class_value]["p"].get<int64_t>();
   g   = classJsonData[class_value]["g"].get<int64_t>();
 
+  int64_t upper_limit = (n_g < 10) ? n_g - 1 : 9;
+  // Set up random number generation
+  std::random_device rd;  // Seed
+  std::mt19937_64 gen(rd()); // Random number engine
+  std::uniform_int_distribution<int64_t> dis(0, upper_limit);
+  int64_t b = dis(gen);
 
   cout << "Enter the content of setup" << class_value << ".json file! (end with a blank line):" << endl;
   string setupJsonInput;
@@ -368,61 +361,49 @@ extern "C" void proofGenerator() {
 
   vector<vector<int64_t>> zA(2);
   cout << "zA(x):" << endl;
-  // for (int64_t i = 0; i < n + b; i++) {
-  for (int64_t i = 0; i < n; i++) {
+  for (int64_t i = 0; i < n + b; i++) {
+  // for (int64_t i = 0; i < n; i++) {
     if (i < n) {
       zA[0].push_back(H[i]);
       zA[1].push_back(Az[i][0]);
-    } /*else {
+    } else {
       zA[0].push_back(Polynomial::generateRandomNumber(H, p - n));
       zA[1].push_back(Polynomial::generateRandomNumber(H, p - n));
-    }*/
+    }
     cout << "zA(" << zA[0][i] << ")= " << zA[1][i] << endl;
   }
-  zA[0].push_back(3);
-  zA[1].push_back(3);
-  zA[0].push_back(4);
-  zA[1].push_back(4);
 
   vector<int64_t> z_hatA = Polynomial::setupLagrangePolynomial(zA[0], zA[1], p, "z_hatA(x)");
 
 
   vector<vector<int64_t>> zB(2);
   cout << "zB(x):" << endl;
-  // for (int64_t i = 0; i < n + b; i++) {
-  for (int64_t i = 0; i < n; i++) {
+  for (int64_t i = 0; i < n + b; i++) {
+  // for (int64_t i = 0; i < n; i++) {
     if (i < n) {
       zB[0].push_back(H[i]);
       zB[1].push_back(Bz[i][0]);
-    } /*else {
+    } else {
       zB[0].push_back(zA[0][i]);
       zB[1].push_back(Polynomial::generateRandomNumber(H, p - n));
-    }*/
+    }
     cout << "zB(" << zB[0][i] << ")= " << zB[1][i] << endl;
   }
-  zB[0].push_back(3);
-  zB[1].push_back(3);
-  zB[0].push_back(4);
-  zB[1].push_back(4);
   vector<int64_t> z_hatB = Polynomial::setupLagrangePolynomial(zB[0], zB[1], p, "z_hatB(x)");
 
   vector<vector<int64_t>> zC(2);
   cout << "zC(x):";
-  // for (int64_t i = 0; i < n + b; i++) {
-  for (int64_t i = 0; i < n; i++) {
+  for (int64_t i = 0; i < n + b; i++) {
+  // for (int64_t i = 0; i < n; i++) {
     if (i < n) {
       zC[0].push_back(H[i]);
       zC[1].push_back(Cz[i][0]);
-    } /*else {
+    } else {
       zC[0].push_back(zA[0][i]);
       zC[1].push_back(Polynomial::generateRandomNumber(H, p - n));
-    }*/
+    }
     cout << "zC(" << zC[0][i] << ")= " << zC[1][i] << endl;
   }
-  zC[0].push_back(3);
-  zC[1].push_back(3);
-  zC[0].push_back(4);
-  zC[1].push_back(4);
   vector<int64_t> z_hatC = Polynomial::setupLagrangePolynomial(zC[0], zC[1], p, "z_hatC(x)");
 
 
@@ -473,15 +454,11 @@ extern "C" void proofGenerator() {
     w_hat[1].push_back(w_bar[i]);
     cout << "w_hat(" << w_hat[0][i] << ")= " << w_hat[1][i] << endl;
   }
-  w_hat[0].push_back(3);
-  w_hat[1].push_back(3);
-  w_hat[0].push_back(4);
-  w_hat[1].push_back(4);
-  // for (int64_t i = n; i < n + b; i++) {
-  //   w_hat[0].push_back(zA[0][i]);
-  //   w_hat[1].push_back(Polynomial::generateRandomNumber(H, p));
-  //   cout << "w_hat(" << w_hat[0][i - b] << ")= " << w_hat[1][i - b] << endl;
-  // }
+  for (int64_t i = n; i < n + b; i++) {
+    w_hat[0].push_back(zA[0][i]);
+    w_hat[1].push_back(Polynomial::generateRandomNumber(H, p));
+    cout << "w_hat(" << w_hat[0][i - b] << ")= " << w_hat[1][i - b] << endl;
+  }
   vector<int64_t> w_hat_x = Polynomial::setupLagrangePolynomial(w_hat[0], w_hat[1], p, "w_hat(x)");
 
   vector<int64_t> productAB = Polynomial::multiplyPolynomials(z_hatA, z_hatB, p);
@@ -517,12 +494,13 @@ extern "C" void proofGenerator() {
   int64_t sigma1 = Polynomial::sumOfEvaluations(s_x, H, p);
   cout << "sigma1 = " << sigma1 << endl;
 
-  int64_t alpha = 10;
-  int64_t beta1 = 22;  // int64_t beta1 = hashAndExtractLower4Bytes(s_x[8], p);
-  int64_t beta2 = 80;  // int64_t beta2 = hashAndExtractLower4Bytes(s_x[9], p);
+  int64_t alpha = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 0, p), p);
   int64_t etaA = 2;
   int64_t etaB = 30;
   int64_t etaC = 100;
+  int64_t beta1 = 22;  // int64_t beta1 = hashAndExtractLower4Bytes(s_x[8], p);
+  int64_t beta2 = 80;  // int64_t beta2 = hashAndExtractLower4Bytes(s_x[9], p);
+
 
   cout << "alpha = " << alpha << endl;
   cout << "beta1 = " << beta1 << endl;

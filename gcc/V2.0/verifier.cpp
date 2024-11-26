@@ -1,100 +1,17 @@
-/*
-  Read the setup.json, commitment.json, and proof.json and use them to verify the code execution 
-  
+// Copyright 2024 FidesInnova.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-  setup.json
-  {
-    "Class":  32-bit Integer,
-    "ck": 64-bit Integer Array,
-    "vk": 64-bit Integer
-  }
-
-
-  commitment.json
-  {
-    "CommitmentID":  64-bit,
-    "Class": 32-bit Integer,
-    "IoT_Manufacturer_Name": String,
-    "IoT_Device_Name": String,
-    "Device_Hardware_Version": float,
-    "Firmware_Version": float,
-    "code_block": 64-bit Array,
-    
-    "m": 64-bit Integer,
-    "n": 64-bit Integer,
-    
-    // PFR Commitment   
-    "ComRowA": 64-bit Integer,
-    "ComColA": 64-bit Integer,
-    "ComValA": 64-bit Integer,
-    "ComRowB": 64-bit Integer,
-    "ComColB": 64-bit Integer,
-    "ComValB": 64-bit Integer,
-    "ComRowC": 64-bit Integer,
-    "ComColC": 64-bit Integer,
-    "ComValC": 64-bit Integer,
-    "RowA": 64-bit Integer,
-    "ColA": 64-bit Integer,
-    "ValA": 64-bit Integer,
-    "RowB": 64-bit Integer,
-    "ColB": 64-bit Integer,
-    "ValB": 64-bit Integer,
-    "RowC": 64-bit Integer,
-    "ColC": 64-bit Integer,
-    "ValC": 64-bit Integer,
-
-    // AHP Commitment
-    "ComRow'A": 64-bit Integer,
-    "ComCol'A": 64-bit Integer,
-    "ComVal'A": 64-bit Integer,
-    "ComRow'B": 64-bit Integer,
-    "ComCol'B": 64-bit Integer,
-    "ComVal'B": 64-bit Integer,
-    "ComRow'C": 64-bit Integer,
-    "ComCol'C": 64-bit Integer,
-    "ComVal'C": 64-bit Integer,
-    "Row'A": 64-bit Integer,
-    "Col'A": 64-bit Integer,
-    "Val'A": 64-bit Integer,
-    "Row'B": 64-bit Integer,
-    "Col'B": 64-bit Integer,
-    "Val'B": 64-bit Integer,
-    "Row'C": 64-bit Integer,
-    "Col'C": 64-bit Integer,
-    "Val'C": 64-bit Integer,
-    
-    "Curve": String,
-    "PolynomialCommitment": String
-  }
-
-
-  proof.json
-  {
-    "CommitmentID": 64-bit,
-    "DeviceEncodedID": String,
-    "Input": String,
-    "Output": String,
-    "P1AHP": 64-bit Integer,
-    "P2AHP": 64-bit Array,
-    "P3AHP": 64-bit Array,
-    "P4AHP": 64-bit Array,
-    "P5AHP": 64-bit Array,
-    "P6AHP": 64-bit Array,
-    "P7AHP": 64-bit Array,
-    "P8AHP": 64-bit Array,
-    "P9AHP": 64-bit Array],
-    "P10AHP": 64-bit Integer,
-    "P11AHP": 64-bit Array,
-    "P12AHP": 64-bit Array,
-    "P13AHP": 64-bit Integer,
-    "P14AHP": 64-bit Array,
-    "P15AHP": 64-bit Array,
-    "P16AHP": 64-bit Array,    
-    "Protocol": String
-  }
-
-
-*/
 
 #include "polynomial.h"
 #include <iostream>
@@ -109,29 +26,6 @@ using namespace std;
 
 void verifier() {
   bool verify = false;
-  int64_t beta3 = 5;  // Must be a random number
-  int64_t z_random = 2;
-
-  int64_t alpha = 10;  // a random number  based on s_x
-  int64_t beta1 = 22;  // int64_t beta1 = hashAndExtractLower4Bytes(s_x[8], p);
-  int64_t beta2 = 80;  // int64_t beta2 = hashAndExtractLower4Bytes(s_x[9], p);
-  int64_t etaA = 2;    // a random number  based on s_x
-  int64_t etaB = 30;   // a random number  based on s_x
-  int64_t etaC = 100;  // a random number  based on s_x
-
-
-  int64_t eta_w_hat = 1;    // a random number  based on s_x
-  int64_t eta_z_hatA = 4;   // a random number  based on s_x
-  int64_t eta_z_hatB = 10;  // a random number  based on s_x
-  int64_t eta_z_hatC = 8;   // a random number  based on s_x
-  int64_t eta_h_0_x = 32;   // a random number  based on s_x
-  int64_t eta_s_x = 45;     // a random number  based on s_x
-  int64_t eta_g_1_x = 92;   // a random number  based on s_x
-  int64_t eta_h_1_x = 11;   // a random number  based on s_x
-  int64_t eta_g_2_x = 1;    // a random number  based on s_x
-  int64_t eta_h_2_x = 5;    // a random number  based on s_x
-  int64_t eta_g_3_x = 25;   // a random number  based on s_x
-  int64_t eta_h_3_x = 63;   // a random number  based on s_x
 
   /*******************************  Read Commitment  ******************************/
   cout << "openning data/program_commitment.json" << endl;
@@ -241,6 +135,36 @@ void verifier() {
   cout << "n: " << n << endl;
   cout << "m: " << m << endl;
   cout << "g: " << g << endl;
+
+
+
+  
+
+  int64_t z_random = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 22, p), p);
+
+  int64_t alpha = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 0, p), p);
+  int64_t etaA = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 1, p), p);
+  int64_t etaB = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 2, p), p);
+  int64_t etaC = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 3, p), p);
+
+  int64_t beta1 = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 8, p), p);
+  int64_t beta2 = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 9, p), p);
+  int64_t beta3 = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 10, p), p);
+
+  int64_t eta_w_hat = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 10, p), p);
+  int64_t eta_z_hatA = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 11, p), p);
+  int64_t eta_z_hatB = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 12, p), p);
+  int64_t eta_z_hatC = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 13, p), p);
+  int64_t eta_h_0_x = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 14, p), p);
+  int64_t eta_s_x = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 15, p), p);
+  int64_t eta_g_1_x = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 16, p), p);
+  int64_t eta_h_1_x = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 17, p), p);
+  int64_t eta_g_2_x = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 18, p), p);
+  int64_t eta_h_2_x = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 19, p), p);
+  int64_t eta_g_3_x = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 20, p), p);
+  int64_t eta_h_3_x = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 21, p), p);
+
+
 
   int64_t y, g_m;
   vector<int64_t> K;

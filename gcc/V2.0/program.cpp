@@ -36,6 +36,14 @@ int main() {
         "mul s3, s4, s4\n"
         "mul s2, s1, s1\n"
         "mul s1, s2, s2\n"
+        "mul s2, s2, s3\n"
+        "addi s1, s3, 11\n"
+        "mul s2, s4, s4\n"
+        "mul s3, s3, s4\n"
+        "add s1, s2, s3\n"
+        "mul s3, s4, s4\n"
+        "mul s2, s1, s1\n"
+        "mul s1, s2, s2\n"
     );
     return 0;
 }

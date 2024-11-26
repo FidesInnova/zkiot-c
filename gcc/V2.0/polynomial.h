@@ -1,3 +1,18 @@
+// Copyright 2024 FidesInnova.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
 #ifndef POLYNOMIAL_H
 #define POLYNOMIAL_H
 
@@ -96,6 +111,12 @@ public:
 
   // Function to calculate KZG in p
   static int64_t KZG_Commitment(vector<int64_t> a, vector<int64_t> b, int64_t p);
+
+  // Function to compute the SHA-256 hash of an int64_t and return the lower 4 bytes as int64_t, applying a modulo operation
+  static int64_t hashAndExtractLower4Bytes(int64_t inputNumber, int64_t p);
+
+  // Function to compute the SHA-256 hash of an int64_t and return the lower 4 bytes as int64_t, applying a modulo operation
+  static string SHA256(char* data);
 };
 
 #endif  // POLYNOMIAL_H
