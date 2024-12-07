@@ -264,7 +264,7 @@ void verifier() {
         p),
       p);
       
-  int64_t ComP_AHP_x = ((Com2_AHP_x * eta_w_hat) % p + (Com3_AHP_x * eta_z_hatA) % p + (Com4_AHP_x * eta_z_hatB) % p + (Com5_AHP_x * eta_z_hatC) % p + (Com6_AHP_x * eta_h_0_x) % p + (Com7_AHP_x * eta_s_x) % p + (Com8_AHP_x * eta_g_1_x) % p + (Com9_AHP_x * eta_h_1_x) % p + (Com10_AHP_x * eta_g_2_x) % p + (Com11_AHP_x * eta_h_2_x) % p + (Com12_AHP_x * eta_g_3_x) % p + (Com13_AHP_x * eta_h_3_x) % p) % p;
+  int64_t ComP_AHP_x = ((Com2_AHP_x * eta_w_hat) % p + ((Com3_AHP_x * eta_z_hatA) % p + ((Com4_AHP_x * eta_z_hatB) % p + ((Com5_AHP_x * eta_z_hatC) % p + ((Com6_AHP_x * eta_h_0_x) % p + ((Com7_AHP_x * eta_s_x) % p + ((Com8_AHP_x * eta_g_1_x) % p + ((Com9_AHP_x * eta_h_1_x) % p + ((Com10_AHP_x * eta_g_2_x) % p + ((Com11_AHP_x * eta_h_2_x) % p + ((Com12_AHP_x * eta_g_3_x) % p + (Com13_AHP_x * eta_h_3_x) % p) % p) %p) % p) % p) % p) % p) % p) % p) % p) % p) % p;
   cout << "ComP_AHP_x = " << ComP_AHP_x << endl;
   
 

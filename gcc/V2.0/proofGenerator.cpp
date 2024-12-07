@@ -22,43 +22,45 @@
 using ordered_json = nlohmann::ordered_json;
 #include <regex>
 #include <random>
+#include <chrono>
 
 using namespace std;
+using namespace chrono;
 
 extern "C" void store_register_instances();
 // Declare the arrays from assembly as external variables
-extern int32_t x0_array[];
-extern int32_t x1_array[];
-extern int32_t x2_array[];
-extern int32_t x3_array[];
-extern int32_t x4_array[];
-extern int32_t x5_array[];
-extern int32_t x6_array[];
-extern int32_t x7_array[];
-extern int32_t x8_array[];
-extern int32_t x9_array[];
-extern int32_t x10_array[];
-extern int32_t x11_array[];
-extern int32_t x12_array[];
-extern int32_t x13_array[];
-extern int32_t x14_array[];
-extern int32_t x15_array[];
-extern int32_t x16_array[];
-extern int32_t x17_array[];
-extern int32_t x18_array[];
-extern int32_t x19_array[];
-extern int32_t x20_array[];
-extern int32_t x21_array[];
-extern int32_t x22_array[];
-extern int32_t x23_array[];
-extern int32_t x24_array[];
-extern int32_t x25_array[];
-extern int32_t x26_array[];
-extern int32_t x27_array[];
-extern int32_t x28_array[];
-extern int32_t x29_array[];
-extern int32_t x30_array[];
-extern int32_t x31_array[];
+extern uint32_t x0_array[];
+extern uint32_t x1_array[];
+extern uint32_t x2_array[];
+extern uint32_t x3_array[];
+extern uint32_t x4_array[];
+extern uint32_t x5_array[];
+extern uint32_t x6_array[];
+extern uint32_t x7_array[];
+extern uint32_t x8_array[];
+extern uint32_t x9_array[];
+extern uint32_t x10_array[];
+extern uint32_t x11_array[];
+extern uint32_t x12_array[];
+extern uint32_t x13_array[];
+extern uint32_t x14_array[];
+extern uint32_t x15_array[];
+extern uint32_t x16_array[];
+extern uint32_t x17_array[];
+extern uint32_t x18_array[];
+extern uint32_t x19_array[];
+extern uint32_t x20_array[];
+extern uint32_t x21_array[];
+extern uint32_t x22_array[];
+extern uint32_t x23_array[];
+extern uint32_t x24_array[];
+extern uint32_t x25_array[];
+extern uint32_t x26_array[];
+extern uint32_t x27_array[];
+extern uint32_t x28_array[];
+extern uint32_t x29_array[];
+extern uint32_t x30_array[];
+extern uint32_t x31_array[];
 
 extern "C" void proofGenerator() {
   cout << "\n\n\n\n*** Start proof generation ***" << endl;
@@ -228,7 +230,10 @@ extern "C" void proofGenerator() {
   int64_t vk = setupJsonData["vk"].get<int64_t>();
 
 
-  extern int32_t z_array[];
+  // Measure the start time
+  auto start_time = high_resolution_clock::now();
+
+  extern uint32_t z_array[];
   // vector<int64_t> z = {1, 0, 126964, 861265, 1299904, 0, 1295808, 1305980, 1678320, 861281, 0, 1, 861285, 0, 30, 5, 1305980, 16, 30, 4, 5, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 31, 806, 20956};
   // vector<int64_t> z = {1, 0, 128242, 1823714, 1298680, 0, 1294568, 1304756, 5087280, 1823730, 1, 1, 1823734, 0, 30, 5, 1304756, 16, 30, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 14, 16, 12, 28, 8, 784, 1568};
   // vector<int64_t> z = {1, 0, 128234, 1823714, 1298680, 0, 1294568, 1304756, 5087280, 1823730, 1, 1, 1823734, 0, 30, 5, 1304756, 16, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 13, 26, 52, 104, 208, 416, 832};
@@ -866,6 +871,11 @@ extern "C" void proofGenerator() {
   int64_t Com11_AHP_x = Polynomial::KZG_Commitment(ck, h_2_x, p);
   int64_t Com12_AHP_x = Polynomial::KZG_Commitment(ck, g_3_x, p);
   int64_t Com13_AHP_x = Polynomial::KZG_Commitment(ck, h_3_x, p);
+
+  // Measure the end time
+  auto end_time = high_resolution_clock::now();
+
+
   cout << "Com2_AHP_x = " << Com2_AHP_x << endl;
   cout << "Com3_AHP_x = " << Com3_AHP_x << endl;
   cout << "Com4_AHP_x = " << Com4_AHP_x << endl;
@@ -882,19 +892,6 @@ extern "C" void proofGenerator() {
   // Generate a KZG commitment for the combined polynomial p(x)
   // int64_t ComP_AHP_x = Polynomial::KZG_Commitment(ck, p_x, p);
   // cout << "ComP_AHP = " << ComP_AHP_x << endl;
-
-
-
-  // TODO: Add req params to the proof.json
-  /*
-    "CommitmentID":  64-bit,
-    "Class": 32-bit Integer,
-    "IoT_Manufacturer_Name": String,
-    "IoT_Device_Name": String,
-    "Device_Hardware_Version": float,
-    "Firmware_Version": float,
-    "code_block": 64-bit Array,
-  */
 
 
   ordered_json proof;
@@ -941,6 +938,10 @@ extern "C" void proofGenerator() {
 
   cout << "\n\n\n\n" << proof << "\n\n\n\n";
 
+  // Calculate the duration
+  auto duration = duration_cast<milliseconds>(end_time - start_time);
+  // Print the time taken
+  cout << "Time taken: " << duration.count() << " milliseconds" << endl;
 
   // std::string proofString = proof.dump();
   // std::ofstream proofFile("data/proof.json");

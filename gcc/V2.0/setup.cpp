@@ -62,7 +62,7 @@ void setup(int64_t tau) {
             if (p <= 1) {
                 cout << "Invalid p value for Class " << class_value << ": " << p << endl;
             } else {
-                int64_t d_AHP = 12 * n_g;
+                int64_t d_AHP = 14 * n_g;
 
                 // Calculate new power for g based on d_AHP
                 int64_t pMinusOne = p - 1;

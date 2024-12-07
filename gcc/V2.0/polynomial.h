@@ -59,7 +59,7 @@ public:
   static vector<int64_t> LagrangePolynomial(int64_t i, const vector<int64_t>& x_values, int64_t p);
 
   // Function to compute Lagrange polynomial(x, y)
-  static vector<int64_t> setupLagrangePolynomial(const vector<int64_t> x_values, const vector<int64_t> y_values, int64_t p, const std::string& name);
+  static vector<int64_t> setupLagrangePolynomial(const vector<int64_t>& x_values, const vector<int64_t>& y_values, int64_t p, const std::string& name);
 
   // Function to parse the polynomial string and evaluate it
   static int64_t evaluatePolynomial(const vector<int64_t>& polynomial, int64_t x, int64_t p);

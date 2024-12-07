@@ -114,6 +114,8 @@ std::vector<std::string> readAssemblyLines(const std::string &assemblyFile, int6
   return selectedLines;
 }
 
+vector<vector<int64_t>> vector_z(2, vector<int64_t>(2, 0ll));
+
 // Function to modify assembly file content and save to new file
 void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &newAssemblyFile, int64_t startLine, int64_t endLine) {
   std::ifstream assemblyFileStream(assemblyFile);
@@ -180,9 +182,13 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
       for(int64_t i = 0; i < n_g; i++){
         spaceSizeZ[rdList[i]] += 4;
         if(spaceSizeZ[rdList[i]] != spaceSize[rdList[i]]) {
+          newAssemblyFileStream << "la a0, z_array" << endl;
           newAssemblyFileStream << "la a1, x" << std::to_string(rdList[i]) << "_array" << endl;
           newAssemblyFileStream << "lw t0, " << std::to_string(spaceSizeZ[rdList[i]]-4) << "(a1)" << endl;
           newAssemblyFileStream << "sw t0, " << std::to_string((n_i+i+1)*4) << "(a0)" << endl;
+
+          vector_z[0].push_back(rdList[i]);
+          vector_z[1].push_back(spaceSizeZ[rdList[i]]);
         }
         else {
           yList.push_back(rdList[i]);
@@ -190,9 +196,13 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
       }
       for(int64_t i = 0; i < yList.size(); i++) {
         // if(spaceSizeZ[rdList[i]] == spaceSize[rdList[i]]) {
+          newAssemblyFileStream << "la a0, z_array" << endl;
           newAssemblyFileStream << "la a1, x" << std::to_string(yList[i]) << "_array" << endl;
           newAssemblyFileStream << "lw t0, " << std::to_string(spaceSizeZ[yList[i]]-4) << "(a1)" << endl;
           newAssemblyFileStream << "sw t0, " << std::to_string((n_i+n_g+i-yList.size()+1)*4) << "(a0)" << endl;
+
+          vector_z[0].push_back(rdList[i]);
+          vector_z[1].push_back(spaceSizeZ[rdList[i]]);
         //   spaceSizeZ[rdList[i]] += 4;
         // }
       }
@@ -349,6 +359,21 @@ void commitmentGenerator() {
   vector<vector<int64_t>> C(n, vector<int64_t>(n, 0ll));
 
   vector<int64_t> rd_latest_used(32, 0);
+
+
+  cout << "\n\n\n\nvector_z[0]: ";
+  for (int64_t i = 0; i < vector_z[0].size(); i++) {
+    cout << vector_z[0][i] << "  ";
+  }
+  cout << "\n\n\n\n";
+
+  cout << "\n\n\n\nvector_z[1]: ";
+  for (int64_t i = 0; i < vector_z[1].size(); i++) {
+    cout << vector_z[1][i] << "  ";
+  }
+  cout << "\n\n\n\n";
+
+
   // Fill matrices based on the instructions
   for (int64_t i = 0; i < n_g; i++) {
     std::stringstream ss(instructions[i]);
@@ -439,9 +464,9 @@ void commitmentGenerator() {
     rd_latest_used[registerMap[rd]] = (1 + n_i + i);
   }
 
-  Polynomial::printMatrix(A, "A");
-  Polynomial::printMatrix(B, "B");
-  Polynomial::printMatrix(C, "C");
+  // Polynomial::printMatrix(A, "A");
+  // Polynomial::printMatrix(B, "B");
+  // Polynomial::printMatrix(C, "C");
 
   // Vector H to store powers of w
   vector<int64_t> H;
@@ -661,7 +686,6 @@ void commitmentGenerator() {
   }
   ordered_json program_param;
   program_param.clear();
-  program_param["Class"] = Class;
   program_param["A"] = nonZeroColsA[0];
   program_param["B"] = nonZeroB;
   program_param["rA"] = rowA[1];
