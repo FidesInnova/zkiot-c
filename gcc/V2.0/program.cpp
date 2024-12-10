@@ -23,14 +23,14 @@ int main() {
         // "add s1, s1, s1\n"
 
 
-        "mul s1, s1, s1\n"
-        "mul s1, s2, s2\n"
-        "add s2, s3, s1\n"
-        "add s2, s4, s2\n"
+        // "mul s1, s1, s1\n"
+        // "mul s1, s2, s2\n"
+        // "add s2, s3, s1\n"
+        // "add s2, s4, s2\n"
 
 
 
-/*
+
         "li s1, 1\n"
         "li s2, 2\n"
         "li s3, 3\n"
@@ -1059,7 +1059,7 @@ int main() {
         "add s1, s2, s3\n"
         "mul s3, s4, s4\n"
         "mul s2, s1, s1\n"
-        "mul s1, s2, s2\n"*/
+        "mul s1, s2, s2\n"
     );
     return 0;
 }

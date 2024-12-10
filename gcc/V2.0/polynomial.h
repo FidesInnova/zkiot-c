@@ -1,4 +1,4 @@
-// Copyright 2024 FidesInnova.
+// Copyright 2024 Fidesinnova.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -120,6 +120,10 @@ public:
 
   // Function to compute the SHA-256 hash of an int64_t and return the lower 4 bytes as int64_t, applying a modulo operation
   static string SHA256(char* data);
+
+  static vector<int64_t> newtonDividedDifferences(const vector<int64_t>& x_values, const vector<int64_t>& y_values, int64_t p);
+
+  static vector<int64_t> newtonPolynomial(const vector<int64_t>& coefficients, const vector<int64_t>& x_values, int64_t p);
 };
 
 #endif  // POLYNOMIAL_H

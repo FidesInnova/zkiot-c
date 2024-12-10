@@ -1,4 +1,4 @@
-// Copyright 2024 FidesInnova.
+// Copyright 2024 Fidesinnova.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -331,7 +331,7 @@ vector<int64_t> Polynomial::multiplyPolynomialByNumber(const vector<int64_t>& H,
   for (int64_t i = 0; i < H.size(); i++) {
     result[i] = (H[i] * h) % p;
 
-    // // If result becomes negative, convert it to a positive equivalent under pulo
+    // If result becomes negative, convert it to a positive equivalent under pulo
     if (result[i] < 0) {
       result[i] += p;
     }
@@ -339,90 +339,123 @@ vector<int64_t> Polynomial::multiplyPolynomialByNumber(const vector<int64_t>& H,
   return result;
 }
 
-// Function to compute Lagrange basis polynomial L_i(x)
-vector<int64_t> Polynomial::LagrangePolynomial(int64_t i, const vector<int64_t>& x_values, int64_t p) {
-  int64_t n = x_values.size();
-  vector<int64_t> result = {1};  // Start with 1 for the polynomial (constant term)
-  vector<int64_t> inv_denominators(n);
+// // Function to compute Lagrange basis polynomial L_i(x)
+// vector<int64_t> Polynomial::LagrangePolynomial(int64_t i, const vector<int64_t>& x_values, int64_t p) {
+//   int64_t n = x_values.size();
+//   vector<int64_t> result = {1};  // Start with 1 for the polynomial (constant term)
+//   vector<int64_t> inv_denominators(n);
 
-  // Precompute modular inverses of (x_i - x_j) for all j ≠ i
-  for (int64_t j = 0; j < n; j++) {
-    if (j != i) {
-      int64_t denominator = (x_values[i] + p - x_values[j]) % p;
-      inv_denominators[j] = pInverse(denominator, p);
-    }
-  }
-
-  for (int64_t j = 0; j < n; j++) {
-    if (j != i) {
-      vector<int64_t> term = { static_cast<int64_t>((p - x_values[j]) % p), 1 };  // (x - x_j)
-      int64_t denominator = (x_values[i] + p - x_values[j]) % p;
-      int64_t inv_denominator = inv_denominators[j];
-
-      // Multiply the result by (x - x_j) / (x_i - x_j)
-      vector<int64_t> temp = multiplyPolynomials(result, term, p);
-      for (int64_t& coef : temp) {
-        coef = (coef * inv_denominator) % p;
-      }
-      result = temp;
-    }
-  }
-  return result;
-}
-
-// // Function to compute Lagrange polynomial(x, y)
-// vector<int64_t> Polynomial::setupLagrangePolynomial(const vector<int64_t>& x_values, 
-//                                                     const vector<int64_t>& y_values, 
-//                                                     int64_t p, 
-//                                                     const std::string& name) {
-//     int64_t num_points = x_values.size();
-//     vector<int64_t> polynomial(1, 0);  // Start with zero polynomial
-
-//     for (int64_t i = 0; i < num_points; i++) {
-//         if (y_values[i] != 0) {  // Process only non-zero y-values
-//             vector<int64_t> Li = Polynomial::LagrangePolynomial(i, x_values, p);
-
-//             // Scale Li by y_i modulo p
-//             for (int64_t& coeff : Li) {
-//                 coeff = (coeff * y_values[i]) % p;
-//             }
-
-//             // Add scaled Li to the final polynomial
-//             polynomial = Polynomial::addPolynomials(polynomial, Li, p);
-//         }
+//   // Precompute modular inverses of (x_i - x_j) for all j ≠ i
+//   for (int64_t j = 0; j < n; j++) {
+//     if (j != i) {
+//       int64_t denominator = (x_values[i] + p - x_values[j]) % p;
+//       inv_denominators[j] = pInverse(denominator, p);
 //     }
+//   }
 
-//     // Print the final polynomial
-//     Polynomial::printPolynomial(polynomial, name);
-//     return polynomial;
+//   for (int64_t j = 0; j < n; j++) {
+//     if (j != i) {
+//       vector<int64_t> term = { static_cast<int64_t>((p - x_values[j]) % p), 1 };  // (x - x_j)
+//       int64_t denominator = (x_values[i] + p - x_values[j]) % p;
+//       int64_t inv_denominator = inv_denominators[j];
+
+//       // Multiply the result by (x - x_j) / (x_i - x_j)
+//       vector<int64_t> temp = multiplyPolynomials(result, term, p);
+//       for (int64_t& coef : temp) {
+//         coef = (coef * inv_denominator) % p;
+//       }
+//       result = temp;
+//     }
+//   }
+//   return result;
+// }
+
+// vector<int64_t> Polynomial::setupLagrangePolynomial(const vector<int64_t>& x_values, const vector<int64_t>& y_values, int64_t p, const std::string& name) {
+//   // Automatically detect number of points
+//   int64_t num_points = x_values.size();
+
+//   // Compute polynomial(x) polynomial
+//   vector<int64_t> polynomial(1, 0);  // Start with a zero polynomial
+
+//   for (int64_t i = 0; i < num_points; i++) {
+//     if (y_values[i] != 0) {  // Only process non-zero y-values
+//       vector<int64_t> Li = LagrangePolynomial(i, x_values, p);
+//       // printPolynomial(Li, "L" + std::to_string(i + 1));
+
+//       // Multiply the L_i(x) by y_i and add to the final polynomial
+//       for (int64_t j = 0; j < Li.size(); j++) {
+//         if (j >= polynomial.size()) {
+//           polynomial.push_back(0);  // Ensure polynomial is large enough to accompate all terms
+//         }
+//         polynomial[j] = (polynomial[j] + y_values[i] * Li[j]) % p;
+//       }
+//     }
+//   }
+//   // Print the final polynomial(x) polynomial
+//   printPolynomial(polynomial, name);
+//   return polynomial;
 // }
 
 
-vector<int64_t> Polynomial::setupLagrangePolynomial(const vector<int64_t>& x_values, const vector<int64_t>& y_values, int64_t p, const std::string& name) {
-  // Automatically detect number of points
-  int64_t num_points = x_values.size();
+vector<int64_t> Polynomial::newtonDividedDifferences(const vector<int64_t>& x_values, const vector<int64_t>& y_values, int64_t p) {
+    int64_t n = x_values.size();
+    vector<vector<int64_t>> divided_diff(n, vector<int64_t>(n, 0));
 
-  // Compute polynomial(x) polynomial
-  vector<int64_t> polynomial(1, 0);  // Start with a zero polynomial
-
-  for (int64_t i = 0; i < num_points; i++) {
-    if (y_values[i] != 0) {  // Only process non-zero y-values
-      vector<int64_t> Li = LagrangePolynomial(i, x_values, p);
-      // printPolynomial(Li, "L" + std::to_string(i + 1));
-
-      // Multiply the L_i(x) by y_i and add to the final polynomial
-      for (int64_t j = 0; j < Li.size(); j++) {
-        if (j >= polynomial.size()) {
-          polynomial.push_back(0);  // Ensure polynomial is large enough to accompate all terms
-        }
-        polynomial[j] = (polynomial[j] + y_values[i] * Li[j]) % p;
-      }
+    // Fill the first column with y_values
+    for (int64_t i = 0; i < n; i++) {
+        divided_diff[i][0] = y_values[i] % p;
     }
-  }
-  // Print the final polynomial(x) polynomial
-  printPolynomial(polynomial, name);
-  return polynomial;
+
+    // Compute the divided differences
+    for (int64_t j = 1; j < n; j++) {
+        for (int64_t i = 0; i < n - j; i++) {
+            int64_t numerator = (divided_diff[i + 1][j - 1] - divided_diff[i][j - 1] + p) % p;
+            int64_t denominator = (x_values[i + j] - x_values[i] + p) % p;
+            divided_diff[i][j] = (numerator * pInverse(denominator, p)) % p;
+        }
+    }
+
+    // Extract the coefficients for the Newton polynomial
+    vector<int64_t> coefficients(n, 0);
+    for (int64_t i = 0; i < n; i++) {
+        coefficients[i] = divided_diff[0][i];
+    }
+    return coefficients;
 }
+
+vector<int64_t> Polynomial::newtonPolynomial(const vector<int64_t>& coefficients, const vector<int64_t>& x_values, int64_t p) {
+    vector<int64_t> result = {coefficients[0]}; // Start with the first term
+    vector<int64_t> current_term = {1};        // Tracks the product (x - x_0)(x - x_1)...
+    
+    for (size_t i = 1; i < coefficients.size(); i++) {
+        vector<int64_t> term = {(-x_values[i - 1] + p) % p, 1}; // (x - x_i)
+        current_term = multiplyPolynomials(current_term, term, p);
+        
+        for (size_t j = 0; j < current_term.size(); j++) {
+            if (j >= result.size()) {
+                result.push_back(0);
+            }
+            result[j] = (result[j] + current_term[j] * coefficients[i]) % p;
+        }
+    }
+    return result;
+}
+
+// vector<int64_t> Polynomial::setupNewtonPolynomial(const vector<int64_t>& x_values, const vector<int64_t>& y_values, int64_t p, const std::string& name) {
+vector<int64_t> Polynomial::setupLagrangePolynomial(const vector<int64_t>& x_values, const vector<int64_t>& y_values, int64_t p, const std::string& name) {
+    // Compute coefficients using divided differences
+    vector<int64_t> coefficients = newtonDividedDifferences(x_values, y_values, p);
+
+    // Construct the polynomial from the coefficients
+    vector<int64_t> polynomial = newtonPolynomial(coefficients, x_values, p);
+
+    // Print and return the polynomial
+    printPolynomial(polynomial, name);
+    return polynomial;
+}
+
+
+
 
 // Function to parse the polynomial string and evaluate it
 int64_t Polynomial::evaluatePolynomial(const vector<int64_t>& polynomial, int64_t x, int64_t p) {
@@ -447,11 +480,6 @@ int64_t Polynomial::evaluatePolynomial(const vector<int64_t>& polynomial, int64_
 
 // Function to compute the sum of polynomial evaluations at multiple points
 int64_t Polynomial::sumOfEvaluations(const vector<int64_t>& poly, const vector<int64_t>& points, int64_t p) {
-  //I add these lines of code to check if there is no elements in points
-  // if (points.empty()) {
-  //   cout << "Error: No points to evaluate" << endl;
-  //   return 0;
-  // }
   int64_t totalSum = 0;
 
   for (int64_t point : points) {
@@ -476,7 +504,7 @@ vector<int64_t> Polynomial::calculatePolynomial_r_alpha_x(int64_t alpha, int64_t
 
   // Calculate each term of the polynomial P(x)
   int64_t currentPowerOfAlpha = 1;  // alpha^0
-  for (int64_t i = 0; i < n; ++i) {
+  for (int64_t i = 0; i < n; i++) {
     P[n - 1 - i] = currentPowerOfAlpha;  // alpha^(n-1-i)
     currentPowerOfAlpha = (currentPowerOfAlpha * alpha) % p;
   }
@@ -493,7 +521,6 @@ int64_t Polynomial::calculatePolynomial_r_alpha_k(int64_t alpha, int64_t k, int6
     buff += p;
   }
   result *= pInverse(buff, p);
-  ;
   result %= p;
   return result;
 }

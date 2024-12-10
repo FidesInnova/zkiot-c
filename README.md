@@ -12,10 +12,10 @@
 <a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
 <a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
 <a href="https://discord.com/invite/NQdM6JGwcs" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://twitter.com/FidesInnova" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
+<a href="https://twitter.com/fidesinnova" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
 
 
- Welcome to the zk-IoT repository! This repository contains the source code for the smart contracts that power the zk-IoT framework within the FidesInnova platform. These smart contracts are designed to facilitate secure, transparent, and efficient interactions in decentralized IoT environments.
+ Welcome to the zk-IoT repository! This repository contains the source code for the smart contracts that power the zk-IoT framework within the Fidesinnova platform. These smart contracts are designed to facilitate secure, transparent, and efficient interactions in decentralized IoT environments.
 
 ## Function-hiding functional commitment
 This repository is a C++ library for the **function-hiding functional commitment zero-knowledge proof (ZKP)** scheme. This scheme is a tuple _(setup, commit, eval)_ that utilizes the following three protocols:

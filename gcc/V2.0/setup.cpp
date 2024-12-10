@@ -1,4 +1,4 @@
-// Copyright 2024 FidesInnova.
+// Copyright 2024 Fidesinnova.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ void setup(int64_t tau) {
             if (p <= 1) {
                 cout << "Invalid p value for Class " << class_value << ": " << p << endl;
             } else {
-                int64_t d_AHP = 14 * n_g;
+                int64_t d_AHP = max(((12 * n_g) - 6), ((3 * n_g) + (2 * n_i) + 1));
 
                 // Calculate new power for g based on d_AHP
                 int64_t pMinusOne = p - 1;
