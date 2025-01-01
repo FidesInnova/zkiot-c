@@ -149,8 +149,7 @@ void verifier() {
 
   uint64_t beta1 = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 8, p), p);
   uint64_t beta2 = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 9, p), p);
-  // uint64_t beta3 = Polynomial::generateRandomNumber({0}, p);
-  uint64_t beta3 = 5;
+  uint64_t beta3 = Polynomial::generateRandomNumber({0}, 1000);
 
   uint64_t eta_w_hat = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 10, p), p);
   uint64_t eta_z_hatA = Polynomial::hashAndExtractLower4Bytes(Polynomial::evaluatePolynomial(s_x, 11, p), p);

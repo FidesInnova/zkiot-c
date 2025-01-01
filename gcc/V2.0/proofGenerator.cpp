@@ -176,8 +176,7 @@ extern "C" void proofGenerator() {
   std::random_device rd;  // Seed
   std::mt19937_64 gen(rd()); // Random number engine
   std::uniform_int_distribution<uint64_t> dis(0, upper_limit);
-  // int64_t b = dis(gen);
-  uint64_t b = 0;
+  int64_t b = dis(gen);
 
   cout << "Enter the content of setup" << class_value << ".json file! (end with a blank line):" << endl;
   string setupJsonInput;
@@ -205,17 +204,17 @@ extern "C" void proofGenerator() {
   // vector<uint64_t> z = {1, 0, 126964, 861265, 1299904, 0, 1295808, 1305980, 1678320, 861281, 0, 1, 861285, 0, 30, 5, 1305980, 16, 30, 4, 5, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 31, 806, 20956};
   // vector<uint64_t> z = {1, 0, 128242, 1823714, 1298680, 0, 1294568, 1304756, 5087280, 1823730, 1, 1, 1823734, 0, 30, 5, 1304756, 16, 30, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 14, 16, 12, 28, 8, 784, 1568};
   // vector<uint64_t> z = {1, 0, 128234, 1823714, 1298680, 0, 1294568, 1304756, 5087280, 1823730, 1, 1, 1823734, 0, 30, 5, 1304756, 16, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 13, 26, 52, 104, 208, 416, 832};
-  vector<uint64_t> z = {1, 0, 115706, 2474412, 1115944, 0, 1110288, 2404123, 1302131, 2474428, 9, 1, 2474436, 0, 1126128, 5, 1126096, 1126128, 30, 18, 19, 20, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 342, 30, 400, 380, 780, 400, 608400, 608800};
+  // vector<uint64_t> z = {1, 0, 115706, 2474412, 1115944, 0, 1110288, 2404123, 1302131, 2474428, 9, 1, 2474436, 0, 1126128, 5, 1126096, 1126128, 30, 18, 19, 20, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 342, 30, 400, 380, 780, 400, 608400, 608800};
 
-  // vector<uint64_t> z;
-  // for(uint64_t i = 0; i < (1 + n_i + n_g); i++) {
-  //   cout << "z_array" << "[" << i << "] = " << z_array[i] % p << endl;
-  //   int64_t bufferZ = z_array[i] % p;
-  //   if (bufferZ < 0) {
-  //     bufferZ += p;
-  //   }
-  //   z.push_back(bufferZ);
-  // }
+  vector<uint64_t> z;
+  for(uint64_t i = 0; i < (1 + n_i + n_g); i++) {
+    cout << "z_array" << "[" << i << "] = " << z_array[i] % p << endl;
+    int64_t bufferZ = z_array[i] % p;
+    if (bufferZ < 0) {
+      bufferZ += p;
+    }
+    z.push_back(bufferZ);
+  }
 
   cout << "\n\n" << endl;
   cout << "z" << "[";
@@ -457,92 +456,8 @@ extern "C" void proofGenerator() {
   vector<uint64_t> h_0_x = Polynomial::dividePolynomials(zAzB_zC, vH_x, p)[0];
   Polynomial::printPolynomial(h_0_x, "h0(x)");
 
-  // vector<uint64_t> s_x = Polynomial::generateRandomPolynomial(n, (2*n)+b-1, p);
+  vector<uint64_t> s_x = Polynomial::generateRandomPolynomial(n, (2*n)+b-1, p);
   // vector<uint64_t> s_x = { 115, 3, 0, 0, 20, 1, 0, 17, 101, 0, 5 };
-  vector<uint64_t> s_x = {
-        82,
-        74,
-        64,
-        0,
-        0,
-        28,
-        59,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        56,
-        0,
-        0,
-        0,
-        14,
-        0,
-        50,
-        41,
-        5,
-        54,
-        64,
-        0,
-        55,
-        69,
-        71,
-        12,
-        0,
-        0,
-        0,
-        0,
-        44,
-        0,
-        0,
-        0,
-        0,
-        0,
-        25,
-        0,
-        0,
-        41,
-        27,
-        0,
-        0,
-        8,
-        34,
-        58,
-        0,
-        0,
-        0,
-        0,
-        47,
-        52,
-        0,
-        0,
-        58,
-        63,
-        48,
-        38,
-        0,
-        0,
-        0,
-        26,
-        65,
-        0,
-        0,
-        0,
-        83,
-        63,
-        0,
-        48,
-        82,
-        0,
-        33,
-        14,
-        34,
-        0,
-        37,
-        12,
-};
   Polynomial::printPolynomial(s_x, "s(x)");
 
   uint64_t sigma1 = Polynomial::sumOfEvaluations(s_x, H, p);

@@ -502,10 +502,7 @@ void commitmentGenerator() {
   
   // Create a polynomial vector vH_x of size (n + 1) initialized to 0
   vector<uint64_t> vH_x(n + 1, 0);
-  vH_x[0] = (-1) % p;
-  if (vH_x[0] < 0) {
-    vH_x[0] += p;
-  }
+  vH_x[0] = p - 1;
   vH_x[n] = 1;
   Polynomial::printPolynomial(vH_x, "vH(x)");
 
