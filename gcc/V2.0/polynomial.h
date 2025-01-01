@@ -26,61 +26,64 @@ using namespace std;
 class Polynomial {
 public:
   // Function to compute the p exponentiation (base^exponent) % p
-  static int64_t power(int64_t base, int64_t exponent, int64_t p);
+  static uint64_t power(uint64_t base, uint64_t exponent, uint64_t p);
 
   // Function to compute the p exponentiation (a^b) % p
-  static int64_t pExp(int64_t a, int64_t b, int64_t p);
+  static uint64_t pExp(uint64_t a, uint64_t b, uint64_t p);
 
   // Function to compute the p inverse using Fermat's Little Theorem
-  static int64_t pInverse(int64_t a, int64_t p);
+  static uint64_t pInverse(uint64_t a, uint64_t p);
 
   // Function to generate a random number in p
-  static int64_t generateRandomNumber(const vector<int64_t>& H, int64_t p);
+  static uint64_t generateRandomNumber(const vector<uint64_t>& H, uint64_t p);
 
   // Function to generate a random polynomial
-  static vector<int64_t> generateRandomPolynomial(size_t numTerms, size_t maxDegree, int64_t p);
+  static vector<uint64_t> generateRandomPolynomial(size_t numTerms, size_t maxDegree, uint64_t p);
 
   // Add two polynomials with p arithmetic
-  static vector<int64_t> addPolynomials(const vector<int64_t>& poly1, const vector<int64_t>& poly2, int64_t p);
+  static vector<uint64_t> addPolynomials(const vector<uint64_t>& poly1, const vector<uint64_t>& poly2, uint64_t p);
 
   // Subtract two polynomials with p arithmetic
-  static vector<int64_t> subtractPolynomials(const vector<int64_t>& poly1, const vector<int64_t>& poly2, int64_t p);
+  static vector<uint64_t> subtractPolynomials(const vector<uint64_t>& poly1, const vector<uint64_t>& poly2, uint64_t p);
 
   // Function to multiply two polynomials
-  static vector<int64_t> multiplyPolynomials(const vector<int64_t>& poly1, const vector<int64_t>& poly2, int64_t p);
+  static vector<uint64_t> multiplyPolynomials(const vector<uint64_t>& poly1, const vector<uint64_t>& poly2, uint64_t p);
 
   // Function to divide two polynomials
-  static vector<vector<int64_t>> dividePolynomials(const vector<int64_t>& dividend, const vector<int64_t>& divisor, int64_t p);
+  static vector<vector<uint64_t>> dividePolynomials(const vector<uint64_t>& dividend, const vector<uint64_t>& divisor, uint64_t p);
 
   // Function to multiply a polynomial by a number
-  static vector<int64_t> multiplyPolynomialByNumber(const vector<int64_t>& H, int64_t h, int64_t p);
+  static vector<uint64_t> multiplyPolynomialByNumber(const vector<uint64_t>& H, uint64_t h, uint64_t p);
+
+  // Function to subtract two number in p
+  static uint64_t subtractModP(uint64_t a, uint64_t b, uint64_t p);
 
   // Function to compute Lagrange basis polynomial L_i(x)
-  static vector<int64_t> LagrangePolynomial(int64_t i, const vector<int64_t>& x_values, int64_t p);
+  static vector<uint64_t> LagrangePolynomial(uint64_t i, const vector<uint64_t>& x_values, uint64_t p);
 
   // Function to compute Lagrange polynomial(x, y)
-  static vector<int64_t> setupLagrangePolynomial(const vector<int64_t>& x_values, const vector<int64_t>& y_values, int64_t p, const std::string& name);
+  static vector<uint64_t> setupNewtonPolynomial(const vector<uint64_t>& x_values, const vector<uint64_t>& y_values, uint64_t p, const std::string& name);
 
   // Function to parse the polynomial string and evaluate it
-  static int64_t evaluatePolynomial(const vector<int64_t>& polynomial, int64_t x, int64_t p);
+  static uint64_t evaluatePolynomial(const vector<uint64_t>& polynomial, uint64_t x, uint64_t p);
 
   // Function to compute the sum of polynomial evaluations at multiple points
-  static int64_t sumOfEvaluations(const vector<int64_t>& poly, const vector<int64_t>& points, int64_t p);
+  static uint64_t sumOfEvaluations(const vector<uint64_t>& poly, const vector<uint64_t>& points, uint64_t p);
 
   // Function to create a polynomial for (x - root)
-  static vector<int64_t> createLinearPolynomial(int64_t root);
+  static vector<uint64_t> createLinearPolynomial(uint64_t root);
 
   // Function to calculate Polynomial r(α,x) = (alpha^n - x^n) / (alpha - x)
-  static vector<int64_t> calculatePolynomial_r_alpha_x(int64_t alpha, int64_t n, int64_t p);
+  static vector<uint64_t> calculatePolynomial_r_alpha_x(uint64_t alpha, uint64_t n, uint64_t p);
 
   // Function to calculate Polynomial r(α,x) = (alpha^n - x^n) / (alpha - x)
-  static int64_t calculatePolynomial_r_alpha_k(int64_t alpha, int64_t k, int64_t n, int64_t p);
+  static uint64_t calculatePolynomial_r_alpha_k(uint64_t alpha, uint64_t k, uint64_t n, uint64_t p);
 
   // Function to expand polynomials given the roots
-  static vector<int64_t> expandPolynomials(const vector<int64_t>& roots, int64_t p);
+  static vector<uint64_t> expandPolynomials(const vector<uint64_t>& roots, uint64_t p);
 
   // Function to print polynomial in serial
-  static void printPolynomial(const vector<int64_t>& coefficients, const std::string& name);
+  static void printPolynomial(const vector<uint64_t>& coefficients, const std::string& name);
 
   // Utility functions for trimming
   static std::string trim(const std::string& str);
@@ -89,41 +92,41 @@ public:
   static std::string removeCommas(const std::string& str);
 
   // Utility functions to print a Matrix
-  static void printMatrix(vector<vector<int64_t>>& matrix, const std::string& name);
+  static void printMatrix(vector<vector<uint64_t>>& matrix, const std::string& name);
 
   // Function to get the row indices of non-zero entries in matrix
-  static vector<vector<int64_t>> getNonZeroRows(const vector<vector<int64_t>>& matrix);
+  static vector<vector<uint64_t>> getNonZeroRows(const vector<vector<uint64_t>>& matrix);
 
   // Function to get the col indices of non-zero entries in matrix
-  static vector<vector<int64_t>> getNonZeroCols(const vector<vector<int64_t>>& matrix);
+  static vector<vector<uint64_t>> getNonZeroCols(const vector<vector<uint64_t>>& matrix);
 
   // Function to create the mapping
-  static vector<vector<int64_t>> createMapping(const vector<int64_t>& K, const vector<int64_t>& H, const vector<vector<int64_t>>& nonZero);
+  static vector<vector<uint64_t>> createMapping(const vector<uint64_t>& K, const vector<uint64_t>& H, const vector<vector<uint64_t>>& nonZero);
 
   // Function to print the mapping
-  static void printMapping(vector<vector<int64_t> >& row, const std::string& name);
+  static void printMapping(vector<vector<uint64_t> >& row, const std::string& name);
 
   // Function to create the val mapping
-  static vector<vector<int64_t>> valMapping(const vector<int64_t>& K, const vector<int64_t>& H, vector<vector<int64_t>>& nonZeroRows, vector<vector<int64_t>>& nonZeroCols, int64_t p);
+  static vector<vector<uint64_t>> valMapping(const vector<uint64_t>& K, const vector<uint64_t>& H, vector<vector<uint64_t>>& nonZeroRows, vector<vector<uint64_t>>& nonZeroCols, uint64_t p);
 
   // Function to calculate log in p
-  static int64_t log_p(int64_t a, int64_t b, int64_t p);
+  static uint64_t log_p(uint64_t a, uint64_t b, uint64_t p);
 
   // Function to calculate e_func in p
-  static int64_t e_func(int64_t a, int64_t b, int64_t g, int64_t p);
+  static uint64_t e_func(uint64_t a, uint64_t b, uint64_t g, uint64_t p);
 
   // Function to calculate KZG in p
-  static int64_t KZG_Commitment(vector<int64_t> a, vector<int64_t> b, int64_t p);
+  static uint64_t KZG_Commitment(vector<uint64_t> a, vector<uint64_t> b, uint64_t p);
 
-  // Function to compute the SHA-256 hash of an int64_t and return the lower 4 bytes as int64_t, applying a modulo operation
-  static int64_t hashAndExtractLower4Bytes(int64_t inputNumber, int64_t p);
+  // Function to compute the SHA-256 hash of an uint64_t and return the lower 4 bytes as uint64_t, applying a modulo operation
+  static uint64_t hashAndExtractLower4Bytes(uint64_t inputNumber, uint64_t p);
 
-  // Function to compute the SHA-256 hash of an int64_t and return the lower 4 bytes as int64_t, applying a modulo operation
+  // Function to compute the SHA-256 hash of an uint64_t and return the lower 4 bytes as uint64_t, applying a modulo operation
   static string SHA256(char* data);
 
-  static vector<int64_t> newtonDividedDifferences(const vector<int64_t>& x_values, const vector<int64_t>& y_values, int64_t p);
+  static vector<uint64_t> newtonDividedDifferences(const vector<uint64_t>& x_values, const vector<uint64_t>& y_values, uint64_t p);
 
-  static vector<int64_t> newtonPolynomial(const vector<int64_t>& coefficients, const vector<int64_t>& x_values, int64_t p);
+  static vector<uint64_t> newtonPolynomial(const vector<uint64_t>& coefficients, const vector<uint64_t>& x_values, uint64_t p);
 };
 
 #endif  // POLYNOMIAL_H

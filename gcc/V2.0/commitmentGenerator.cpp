@@ -37,12 +37,12 @@ std::unordered_map<std::string, int> registerMap = {
     {"t5", 30},   {"t6", 31}
 };
 
-int64_t n_i, n_g, m, n, p, g;
+uint64_t n_i, n_g, m, n, p, g;
 
 std::string configFile = "device_config.json", setupFile, assemblyFile = "program.s", newAssemblyFile = "program_new.s";
 
 std::vector<std::string> instructions;
-int64_t Class;
+uint64_t Class;
 string commitmentID;
 string IoT_Manufacturer_Name;
 string IoT_Device_Name;
@@ -50,7 +50,7 @@ string Device_Hardware_Version;
 string Firmware_Version;
 
 // Function to read JSON config file and parse lines to read from assembly file
-std::pair<int64_t, int64_t> parseDeviceConfig(const std::string &configFile, nlohmann::json &config) {
+std::pair<uint64_t, uint64_t> parseDeviceConfig(const std::string &configFile, nlohmann::json &config) {
   std::ifstream configFileStream(configFile, std::ifstream::binary);
   if (!configFileStream.is_open()) {
       std::cerr << "Error opening config file: " << configFile << std::endl;
@@ -60,11 +60,11 @@ std::pair<int64_t, int64_t> parseDeviceConfig(const std::string &configFile, nlo
   configFileStream >> config;
   configFileStream.close();
 
-  std::vector<int64_t> linesToRead;
+  std::vector<uint64_t> linesToRead;
 
-  int64_t startLine = config["code_block"][0].get<int64_t>();
-  int64_t endLine = config["code_block"][1].get<int64_t>();
-  Class = config["Class"].get<int64_t>();
+  uint64_t startLine = config["code_block"][0].get<uint64_t>();
+  uint64_t endLine = config["code_block"][1].get<uint64_t>();
+  Class = config["Class"].get<uint64_t>();
   commitmentID = config["commitmentID"].get<string>();
   IoT_Manufacturer_Name = config["iot_manufacturer_name"].get<string>();
   IoT_Device_Name = config["iot_device_name"].get<string>();
@@ -81,18 +81,18 @@ std::pair<int64_t, int64_t> parseDeviceConfig(const std::string &configFile, nlo
   classFileStream >> classJsonData;
   classFileStream.close();
   string class_value = to_string(Class); // Convert integer to string class
-  n_g = classJsonData[class_value]["n_g"].get<int64_t>();
-  n_i = classJsonData[class_value]["n_i"].get<int64_t>();
-  n   = classJsonData[class_value]["n"].get<int64_t>();
-  m   = classJsonData[class_value]["m"].get<int64_t>();
-  p   = classJsonData[class_value]["p"].get<int64_t>();
-  g   = classJsonData[class_value]["g"].get<int64_t>();
+  n_g = classJsonData[class_value]["n_g"].get<uint64_t>();
+  n_i = classJsonData[class_value]["n_i"].get<uint64_t>();
+  n   = classJsonData[class_value]["n"].get<uint64_t>();
+  m   = classJsonData[class_value]["m"].get<uint64_t>();
+  p   = classJsonData[class_value]["p"].get<uint64_t>();
+  g   = classJsonData[class_value]["g"].get<uint64_t>();
 
   return {startLine, endLine};
 }
 
 // Function to read specified lines from assembly file
-std::vector<std::string> readAssemblyLines(const std::string &assemblyFile, int64_t startLine, int64_t endLine) {
+std::vector<std::string> readAssemblyLines(const std::string &assemblyFile, uint64_t startLine, uint64_t endLine) {
   std::ifstream assemblyFileStream(assemblyFile);
   if (!assemblyFileStream.is_open()) {
       std::cerr << "Error opening assembly file: " << assemblyFile << std::endl;
@@ -101,7 +101,7 @@ std::vector<std::string> readAssemblyLines(const std::string &assemblyFile, int6
 
   std::vector<std::string> selectedLines;
   std::string line;
-  int64_t currentLineNumber = 1;
+  uint64_t currentLineNumber = 1;
 
   while (std::getline(assemblyFileStream, line)) {
       if (currentLineNumber >= startLine && currentLineNumber <= endLine) {
@@ -114,10 +114,10 @@ std::vector<std::string> readAssemblyLines(const std::string &assemblyFile, int6
   return selectedLines;
 }
 
-vector<vector<int64_t>> vector_z(2, vector<int64_t>(2, 0ll));
+vector<vector<uint64_t>> vector_z(2, vector<uint64_t>(2, 0ll));
 
 // Function to modify assembly file content and save to new file
-void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &newAssemblyFile, int64_t startLine, int64_t endLine) {
+void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &newAssemblyFile, uint64_t startLine, uint64_t endLine) {
   std::ifstream assemblyFileStream(assemblyFile);
   if (!assemblyFileStream.is_open()) {
       std::cerr << "Error opening assembly file: " << assemblyFile << std::endl;
@@ -131,11 +131,12 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
   }
 
   std::string line;
-  int64_t currentLineNumber = 1;
-  int64_t index = 0;
+  uint64_t currentLineNumber = 1;
+  uint64_t index = 0;
+  uint64_t z_arrayList = 0;
 
-  vector<int64_t> spaceSize(32, 4);
-  vector<int64_t> rdList;
+  vector<uint64_t> spaceSize(32, 4);
+  vector<uint64_t> rdList;
   while (std::getline(assemblyFileStream, line)) {
     // Insert variables before the specified lines
     if (currentLineNumber == startLine) {
@@ -167,45 +168,53 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
     }
 
     else if (currentLineNumber == endLine + 1){
+      // newAssemblyFileStream << "la a0, z_array0" << endl;
       newAssemblyFileStream << "la a0, z_array" << endl;
       newAssemblyFileStream << "li t0, 1" << endl;
       newAssemblyFileStream << "sw t0, 0(a0)" << endl;
-      for(int64_t i = 0; i < n_i; i++) {
+      for(uint64_t i = 0; i < n_i; i++) {
+        // newAssemblyFileStream << "la a0, z_array0" << endl;
         newAssemblyFileStream << "la a0, z_array" << endl;
         newAssemblyFileStream << "la a1, x" << std::to_string(i) << "_array" << endl;
         newAssemblyFileStream << "lw t0, 0(a1)" << endl;
         newAssemblyFileStream << "sw t0, " << std::to_string((i+1)*4) << "(a0)" << endl;
       }
-      vector<int64_t> spaceSizeZ(32, 4);
-      vector<int64_t> yList;
-      
-      for(int64_t i = 0; i < n_g; i++){
+      vector<uint64_t> spaceSizeZ(32, 4);
+      vector<uint64_t> yList;
+      for(uint64_t i = 0; i < n_g; i++){
+        // if ((i % 511) == 0 && i != 0) {
+        //   z_arrayList++;
+        // }
+        // spaceSizeZ[rdList[i]] += 4;
         spaceSizeZ[rdList[i]] += 4;
-        if(spaceSizeZ[rdList[i]] != spaceSize[rdList[i]]) {
+        // if(spaceSizeZ[rdList[i]] != spaceSize[rdList[i]]) {
+          // newAssemblyFileStream << "la a0, z_array" << std::to_string(z_arrayList) << endl;
           newAssemblyFileStream << "la a0, z_array" << endl;
           newAssemblyFileStream << "la a1, x" << std::to_string(rdList[i]) << "_array" << endl;
           newAssemblyFileStream << "lw t0, " << std::to_string(spaceSizeZ[rdList[i]]-4) << "(a1)" << endl;
-          newAssemblyFileStream << "sw t0, " << std::to_string((n_i+i+1)*4) << "(a0)" << endl;
+          // newAssemblyFileStream << "sw t0, " << std::to_string(((n_i + i + 1) % 511) * 4) << "(a0)" << endl;
+          newAssemblyFileStream << "sw t0, " << std::to_string((n_i + i + 1) * 4) << "(a0)" << endl;
 
-          vector_z[0].push_back(rdList[i]);
-          vector_z[1].push_back(spaceSizeZ[rdList[i]]);
-        }
-        else {
-          yList.push_back(rdList[i]);
-        }
-      }
-      for(int64_t i = 0; i < yList.size(); i++) {
-        // if(spaceSizeZ[rdList[i]] == spaceSize[rdList[i]]) {
-          newAssemblyFileStream << "la a0, z_array" << endl;
-          newAssemblyFileStream << "la a1, x" << std::to_string(yList[i]) << "_array" << endl;
-          newAssemblyFileStream << "lw t0, " << std::to_string(spaceSizeZ[yList[i]]-4) << "(a1)" << endl;
-          newAssemblyFileStream << "sw t0, " << std::to_string((n_i+n_g+i-yList.size()+1)*4) << "(a0)" << endl;
-
-          vector_z[0].push_back(rdList[i]);
-          vector_z[1].push_back(spaceSizeZ[rdList[i]]);
-        //   spaceSizeZ[rdList[i]] += 4;
+          // vector_z[0].push_back(rdList[i]);
+          // vector_z[1].push_back(spaceSizeZ[rdList[i]]);
+        // }
+        // else {
+        //   yList.push_back(rdList[i]);
         // }
       }
+      // for(uint64_t i = 0; i < yList.size(); i++) {
+      //   if ((i % 511) == 0) {
+      //     z_arrayList++;
+      //   }
+      //   newAssemblyFileStream << "la a0, z_array" << std::to_string(z_arrayList) << endl;
+      //   newAssemblyFileStream << "la a1, x" << std::to_string(yList[i]) << "_array" << endl;
+      //   newAssemblyFileStream << "lw t0, " << std::to_string(spaceSizeZ[yList[i]]-4) << "(a1)" << endl;
+
+      //   newAssemblyFileStream << "sw t0, " << std::to_string(((n_i + n_g + i - yList.size() + 1) % 511) * 4) << "(a0)" << endl;
+
+      //   vector_z[0].push_back(rdList[i]);
+      //   vector_z[1].push_back(spaceSizeZ[rdList[i]]);
+      // }
       newAssemblyFileStream << "call proofGenerator\n";
       newAssemblyFileStream << line << std::endl;
     }
@@ -216,7 +225,12 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
     ++currentLineNumber;
   }
 
-  std::string assemblyCode = ".section .data\n.global z_array\nz_array:    .space " + std::to_string((n_i + n_g + 1) * 4) + "   # Array for z\n";
+  std::string assemblyCode = ".section .data\n";
+  // for(uint64_t i = 0; i < z_arrayList; i++) {
+  //   assemblyCode += ".global z_array" + std::to_string(i) + "\nz_array" + std::to_string(i) + ":    .space " + std::to_string(511 * 4) + "   # Array for z\n";
+  // }
+      assemblyCode += ".global z_array\nz_array:    .space " + std::to_string((n_i + n_g + 1) * 4) + "   # Array for z\n";
+
   assemblyCode += "#### Subroutine Code (`store_registers.s`)\n\n";
   assemblyCode +=
   "        .data\n";
@@ -325,8 +339,8 @@ void commitmentGenerator() {
   nlohmann::json setupJsonData;
   setupFileStream >> setupJsonData;
   setupFileStream.close();
-  vector<int64_t> ck = setupJsonData["ck"].get<vector<int64_t>>();
-  int64_t vk = setupJsonData["vk"].get<int64_t>();
+  vector<uint64_t> ck = setupJsonData["ck"].get<vector<uint64_t>>();
+  uint64_t vk = setupJsonData["vk"].get<uint64_t>();
 
   
 
@@ -347,40 +361,26 @@ void commitmentGenerator() {
   cout << "Number of general instructions (n_g): " << n_g << endl;
 
   // Matrix order
-  int64_t t;
+  uint64_t t;
   cout << "Matrix order: " << n << endl;
 
   t = n_i + 1;
   // m = (((Polynomial::power(n, 2, p) - n) / 2) - ((Polynomial::power(t, 2, p) - t) / 2)) % p;
 
   // Initialize matrices A, B, C
-  vector<vector<int64_t>> A(n, vector<int64_t>(n, 0ll));
-  vector<vector<int64_t>> B(n, vector<int64_t>(n, 0ll));
-  vector<vector<int64_t>> C(n, vector<int64_t>(n, 0ll));
+  vector<vector<uint64_t>> A(n, vector<uint64_t>(n, 0ll));
+  vector<vector<uint64_t>> B(n, vector<uint64_t>(n, 0ll));
+  vector<vector<uint64_t>> C(n, vector<uint64_t>(n, 0ll));
 
-  vector<int64_t> rd_latest_used(32, 0);
-
-
-  cout << "\n\n\n\nvector_z[0]: ";
-  for (int64_t i = 0; i < vector_z[0].size(); i++) {
-    cout << vector_z[0][i] << "  ";
-  }
-  cout << "\n\n\n\n";
-
-  cout << "\n\n\n\nvector_z[1]: ";
-  for (int64_t i = 0; i < vector_z[1].size(); i++) {
-    cout << vector_z[1][i] << "  ";
-  }
-  cout << "\n\n\n\n";
-
+  vector<uint64_t> rd_latest_used(32, 0);
 
   // Fill matrices based on the instructions
-  for (int64_t i = 0; i < n_g; i++) {
+  for (uint64_t i = 0; i < n_g; i++) {
     std::stringstream ss(instructions[i]);
     std::string opcode, rd, leftStr, rightStr;
     ss >> opcode >> rd;
-    int64_t li = 0;
-    int64_t ri = 0;
+    uint64_t li = 0;
+    uint64_t ri = 0;
 
     if (opcode == "add" || opcode == "addi" || opcode == "mul") {
       ss >> leftStr >> rightStr;
@@ -394,7 +394,7 @@ void commitmentGenerator() {
       leftStr = Polynomial::trim(leftStr);
       rightStr = Polynomial::trim(rightStr);
 
-      int64_t leftInt, rightInt;
+      uint64_t leftInt, rightInt;
       
       C[1+n_i+i][1+n_i+i] = 1;
 
@@ -455,53 +455,53 @@ void commitmentGenerator() {
           B[1+n_i+i][ri] = 1;
         }
       }
+      rd_latest_used[registerMap[rd]] = (1 + n_i + i);
     }
     
     else {
       cout << "!!! Undefined instruction in the defiend Line range !!!\n" << opcode << endl;
       std::exit(0);
     }
-    rd_latest_used[registerMap[rd]] = (1 + n_i + i);
   }
 
-  // Polynomial::printMatrix(A, "A");
-  // Polynomial::printMatrix(B, "B");
-  // Polynomial::printMatrix(C, "C");
+  Polynomial::printMatrix(A, "A");
+  Polynomial::printMatrix(B, "B");
+  Polynomial::printMatrix(C, "C");
 
   // Vector H to store powers of w
-  vector<int64_t> H;
-  int64_t w, g_n;
+  vector<uint64_t> H;
+  uint64_t w, g_n;
 
   H.push_back(1);
   g_n = ((p - 1) / n) % p;
   w = Polynomial::power(g, g_n, p);
-  for (int64_t i = 1; i < n; i++) {
+  for (uint64_t i = 1; i < n; i++) {
     H.push_back(Polynomial::power(w, i, p));
   }
   cout << "H[n]: ";
-  for (int64_t i = 0; i < n; i++) {
+  for (uint64_t i = 0; i < n; i++) {
     cout << H[i] << " ";
   }
   cout << endl;
 
-  int64_t y, g_m;
+  uint64_t y, g_m;
 
   // Vector K to store powers of y
-  vector<int64_t> K;
+  vector<uint64_t> K;
   K.push_back(1);
   g_m = ((p - 1) * Polynomial::pInverse(m, p)) % p;
   y = Polynomial::power(g, g_m, p);
-  for (int64_t i = 1; i < m; i++) {
+  for (uint64_t i = 1; i < m; i++) {
     K.push_back(Polynomial::power(y, i, p));
   }
   cout << "K[m]: ";
-  for (int64_t i = 0; i < m; i++) {
+  for (uint64_t i = 0; i < m; i++) {
     cout << K[i] << " ";
   }
   cout << endl;
   
   // Create a polynomial vector vH_x of size (n + 1) initialized to 0
-  vector<int64_t> vH_x(n + 1, 0);
+  vector<uint64_t> vH_x(n + 1, 0);
   vH_x[0] = (-1) % p;
   if (vH_x[0] < 0) {
     vH_x[0] += p;
@@ -510,8 +510,8 @@ void commitmentGenerator() {
   Polynomial::printPolynomial(vH_x, "vH(x)");
 
  // Create a mapping for the non-zero rows using parameters K and H
-  vector<vector<int64_t>> nonZeroRowsA = Polynomial::getNonZeroRows(A);
-  vector<vector<int64_t>> rowA = Polynomial::createMapping(K, H, nonZeroRowsA);
+  vector<vector<uint64_t>> nonZeroRowsA = Polynomial::getNonZeroRows(A);
+  vector<vector<uint64_t>> rowA = Polynomial::createMapping(K, H, nonZeroRowsA);
   // rowA[1].push_back(1);
   // rowA[1].push_back(135);
   // rowA[1].push_back(125);
@@ -519,8 +519,8 @@ void commitmentGenerator() {
   // rowA[1].push_back(42);
   // rowA[1].push_back(1);
   Polynomial::printMapping(rowA, "row_A");
-  vector<vector<int64_t>> nonZeroColsA = Polynomial::getNonZeroCols(A);
-  vector<vector<int64_t>> colA = Polynomial::createMapping(K, H, nonZeroColsA);
+  vector<vector<uint64_t>> nonZeroColsA = Polynomial::getNonZeroCols(A);
+  vector<vector<uint64_t>> colA = Polynomial::createMapping(K, H, nonZeroColsA);
   // colA[1].push_back(42);
   // colA[1].push_back(1);
   // colA[1].push_back(135);
@@ -528,30 +528,30 @@ void commitmentGenerator() {
   // colA[1].push_back(59);
   // colA[1].push_back(42);
   Polynomial::printMapping(colA, "col_A");
-  vector<vector<int64_t>> valA = Polynomial::valMapping(K, H, nonZeroRowsA, nonZeroColsA, p);
+  vector<vector<uint64_t>> valA = Polynomial::valMapping(K, H, nonZeroRowsA, nonZeroColsA, p);
   Polynomial::printMapping(valA, "val_A");
 
-  vector<vector<int64_t>> nonZeroRowsB = Polynomial::getNonZeroRows(B);
-  vector<vector<int64_t>> rowB = Polynomial::createMapping(K, H, nonZeroRowsB);
+  vector<vector<uint64_t>> nonZeroRowsB = Polynomial::getNonZeroRows(B);
+  vector<vector<uint64_t>> rowB = Polynomial::createMapping(K, H, nonZeroRowsB);
   // rowB[1].push_back(59);
   // rowB[1].push_back(1);
   // rowB[1].push_back(42);
   // rowB[1].push_back(135);
   // rowB[1].push_back(59);
   Polynomial::printMapping(rowB, "row_B");
-  vector<vector<int64_t>> nonZeroColsB = Polynomial::getNonZeroCols(B);
-  vector<vector<int64_t>> colB = Polynomial::createMapping(K, H, nonZeroColsB);
+  vector<vector<uint64_t>> nonZeroColsB = Polynomial::getNonZeroCols(B);
+  vector<vector<uint64_t>> colB = Polynomial::createMapping(K, H, nonZeroColsB);
   // colB[1].push_back(59);
   // colB[1].push_back(42);
   // colB[1].push_back(125);
   // colB[1].push_back(1);
   // colB[1].push_back(135);
   Polynomial::printMapping(colB, "col_B");
-  vector<vector<int64_t>> valB = Polynomial::valMapping(K, H, nonZeroRowsB, nonZeroColsB, p);
+  vector<vector<uint64_t>> valB = Polynomial::valMapping(K, H, nonZeroRowsB, nonZeroColsB, p);
   Polynomial::printMapping(valB, "val_B");
 
-  vector<vector<int64_t>> nonZeroRowsC = Polynomial::getNonZeroRows(C);
-  vector<vector<int64_t>> rowC = Polynomial::createMapping(K, H, nonZeroRowsC);
+  vector<vector<uint64_t>> nonZeroRowsC = Polynomial::getNonZeroRows(C);
+  vector<vector<uint64_t>> rowC = Polynomial::createMapping(K, H, nonZeroRowsC);
   // rowC[1].push_back(1);
   // rowC[1].push_back(59);
   // rowC[1].push_back(125);
@@ -559,8 +559,8 @@ void commitmentGenerator() {
   // rowC[1].push_back(135);
   // rowC[1].push_back(42);
   Polynomial::printMapping(rowC, "row_C");
-  vector<vector<int64_t>> nonZeroColsC = Polynomial::getNonZeroCols(C);
-  vector<vector<int64_t>> colC = Polynomial::createMapping(K, H, nonZeroColsC);
+  vector<vector<uint64_t>> nonZeroColsC = Polynomial::getNonZeroCols(C);
+  vector<vector<uint64_t>> colC = Polynomial::createMapping(K, H, nonZeroColsC);
   // colC[1].push_back(125);
   // colC[1].push_back(59);
   // colC[1].push_back(1);
@@ -568,23 +568,23 @@ void commitmentGenerator() {
   // colC[1].push_back(42);
   // colC[1].push_back(59);
   Polynomial::printMapping(colC, "col_C");
-  vector<vector<int64_t>> valC = Polynomial::valMapping(K, H, nonZeroRowsC, nonZeroColsC, p);
+  vector<vector<uint64_t>> valC = Polynomial::valMapping(K, H, nonZeroRowsC, nonZeroColsC, p);
   Polynomial::printMapping(valC, "val_C");
 
 
-  vector<int64_t> rowA_x = Polynomial::setupLagrangePolynomial(rowA[0], rowA[1], p, "rowA(x)");
-  vector<int64_t> colA_x = Polynomial::setupLagrangePolynomial(colA[0], colA[1], p, "colA(x)");
-  vector<int64_t> valA_x = Polynomial::setupLagrangePolynomial(valA[0], valA[1], p, "valA(x)");
+  vector<uint64_t> rowA_x = Polynomial::setupNewtonPolynomial(rowA[0], rowA[1], p, "rowA(x)");
+  vector<uint64_t> colA_x = Polynomial::setupNewtonPolynomial(colA[0], colA[1], p, "colA(x)");
+  vector<uint64_t> valA_x = Polynomial::setupNewtonPolynomial(valA[0], valA[1], p, "valA(x)");
 
-  vector<int64_t> rowB_x = Polynomial::setupLagrangePolynomial(rowB[0], rowB[1], p, "rowB(x)");
-  vector<int64_t> colB_x = Polynomial::setupLagrangePolynomial(colB[0], colB[1], p, "colB(x)");
-  vector<int64_t> valB_x = Polynomial::setupLagrangePolynomial(valB[0], valB[1], p, "valB(x)");
+  vector<uint64_t> rowB_x = Polynomial::setupNewtonPolynomial(rowB[0], rowB[1], p, "rowB(x)");
+  vector<uint64_t> colB_x = Polynomial::setupNewtonPolynomial(colB[0], colB[1], p, "colB(x)");
+  vector<uint64_t> valB_x = Polynomial::setupNewtonPolynomial(valB[0], valB[1], p, "valB(x)");
 
-  vector<int64_t> rowC_x = Polynomial::setupLagrangePolynomial(rowC[0], rowC[1], p, "rowC(x)");
-  vector<int64_t> colC_x = Polynomial::setupLagrangePolynomial(colC[0], colC[1], p, "colC(x)");
-  vector<int64_t> valC_x = Polynomial::setupLagrangePolynomial(valC[0], valC[1], p, "valC(x)");
+  vector<uint64_t> rowC_x = Polynomial::setupNewtonPolynomial(rowC[0], rowC[1], p, "rowC(x)");
+  vector<uint64_t> colC_x = Polynomial::setupNewtonPolynomial(colC[0], colC[1], p, "colC(x)");
+  vector<uint64_t> valC_x = Polynomial::setupNewtonPolynomial(valC[0], valC[1], p, "valC(x)");
 
-  vector<int64_t> O_AHP;
+  vector<uint64_t> O_AHP;
 
   O_AHP.insert(O_AHP.end(), rowA_x.begin(), rowA_x.end());
   O_AHP.insert(O_AHP.end(), colA_x.begin(), colA_x.end());
@@ -599,7 +599,7 @@ void commitmentGenerator() {
   O_AHP.insert(O_AHP.end(), valC_x.begin(), valC_x.end());
 
   cout << "O_AHP = {";
-  for (int64_t i = 0; i < O_AHP.size(); i++) {
+  for (uint64_t i = 0; i < O_AHP.size(); i++) {
     cout << O_AHP[i];
     if (i != O_AHP.size() - 1) {
       cout << ", ";
@@ -607,11 +607,11 @@ void commitmentGenerator() {
   }
   cout << "}" << endl;
 
-  int64_t Com0_AHP = 0, Com1_AHP = 0, Com2_AHP = 0, Com3_AHP = 0, Com4_AHP = 0, Com5_AHP = 0, Com6_AHP = 0, Com7_AHP = 0, Com8_AHP = 0;
+  uint64_t Com0_AHP = 0, Com1_AHP = 0, Com2_AHP = 0, Com3_AHP = 0, Com4_AHP = 0, Com5_AHP = 0, Com6_AHP = 0, Com7_AHP = 0, Com8_AHP = 0;
   // Ensure ck and *_x vectors are of the same size before iterating
   // size_t minSize = std::min(rowA_x.size(), ck.size()); // **Changed: Added minSize for safer iteration**
-  // for (int64_t i = 0; i < minSize; i++) { // **Changed: Use minSize in loop condition**
-  for (int64_t i = 0; i < rowA_x.size(); i++) {
+  // for (uint64_t i = 0; i < minSize; i++) { // **Changed: Use minSize in loop condition**
+  for (uint64_t i = 0; i < rowA_x.size(); i++) {
     Com0_AHP += (ck[i] * rowA_x[i]) % p;
     Com1_AHP += (ck[i] * colA_x[i]) % p;
     Com2_AHP += (ck[i] * valA_x[i]) % p;
@@ -680,8 +680,8 @@ void commitmentGenerator() {
       std::cerr << "Error opening file for writing\n";
   }
 
-  vector<vector<int64_t>> nonZeroB;
-  for(int64_t i = 0; i < nonZeroRowsB[0].size(); i++){
+  vector<vector<uint64_t>> nonZeroB;
+  for(uint64_t i = 0; i < nonZeroRowsB[0].size(); i++){
     nonZeroB.push_back({nonZeroRowsB[0][i], nonZeroColsB[0][i], nonZeroColsB[1][i]});
   }
   ordered_json program_param;

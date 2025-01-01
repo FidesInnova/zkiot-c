@@ -31,7 +31,7 @@
 #include <cmath>
 #include <algorithm>
 
-int64_t Polynomial::power(int64_t base, int64_t exponent, int64_t p) {
+uint64_t Polynomial::power(uint64_t base, uint64_t exponent, uint64_t p) {
   uint64_t result = 1;
   base = base % p;  // Handle base larger than p
 
@@ -51,8 +51,8 @@ int64_t Polynomial::power(int64_t base, int64_t exponent, int64_t p) {
 //These two functions Polynomial::power and Polynomial::pExp are the same, should delete one to be clear
 
 // Function to compute the p exponentiation (a^b) % p
-// int64_t Polynomial::pExp(int64_t a, int64_t b, int64_t p) {
-//   int64_t result = 1;
+// uint64_t Polynomial::pExp(uint64_t a, uint64_t b, uint64_t p) {
+//   uint64_t result = 1;
 //   while (b > 0) {
 //     if (b & 1) result = (result * a) % p;
 //     a = (a * a) % p;
@@ -64,8 +64,8 @@ int64_t Polynomial::power(int64_t base, int64_t exponent, int64_t p) {
 //   return result;
 // }
 // Function to compute the p exponentiation (a^b) % p
-int64_t Polynomial::pExp(int64_t a, int64_t b, int64_t p) {
-  int64_t result = 1;
+uint64_t Polynomial::pExp(uint64_t a, uint64_t b, uint64_t p) {
+  uint64_t result = 1;
   a = a % p;
   while (b > 0) {
     if (b % 2 == 1) {  // If b is odd, multiply a with the result
@@ -78,12 +78,12 @@ int64_t Polynomial::pExp(int64_t a, int64_t b, int64_t p) {
 }
 
 // Function to compute the p inverse using Fermat's Little Theorem
-int64_t Polynomial::pInverse(int64_t a, int64_t p) {
+uint64_t Polynomial::pInverse(uint64_t a, uint64_t p) {
   return pExp(a, p - 2, p);
 }
 
-// int64_t Polynomial::generateRandomNumber(const vector<int64_t>& H, int64_t p) {
-//   int64_t randomNumber;
+// uint64_t Polynomial::generateRandomNumber(const vector<uint6& H, uint64_t p) {
+//   uint64_t randomNumber;
 //   bool found;
 //   do {
 //     randomNumber = random(0, p);  // Generate a random number between 0 and p-1
@@ -99,11 +99,11 @@ int64_t Polynomial::pInverse(int64_t a, int64_t p) {
 //   return randomNumber;
 // }
 
-int64_t Polynomial::generateRandomNumber(const std::vector<int64_t>& H, int64_t mod) {
+uint64_t Polynomial::generateRandomNumber(const std::vector<uint64_t>& H, uint64_t mod) {
     std::mt19937_64 rng(std::random_device{}());  // Use random_device to seed the generator
-    std::uniform_int_distribution<int64_t> dist(0, mod - 1);
+    std::uniform_int_distribution<uint64_t> dist(0, mod - 1);
     
-    int64_t randomNumber;
+    uint64_t randomNumber;
     do {
         randomNumber = dist(rng);
     } while (std::find(H.begin(), H.end(), randomNumber) != H.end());
@@ -111,8 +111,8 @@ int64_t Polynomial::generateRandomNumber(const std::vector<int64_t>& H, int64_t 
 }
 
 // Function to generate a random polynomial
-vector<int64_t> Polynomial::generateRandomPolynomial(size_t numTerms, size_t maxDegree, int64_t p) {
-    vector<int64_t> polynomial(maxDegree + 1, 0); // Initialize polynomial with zeros
+vector<uint64_t> Polynomial::generateRandomPolynomial(size_t numTerms, size_t maxDegree, uint64_t p) {
+    vector<uint64_t> polynomial(maxDegree + 1, 0); // Initialize polynomial with zeros
 
     // Generate random indices for the non-zero terms
     set<size_t> indices;
@@ -127,17 +127,16 @@ vector<int64_t> Polynomial::generateRandomPolynomial(size_t numTerms, size_t max
     // Fill the polynomial with random values at the chosen indices
     for (size_t index : indices) {
         polynomial[index] = dis(gen) % p;
-        if (polynomial[index] < 0) polynomial[index] += p;
     }
 
     return polynomial;
 }
 
 // Add two polynomials with p arithmetic
-vector<int64_t> Polynomial::addPolynomials(const vector<int64_t>& poly1, const vector<int64_t>& poly2, int64_t p) {
+vector<uint64_t> Polynomial::addPolynomials(const vector<uint64_t>& poly1, const vector<uint64_t>& poly2, uint64_t p) {
   // Determine the size of the result polynomial (the max size of the two input polynomials)
   size_t maxSize = max(poly1.size(), poly2.size());
-  vector<int64_t> result(maxSize, 0);
+  vector<uint64_t> result(maxSize, 0);
 
   // Add the polynomials
   for (size_t i = 0; i < maxSize; ++i) {
@@ -147,20 +146,16 @@ vector<int64_t> Polynomial::addPolynomials(const vector<int64_t>& poly1, const v
     if (i < poly2.size()) {
       result[i] = (result[i] + poly2[i]) % p;
     }
-    // Ensure the result is non-negative
-    if (result[i] < 0) {
-      result[i] += p;
-    }
   }
   return result;
 
 
     // size_t max_size = max(poly1.size(), poly2.size());
-    // vector<int64_t> result(max_size, 0);
+    // vector<uint64_t> result(max_size, 0);
 
     // for (size_t i = 0; i < max_size; i++) {
-    //     int64_t coeff1 = (i < poly1.size()) ? poly1[i] : 0;
-    //     int64_t coeff2 = (i < poly2.size()) ? poly2[i] : 0;
+    //     uint64_t coeff1 = (i < poly1.size()) ? poly1[i] : 0;
+    //     uint64_t coeff2 = (i < poly2.size()) ? poly2[i] : 0;
     //     result[i] = (coeff1 + coeff2) % p;
     //     if (result[i] < 0) result[i] += p;  // Ensure positive modulo
     // }
@@ -168,21 +163,18 @@ vector<int64_t> Polynomial::addPolynomials(const vector<int64_t>& poly1, const v
 }
 
 // Subtract two polynomials with p arithmetic
-vector<int64_t> Polynomial::subtractPolynomials(const vector<int64_t>& poly1, const vector<int64_t>& poly2, int64_t p) {
+vector<uint64_t> Polynomial::subtractPolynomials(const vector<uint64_t>& poly1, const vector<uint64_t>& poly2, uint64_t p) {
   size_t maxSize = max(poly1.size(), poly2.size());
-  vector<int64_t> buf1 = poly1;
-  vector<int64_t> buf2 = poly2;
-  vector<int64_t> result(maxSize, 0);
+  vector<uint64_t> buf1 = poly1;
+  vector<uint64_t> buf2 = poly2;
+  vector<uint64_t> result(maxSize, 0);
 
   // Subtract the polynomials
   for (size_t i = 0; i < maxSize; i++) {
-    int64_t val1 = (i < buf1.size()) ? buf1[i] : 0;
-    int64_t val2 = (i < buf2.size()) ? buf2[i] : 0;
+    uint64_t val1 = (i < buf1.size()) ? buf1[i] : 0;
+    uint64_t val2 = (i < buf2.size()) ? buf2[i] : 0;
 
-    result[i] = (val1 - val2) % p;
-    if (result[i] < 0) {
-      result[i] += p;  // Handle negative results
-    }
+    result[i] = Polynomial::subtractModP(val1, val2, p);
   }
 
   return result;
@@ -191,10 +183,10 @@ vector<int64_t> Polynomial::subtractPolynomials(const vector<int64_t>& poly1, co
 // Function to multiply two polynomials
 
 // Perform NTT or inverse NTT
-void NTT(vector<int64_t>& a, bool invert, int64_t p, int64_t root) {
+void NTT(vector<uint64_t>& a, bool invert, uint64_t p, uint64_t root) {
     int n = a.size();
-    int64_t root_inv = Polynomial::pExp(root, p - 2, p);  // Inverse of root mod p
-    int64_t root_pw = Polynomial::pExp(root, (p - 1) / n, p);  // root^(n/pw) mod p
+    uint64_t root_inv = Polynomial::pExp(root, p - 2, p);  // Inverse of root mod p
+    uint64_t root_pw = Polynomial::pExp(root, (p - 1) / n, p);  // root^(n/pw) mod p
     if (invert) root_pw = Polynomial::pExp(root_pw, p - 2, p);
 
     // Bit-reversal permutation
@@ -210,12 +202,12 @@ void NTT(vector<int64_t>& a, bool invert, int64_t p, int64_t root) {
 
     // NTT computation
     for (int len = 2; len <= n; len <<= 1) {
-        int64_t wlen = Polynomial::pExp(root_pw, n / len, p);
+        uint64_t wlen = Polynomial::pExp(root_pw, n / len, p);
         for (int i = 0; i < n; i += len) {
-            int64_t w = 1;
+            uint64_t w = 1;
             for (int j = 0; j < len / 2; j++) {
-                int64_t u = a[i + j];
-                int64_t v = (a[i + j + len / 2] * w) % p;
+                uint64_t u = a[i + j];
+                uint64_t v = (a[i + j + len / 2] * w) % p;
                 a[i + j] = (u + v) % p;
                 a[i + j + len / 2] = (u - v + p) % p;
                 w = (w * wlen) % p;
@@ -225,26 +217,26 @@ void NTT(vector<int64_t>& a, bool invert, int64_t p, int64_t root) {
 
     // Scale for inverse NTT
     if (invert) {
-        int64_t inv_n = Polynomial::pExp(n, p - 2, p);
-        for (int64_t& x : a) x = (x * inv_n) % p;
+        uint64_t inv_n = Polynomial::pExp(n, p - 2, p);
+        for (uint64_t& x : a) x = (x * inv_n) % p;
     }
 }
 
 // Multiply two polynomials using NTT
-// vector<int64_t> Polynomial::multiplyPolynomials(const vector<int64_t>& poly1, const vector<int64_t>& poly2, int64_t p) {
-//     int64_t root = 15;
+// vector<uint64_t> Polynomial::multiplyPolynomials(const vector<uint64_t>& poly1, const vector<uint64_t>& poly2, uint64_t p) {
+//     uint64_t root = 15;
 //     int n = 1;
 //     while (n < poly1.size() + poly2.size() - 1) n <<= 1;
 
-//     vector<int64_t> a(poly1.begin(), poly1.end());
-//     vector<int64_t> b(poly2.begin(), poly2.end());
+//     vector<uint64_t> a(poly1.begin(), poly1.end());
+//     vector<uint64_t> b(poly2.begin(), poly2.end());
 //     a.resize(n, 0);
 //     b.resize(n, 0);
 
 //     NTT(a, false, p, root);
 //     NTT(b, false, p, root);
 
-//     vector<int64_t> c(n);
+//     vector<uint64_t> c(n);
 //     for (int i = 0; i < n; i++) {
 //         c[i] = (a[i] * b[i]) % p;
 //     }
@@ -257,15 +249,12 @@ void NTT(vector<int64_t>& a, bool invert, int64_t p, int64_t root) {
 // }
 
 
-vector<int64_t> Polynomial::multiplyPolynomials(const vector<int64_t>& poly1, const vector<int64_t>& poly2, int64_t p) {
-  vector<int64_t> result(poly1.size() + poly2.size() - 1, 0);
+vector<uint64_t> Polynomial::multiplyPolynomials(const vector<uint64_t>& poly1, const vector<uint64_t>& poly2, uint64_t p) {
+  vector<uint64_t> result(poly1.size() + poly2.size() - 1, 0);
 
   for (size_t i = 0; i < poly1.size(); i++) {
     for (size_t j = 0; j < poly2.size(); j++) {
       result[i + j] = (result[i + j] + poly1[i] * poly2[j]) % p;
-      if (result[i + j] < 0) {
-        result[i + j] += p;
-      }
     }
   }
   return result;
@@ -273,13 +262,13 @@ vector<int64_t> Polynomial::multiplyPolynomials(const vector<int64_t>& poly1, co
 
 
 // Function to divide two polynomials
-vector<vector<int64_t>> Polynomial::dividePolynomials(const vector<int64_t>& dividend, const vector<int64_t>& divisor, int64_t p) {
-  vector<int64_t> quotient(dividend.size(), 0);  // Initialize with size equal to dividend size
-  vector<int64_t> remainder = dividend;
-  vector<vector<int64_t>> result;
+vector<vector<uint64_t>> Polynomial::dividePolynomials(const vector<uint64_t>& dividend, const vector<uint64_t>& divisor, uint64_t p) {
+  vector<uint64_t> quotient(dividend.size(), 0);  // Initialize with size equal to dividend size
+  vector<uint64_t> remainder = dividend;
+  vector<vector<uint64_t>> result;
 
-  int64_t n = remainder.size();
-  int64_t m = divisor.size();
+  uint64_t n = remainder.size();
+  uint64_t m = divisor.size();
 
   // If the divisor is larger than the dividend, the quotient is zero
   if (m > n) {
@@ -293,16 +282,16 @@ vector<vector<int64_t>> Polynomial::dividePolynomials(const vector<int64_t>& div
   while (remainder.size() >= divisor.size()) {
     // Degree of the current term in the quotient
     int64_t degreeDiff = remainder.size() - divisor.size();
-    int64_t coef = (remainder.back() * pInverse(divisor.back(), p)) % p;
+    uint64_t coef = (remainder.back() * pInverse(divisor.back(), p)) % p;
 
     // Add coefficient to the correct degree in the quotient
     quotient[degreeDiff] = coef;
 
-    vector<int64_t> term(degreeDiff + 1, 0);
+    vector<uint64_t> term(degreeDiff + 1, 0);
     term[degreeDiff] = coef;
 
     // Multiply the divisor by the current term in the quotient
-    vector<int64_t> termTimesDivisor = multiplyPolynomials(term, divisor, p);
+    vector<uint64_t> termTimesDivisor = multiplyPolynomials(term, divisor, p);
     termTimesDivisor.resize(remainder.size(), 0);  // Resize to match remainder size
 
     // Subtract to update the remainder
@@ -325,43 +314,43 @@ vector<vector<int64_t>> Polynomial::dividePolynomials(const vector<int64_t>& div
 }
 
 // Function to multiply a polynomial by a number
-vector<int64_t> Polynomial::multiplyPolynomialByNumber(const vector<int64_t>& H, int64_t h, int64_t p) {
-  vector<int64_t> result(H.size(), 0);  // Use long long to avoid overflow during multiplication
+vector<uint64_t> Polynomial::multiplyPolynomialByNumber(const vector<uint64_t>& H, uint64_t h, uint64_t p) {
+  vector<uint64_t> result(H.size(), 0);  // Use long long to avoid overflow during multiplication
 
-  for (int64_t i = 0; i < H.size(); i++) {
+  for (uint64_t i = 0; i < H.size(); i++) {
     result[i] = (H[i] * h) % p;
-
-    // If result becomes negative, convert it to a positive equivalent under pulo
-    if (result[i] < 0) {
-      result[i] += p;
-    }
   }
   return result;
 }
 
+
+uint64_t Polynomial::subtractModP(uint64_t a, uint64_t b, uint64_t p) {
+    return (a >= b) ? (a - b) % p : (p - (b - a) % p) % p;
+}
+
 // // Function to compute Lagrange basis polynomial L_i(x)
-// vector<int64_t> Polynomial::LagrangePolynomial(int64_t i, const vector<int64_t>& x_values, int64_t p) {
-//   int64_t n = x_values.size();
-//   vector<int64_t> result = {1};  // Start with 1 for the polynomial (constant term)
-//   vector<int64_t> inv_denominators(n);
+// vector<uint64_t> Polynomial::LagrangePolynomial(uint64_t i, const vector<uint64_t>& x_values, uint64_t p) {
+//   uint64_t n = x_values.size();
+//   vector<uint64_t> result = {1};  // Start with 1 for the polynomial (constant term)
+//   vector<uint64_t> inv_denominators(n);
 
 //   // Precompute modular inverses of (x_i - x_j) for all j ≠ i
-//   for (int64_t j = 0; j < n; j++) {
+//   for (uint64_t j = 0; j < n; j++) {
 //     if (j != i) {
-//       int64_t denominator = (x_values[i] + p - x_values[j]) % p;
+//       uint64_t denominator = (x_values[i] + p - x_values[j]) % p;
 //       inv_denominators[j] = pInverse(denominator, p);
 //     }
 //   }
 
-//   for (int64_t j = 0; j < n; j++) {
+//   for (uint64_t j = 0; j < n; j++) {
 //     if (j != i) {
-//       vector<int64_t> term = { static_cast<int64_t>((p - x_values[j]) % p), 1 };  // (x - x_j)
-//       int64_t denominator = (x_values[i] + p - x_values[j]) % p;
-//       int64_t inv_denominator = inv_denominators[j];
+//       vector<uint64_t> term = { static_cast<uint64_t>((p - x_values[j]) % p), 1 };  // (x - x_j)
+//       uint64_t denominator = (x_values[i] + p - x_values[j]) % p;
+//       uint64_t inv_denominator = inv_denominators[j];
 
 //       // Multiply the result by (x - x_j) / (x_i - x_j)
-//       vector<int64_t> temp = multiplyPolynomials(result, term, p);
-//       for (int64_t& coef : temp) {
+//       vector<uint64_t> temp = multiplyPolynomials(result, term, p);
+//       for (uint64_t& coef : temp) {
 //         coef = (coef * inv_denominator) % p;
 //       }
 //       result = temp;
@@ -370,20 +359,20 @@ vector<int64_t> Polynomial::multiplyPolynomialByNumber(const vector<int64_t>& H,
 //   return result;
 // }
 
-// vector<int64_t> Polynomial::setupLagrangePolynomial(const vector<int64_t>& x_values, const vector<int64_t>& y_values, int64_t p, const std::string& name) {
+// vector<uint64_t> Polynomial::setupLagrangePolynomial(const vector<uint64_t>& x_values, const vector<uint64_t>& y_values, uint64_t p, const std::string& name) {
 //   // Automatically detect number of points
-//   int64_t num_points = x_values.size();
+//   uint64_t num_points = x_values.size();
 
 //   // Compute polynomial(x) polynomial
-//   vector<int64_t> polynomial(1, 0);  // Start with a zero polynomial
+//   vector<uint64_t> polynomial(1, 0);  // Start with a zero polynomial
 
-//   for (int64_t i = 0; i < num_points; i++) {
+//   for (uint64_t i = 0; i < num_points; i++) {
 //     if (y_values[i] != 0) {  // Only process non-zero y-values
-//       vector<int64_t> Li = LagrangePolynomial(i, x_values, p);
+//       vector<uint64_t> Li = LagrangePolynomial(i, x_values, p);
 //       // printPolynomial(Li, "L" + std::to_string(i + 1));
 
 //       // Multiply the L_i(x) by y_i and add to the final polynomial
-//       for (int64_t j = 0; j < Li.size(); j++) {
+//       for (uint64_t j = 0; j < Li.size(); j++) {
 //         if (j >= polynomial.size()) {
 //           polynomial.push_back(0);  // Ensure polynomial is large enough to accompate all terms
 //         }
@@ -397,38 +386,38 @@ vector<int64_t> Polynomial::multiplyPolynomialByNumber(const vector<int64_t>& H,
 // }
 
 
-vector<int64_t> Polynomial::newtonDividedDifferences(const vector<int64_t>& x_values, const vector<int64_t>& y_values, int64_t p) {
-    int64_t n = x_values.size();
-    vector<vector<int64_t>> divided_diff(n, vector<int64_t>(n, 0));
+vector<uint64_t> Polynomial::newtonDividedDifferences(const vector<uint64_t>& x_values, const vector<uint64_t>& y_values, uint64_t p) {
+    uint64_t n = x_values.size();
+    vector<vector<uint64_t>> divided_diff(n, vector<uint64_t>(n, 0));
 
     // Fill the first column with y_values
-    for (int64_t i = 0; i < n; i++) {
+    for (uint64_t i = 0; i < n; i++) {
         divided_diff[i][0] = y_values[i] % p;
     }
 
     // Compute the divided differences
-    for (int64_t j = 1; j < n; j++) {
-        for (int64_t i = 0; i < n - j; i++) {
-            int64_t numerator = (divided_diff[i + 1][j - 1] - divided_diff[i][j - 1] + p) % p;
-            int64_t denominator = (x_values[i + j] - x_values[i] + p) % p;
+    for (uint64_t j = 1; j < n; j++) {
+        for (uint64_t i = 0; i < n - j; i++) {
+            uint64_t numerator = (divided_diff[i + 1][j - 1] - divided_diff[i][j - 1] + p) % p;
+            uint64_t denominator = (x_values[i + j] - x_values[i] + p) % p;
             divided_diff[i][j] = (numerator * pInverse(denominator, p)) % p;
         }
     }
 
     // Extract the coefficients for the Newton polynomial
-    vector<int64_t> coefficients(n, 0);
-    for (int64_t i = 0; i < n; i++) {
+    vector<uint64_t> coefficients(n, 0);
+    for (uint64_t i = 0; i < n; i++) {
         coefficients[i] = divided_diff[0][i];
     }
     return coefficients;
 }
 
-vector<int64_t> Polynomial::newtonPolynomial(const vector<int64_t>& coefficients, const vector<int64_t>& x_values, int64_t p) {
-    vector<int64_t> result = {coefficients[0]}; // Start with the first term
-    vector<int64_t> current_term = {1};        // Tracks the product (x - x_0)(x - x_1)...
+vector<uint64_t> Polynomial::newtonPolynomial(const vector<uint64_t>& coefficients, const vector<uint64_t>& x_values, uint64_t p) {
+    vector<uint64_t> result = {coefficients[0]}; // Start with the first term
+    vector<uint64_t> current_term = {1};        // Tracks the product (x - x_0)(x - x_1)...
     
     for (size_t i = 1; i < coefficients.size(); i++) {
-        vector<int64_t> term = {(-x_values[i - 1] + p) % p, 1}; // (x - x_i)
+        vector<uint64_t> term = {(p - x_values[i - 1]) % p, 1}; // (x - x_i)
         current_term = multiplyPolynomials(current_term, term, p);
         
         for (size_t j = 0; j < current_term.size(); j++) {
@@ -441,13 +430,13 @@ vector<int64_t> Polynomial::newtonPolynomial(const vector<int64_t>& coefficients
     return result;
 }
 
-// vector<int64_t> Polynomial::setupNewtonPolynomial(const vector<int64_t>& x_values, const vector<int64_t>& y_values, int64_t p, const std::string& name) {
-vector<int64_t> Polynomial::setupLagrangePolynomial(const vector<int64_t>& x_values, const vector<int64_t>& y_values, int64_t p, const std::string& name) {
+// vector<uint64_t> Polynomial::setupNewtonPolynomial(const vector<uint64_t>& x_values, const vector<uint64_t>& y_values, uint64_t p, const std::string& name) {
+vector<uint64_t> Polynomial::setupNewtonPolynomial(const vector<uint64_t>& x_values, const vector<uint64_t>& y_values, uint64_t p, const std::string& name) {
     // Compute coefficients using divided differences
-    vector<int64_t> coefficients = newtonDividedDifferences(x_values, y_values, p);
+    vector<uint64_t> coefficients = newtonDividedDifferences(x_values, y_values, p);
 
     // Construct the polynomial from the coefficients
-    vector<int64_t> polynomial = newtonPolynomial(coefficients, x_values, p);
+    vector<uint64_t> polynomial = newtonPolynomial(coefficients, x_values, p);
 
     // Print and return the polynomial
     printPolynomial(polynomial, name);
@@ -458,53 +447,41 @@ vector<int64_t> Polynomial::setupLagrangePolynomial(const vector<int64_t>& x_val
 
 
 // Function to parse the polynomial string and evaluate it
-int64_t Polynomial::evaluatePolynomial(const vector<int64_t>& polynomial, int64_t x, int64_t p) {
-  int64_t result = 0;
+uint64_t Polynomial::evaluatePolynomial(const vector<uint64_t>& polynomial, uint64_t x, uint64_t p) {
+  uint64_t result = 0;
 
   for (size_t i = 0; i < polynomial.size(); i++) {
-
-    int64_t termValue = polynomial[i] * power(x, i, p) % p;
-
-    //handle when the number is negative
-    if (termValue < 0) {
-      termValue += p;
-    }
+    uint64_t termValue = (polynomial[i] * power(x, i, p)) % p;
     result += termValue;
     result %= p;
-    if (result < 0) {
-      result += p;
-    }
   }
   return result;
 }
 
 // Function to compute the sum of polynomial evaluations at multiple points
-int64_t Polynomial::sumOfEvaluations(const vector<int64_t>& poly, const vector<int64_t>& points, int64_t p) {
-  int64_t totalSum = 0;
+uint64_t Polynomial::sumOfEvaluations(const vector<uint64_t>& poly, const vector<uint64_t>& points, uint64_t p) {
+  uint64_t totalSum = 0;
 
-  for (int64_t point : points) {
-    int64_t evlpol = evaluatePolynomial(poly, point, p);
+  for (uint64_t point : points) {
+    uint64_t evlpol = evaluatePolynomial(poly, point, p);
     totalSum = (totalSum + evlpol) % p;
   }
   totalSum %= p;
-
-  if (totalSum < 0) totalSum += p;
-
   return totalSum;
 }
 
 // Function to create a polynomial for (x - root)
-vector<int64_t> Polynomial::createLinearPolynomial(int64_t root) {
-  return { -root, 1 };  // Represents (x - root)
+vector<uint64_t> Polynomial::createLinearPolynomial(uint64_t root) {
+  return { root, 1 };  // Represents (x - root)
 }
 
 // Function to calculate Polynomial r(α,x) = (alpha^n - x^n) / (alpha - x)
-vector<int64_t> Polynomial::calculatePolynomial_r_alpha_x(int64_t alpha, int64_t n, int64_t p) {
-  vector<int64_t> P(n, 0);
+vector<uint64_t> Polynomial::calculatePolynomial_r_alpha_x(uint64_t alpha, uint64_t n, uint64_t p) {
+  vector<uint64_t> P(n, 0);
 
   // Calculate each term of the polynomial P(x)
-  int64_t currentPowerOfAlpha = 1;  // alpha^0
-  for (int64_t i = 0; i < n; i++) {
+  uint64_t currentPowerOfAlpha = 1;  // alpha^0
+  for (uint64_t i = 0; i < n; i++) {
     P[n - 1 - i] = currentPowerOfAlpha;  // alpha^(n-1-i)
     currentPowerOfAlpha = (currentPowerOfAlpha * alpha) % p;
   }
@@ -513,31 +490,30 @@ vector<int64_t> Polynomial::calculatePolynomial_r_alpha_x(int64_t alpha, int64_t
 }
 
 // This function calculates the value of the polynomial at a specific point 𝑘 rather than returning the coefficients.
-int64_t Polynomial::calculatePolynomial_r_alpha_k(int64_t alpha, int64_t k, int64_t n, int64_t p) {
-  int64_t result = 1;
-  result = (power(alpha, n, p) - power(k, n, p)) % p;
-  int64_t buff = (alpha - k) % p;
-  if (buff < 0) {
-    buff += p;
-  }
+uint64_t Polynomial::calculatePolynomial_r_alpha_k(uint64_t alpha, uint64_t k, uint64_t n, uint64_t p) {
+  uint64_t result = 1;
+  result = subtractModP(power(alpha, n, p), power(k, n, p), p);
+  uint64_t buff = subtractModP(alpha, k, p);
+
   result *= pInverse(buff, p);
   result %= p;
   return result;
 }
 
 // Function to expand polynomials given the roots
-vector<int64_t> Polynomial::expandPolynomials(const vector<int64_t>& roots, int64_t p) {
-  vector<int64_t> result = { 1 };  // Start with the polynomial "1"
+vector<uint64_t> Polynomial::expandPolynomials(const vector<uint64_t>& roots, uint64_t p) {
+  vector<uint64_t> result = { 1 };  // Start with the polynomial "1"
 
-  for (int64_t root : roots) {
+  for (uint64_t root : roots) {
     // Multiply the current result polynomial by (x - root)
-    vector<int64_t> temp(result.size() + 1, 0);
+    vector<uint64_t> temp(result.size() + 1, 0);
     for (size_t i = 0; i < result.size(); i++) {
       temp[i] += result[i];  // x^n term
       temp[i] %= p;
-      temp[i + 1] -= result[i] * root;  // -root * x^(n-1) term
-      temp[i + 1] %= p;
-      if (temp[i + 1] < 0) temp[i + 1] += p;
+      temp[i + 1] = subtractModP(temp[i + 1], (result[i] * root), p);
+      // temp[i + 1] -= result[i] * root;  // -root * x^(n-1) term
+      // temp[i + 1] %= p;
+      // if (temp[i + 1] < 0) temp[i + 1] += p;
     }
     result = temp;
   }
@@ -546,16 +522,22 @@ vector<int64_t> Polynomial::expandPolynomials(const vector<int64_t>& roots, int6
 }
 
 // Function to print polynomial in serial
-void Polynomial::printPolynomial(const vector<int64_t>& coefficients, const std::string& name) {
+void Polynomial::printPolynomial(const vector<uint64_t>& coefficients, const std::string& name) {
   // Iterate through the coefficients and print each term of the polynomial
+  vector<int64_t> coefficientsBuf;
+  for (size_t i = 0; i < coefficients.size(); i++)
+  {
+    coefficientsBuf.push_back(coefficients[i]);
+  }
+  
   cout << name  << " = ";
   bool first = true;
-  for (int64_t i = coefficients.size() - 1; i >= 0; i--) {
-    if (coefficients[i] == 0) continue;  // Skip zero coefficients
+  for (int64_t i = coefficientsBuf.size() - 1; i >= 0; i--) {
+    if (coefficientsBuf[i] == 0) continue;  // Skip zero coefficients
 
     // Print the sign for all terms except the first
     if (!first) {
-      if (coefficients[i] > 0) {
+      if (coefficientsBuf[i] > 0) {
         cout << " + ";
       } else {
         cout << " - ";
@@ -565,7 +547,7 @@ void Polynomial::printPolynomial(const vector<int64_t>& coefficients, const std:
     }
 
     // Print the absolute value of the coefficient
-    cout << abs(coefficients[i]);
+    cout << abs(coefficientsBuf[i]);
 
     // Print the variable and the exponent
     cout << "x^" << i;
@@ -591,10 +573,10 @@ std::string Polynomial::removeCommas(const std::string& str) {
     return str.substr(first, last - first + 1);
 }
 
-void Polynomial::printMatrix(vector<vector<int64_t>>& matrix, const std::string& name) {
+void Polynomial::printMatrix(vector<vector<uint64_t>>& matrix, const std::string& name) {
   cout << "Matrix " << name << ":" << endl;
   for (const auto& row : matrix) {
-    for (int64_t val : row) {
+    for (uint64_t val : row) {
       cout << val << " ";
     }
     cout << endl;
@@ -603,10 +585,10 @@ void Polynomial::printMatrix(vector<vector<int64_t>>& matrix, const std::string&
 
 
 // Function to get the row indices of non-zero entries in matrix
-vector<vector<int64_t>> Polynomial::getNonZeroRows(const vector<vector<int64_t>>& matrix) {
-  vector<vector<int64_t>> nonZeroRows(2);
-  for (int64_t i = 0; i < matrix.size(); i++) {
-    for (int64_t j = 0; j < matrix[i].size(); j++) {
+vector<vector<uint64_t>> Polynomial::getNonZeroRows(const vector<vector<uint64_t>>& matrix) {
+  vector<vector<uint64_t>> nonZeroRows(2);
+  for (uint64_t i = 0; i < matrix.size(); i++) {
+    for (uint64_t j = 0; j < matrix[i].size(); j++) {
       if (matrix[i][j] != 0) {
         nonZeroRows[0].push_back(i);  // Storing row index
         nonZeroRows[1].push_back(matrix[i][j]);
@@ -617,10 +599,10 @@ vector<vector<int64_t>> Polynomial::getNonZeroRows(const vector<vector<int64_t>>
 }
 
 // Function to get the col indices of non-zero entries in matrix
-vector<vector<int64_t>> Polynomial::getNonZeroCols(const vector<vector<int64_t>>& matrix) {
-  vector<vector<int64_t>> nonZeroCols(2);
-  for (int64_t i = 0; i < matrix.size(); i++) {
-    for (int64_t j = 0; j < matrix[i].size(); j++) {
+vector<vector<uint64_t>> Polynomial::getNonZeroCols(const vector<vector<uint64_t>>& matrix) {
+  vector<vector<uint64_t>> nonZeroCols(2);
+  for (uint64_t i = 0; i < matrix.size(); i++) {
+    for (uint64_t j = 0; j < matrix[i].size(); j++) {
       if (matrix[i][j] != 0) {
         nonZeroCols[0].push_back(j);  // Storing col index
         nonZeroCols[1].push_back(matrix[i][j]);
@@ -632,13 +614,13 @@ vector<vector<int64_t>> Polynomial::getNonZeroCols(const vector<vector<int64_t>>
 
 
 // Function to create the mapping
-vector<vector<int64_t>> Polynomial::createMapping(const vector<int64_t>& K, const vector<int64_t>& H, const vector<vector<int64_t>>& nonZero) {
-  vector<vector<int64_t>> row(2);
-  for (int64_t i = 0; i < nonZero[0].size(); i++) {
+vector<vector<uint64_t>> Polynomial::createMapping(const vector<uint64_t>& K, const vector<uint64_t>& H, const vector<vector<uint64_t>>& nonZero) {
+  vector<vector<uint64_t>> row(2);
+  for (uint64_t i = 0; i < nonZero[0].size(); i++) {
     row[0].push_back(K[i]);
     row[1].push_back(H[nonZero[0][i]]);
   }
-  for (int64_t i = nonZero[0].size(); i < K.size(); i++) {
+  for (uint64_t i = nonZero[0].size(); i < K.size(); i++) {
     row[0].push_back(K[i]);
     row[1].push_back(H[i % H.size()]);
   }
@@ -647,18 +629,18 @@ vector<vector<int64_t>> Polynomial::createMapping(const vector<int64_t>& K, cons
 }
 
 // Function to print the mapping
-void Polynomial::printMapping(vector<vector<int64_t>>& row, const std::string& name) {
-  for (int64_t i = 0; i < row[0].size(); i++) {
+void Polynomial::printMapping(vector<vector<uint64_t>>& row, const std::string& name) {
+  for (uint64_t i = 0; i < row[0].size(); i++) {
     cout << name << "(" << row[0][i] << ") = " << row[1][i] << endl;
   }
   cout << endl;
 }
 
 // Function to create the val mapping
-vector<vector<int64_t>> Polynomial::valMapping(const vector<int64_t>& K, const vector<int64_t>& H, vector<vector<int64_t>>& nonZeroRows, vector<vector<int64_t>>& nonZeroCols, int64_t p) {
-  vector<vector<int64_t>> val(2);
+vector<vector<uint64_t>> Polynomial::valMapping(const vector<uint64_t>& K, const vector<uint64_t>& H, vector<vector<uint64_t>>& nonZeroRows, vector<vector<uint64_t>>& nonZeroCols, uint64_t p) {
+  vector<vector<uint64_t>> val(2);
 
-  for (int64_t i = 0; i < K.size(); i++) {
+  for (uint64_t i = 0; i < K.size(); i++) {
     if (i < nonZeroRows[0].size()) {
       val[0].push_back(K[i]);
       val[1].push_back((nonZeroRows[1][i] * Polynomial::pInverse(((H.size() * Polynomial::power(H[nonZeroRows[0][i]], H.size() - 1, p)) % p) * ((H.size() * Polynomial::power(H[nonZeroCols[0][i]], H.size() - 1, p)) % p), p)) % p);
@@ -672,22 +654,22 @@ vector<vector<int64_t>> Polynomial::valMapping(const vector<int64_t>& K, const v
 }
 
 // Function to calculate log in p
-int64_t Polynomial::log_p(int64_t a, int64_t b, int64_t p) {
-  int64_t m = static_cast<int64_t>(ceil(sqrt(static_cast<double>(p - 1))));
+uint64_t Polynomial::log_p(uint64_t a, uint64_t b, uint64_t p) {
+  uint64_t m = static_cast<uint64_t>(ceil(sqrt(static_cast<double>(p - 1))));
 
   // Precompute a^i (p P) for i = 0..m and store in a map
-  std::unordered_map<int64_t, int64_t> tbl;
-  for (int64_t i = 0; i < m; ++i) {
+  std::unordered_map<int64_t, uint64_t> tbl;
+  for (uint64_t i = 0; i < m; ++i) {
     tbl[Polynomial::pExp(a, i, p)] = i;
   }
 
-  int64_t c = Polynomial::pExp(a, m * (p - 2), p);  // c = a^(-m) p P
+  uint64_t c = Polynomial::pExp(a, m * (p - 2), p);  // c = a^(-m) p P
 
   // Check if we can find the solution in the baby-step giant-step manner
-  for (int64_t j = 0; j < m; ++j) {
-    int64_t y = (b * Polynomial::pExp(c, j, p)) % p;
+  for (uint64_t j = 0; j < m; ++j) {
+    uint64_t y = (b * Polynomial::pExp(c, j, p)) % p;
     if (tbl.find(y) != tbl.end()) {
-      int64_t num = tbl[y];
+      uint64_t num = tbl[y];
       return j * m + num;
     }
   }
@@ -695,17 +677,17 @@ int64_t Polynomial::log_p(int64_t a, int64_t b, int64_t p) {
 }
 
 // Function to calculate e_func in p
-int64_t Polynomial::e_func(int64_t a, int64_t b, int64_t g, int64_t p) {
-  int64_t buf1 = (a * Polynomial::pInverse(g, p)) % p;
-  int64_t buf2 = (b * Polynomial::pInverse(g, p)) % p;
-  // return (3 * (buf1 * buf2)) % p;
+uint64_t Polynomial::e_func(uint64_t a, uint64_t b, uint64_t g, uint64_t p) {
+  uint64_t buf1 = (a * Polynomial::pInverse(g, p)) % p;
+  uint64_t buf2 = (b * Polynomial::pInverse(g, p)) % p;
+  return (3 * (buf1 * buf2)) % p;
   return (buf1 * buf2) % p;
 }
 
   // Function to calculate KZG in p
-int64_t Polynomial::KZG_Commitment(vector<int64_t> a, vector<int64_t> b, int64_t p) {
-  int64_t res = 0;
-  for (int64_t i = 0; i < b.size(); i++) {
+uint64_t Polynomial::KZG_Commitment(vector<uint64_t> a, vector<uint64_t> b, uint64_t p) {
+  uint64_t res = 0;
+  for (uint64_t i = 0; i < b.size(); i++) {
     res += (a[i] * b[i]) % p;
     res %= p;
   }
@@ -714,8 +696,8 @@ int64_t Polynomial::KZG_Commitment(vector<int64_t> a, vector<int64_t> b, int64_t
 
 
 
-// Function to compute the SHA-256 hash of an int64_t and return the lower 4 bytes as int64_t, applying a modulo operation
-int64_t Polynomial::hashAndExtractLower4Bytes(int64_t inputNumber, int64_t p) {
+// Function to compute the SHA-256 hash of an uint64_t and return the lower 4 bytes as uint64_t, applying a modulo operation
+uint64_t Polynomial::hashAndExtractLower4Bytes(uint64_t inputNumber, uint64_t p) {
   char* inputData = (char*)malloc(21);
   snprintf(inputData, 21, "%" PRId64, inputNumber);
 
@@ -723,23 +705,15 @@ int64_t Polynomial::hashAndExtractLower4Bytes(int64_t inputNumber, int64_t p) {
   string hashStr = Polynomial::SHA256(inputData);
   string last4BytesHex = hashStr.substr(56, 8);
   
-  int64_t result = 0;
+  uint64_t result = 0;
   std::stringstream ss;
   ss << std::hex << last4BytesHex;
   ss >> result;
 
   // Apply modulo operation
   result = result % p;
-
-  // Ensure positive result for modulo
-  if (result < 0) {
-    result += p;
-  }
-
   return result;
 }
-
-
 
 
 
