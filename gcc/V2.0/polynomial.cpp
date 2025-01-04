@@ -48,21 +48,7 @@ uint64_t Polynomial::power(uint64_t base, uint64_t exponent, uint64_t p) {
   return result;
 }
 
-//These two functions Polynomial::power and Polynomial::pExp are the same, should delete one to be clear
 
-// Function to compute the p exponentiation (a^b) % p
-// uint64_t Polynomial::pExp(uint64_t a, uint64_t b, uint64_t p) {
-//   uint64_t result = 1;
-//   while (b > 0) {
-//     if (b & 1) result = (result * a) % p;
-//     a = (a * a) % p;
-//     b >>= 1;
-//   }
-//   if(result < 0) {
-//     result += p;
-//   }
-//   return result;
-// }
 // Function to compute the p exponentiation (a^b) % p
 uint64_t Polynomial::pExp(uint64_t a, uint64_t b, uint64_t p) {
   uint64_t result = 1;
@@ -81,23 +67,6 @@ uint64_t Polynomial::pExp(uint64_t a, uint64_t b, uint64_t p) {
 uint64_t Polynomial::pInverse(uint64_t a, uint64_t p) {
   return pExp(a, p - 2, p);
 }
-
-// uint64_t Polynomial::generateRandomNumber(const vector<uint6& H, uint64_t p) {
-//   uint64_t randomNumber;
-//   bool found;
-//   do {
-//     randomNumber = random(0, p);  // Generate a random number between 0 and p-1
-//     found = false;
-//     // Check if the generated number is in array H
-//     for (size_t i = 0; i < H.size(); i++) {
-//       if (H[i] == randomNumber) {
-//         found = true;
-//         break;
-//       }
-//     }
-//   } while (found);
-//   return randomNumber;
-// }
 
 uint64_t Polynomial::generateRandomNumber(const std::vector<uint64_t>& H, uint64_t mod) {
     std::mt19937_64 rng(std::random_device{}());  // Use random_device to seed the generator
@@ -148,18 +117,6 @@ vector<uint64_t> Polynomial::addPolynomials(const vector<uint64_t>& poly1, const
     }
   }
   return result;
-
-
-    // size_t max_size = max(poly1.size(), poly2.size());
-    // vector<uint64_t> result(max_size, 0);
-
-    // for (size_t i = 0; i < max_size; i++) {
-    //     uint64_t coeff1 = (i < poly1.size()) ? poly1[i] : 0;
-    //     uint64_t coeff2 = (i < poly2.size()) ? poly2[i] : 0;
-    //     result[i] = (coeff1 + coeff2) % p;
-    //     if (result[i] < 0) result[i] += p;  // Ensure positive modulo
-    // }
-    // return result;
 }
 
 // Subtract two polynomials with p arithmetic
@@ -221,32 +178,6 @@ void NTT(vector<uint64_t>& a, bool invert, uint64_t p, uint64_t root) {
         for (uint64_t& x : a) x = (x * inv_n) % p;
     }
 }
-
-// Multiply two polynomials using NTT
-// vector<uint64_t> Polynomial::multiplyPolynomials(const vector<uint64_t>& poly1, const vector<uint64_t>& poly2, uint64_t p) {
-//     uint64_t root = 15;
-//     int n = 1;
-//     while (n < poly1.size() + poly2.size() - 1) n <<= 1;
-
-//     vector<uint64_t> a(poly1.begin(), poly1.end());
-//     vector<uint64_t> b(poly2.begin(), poly2.end());
-//     a.resize(n, 0);
-//     b.resize(n, 0);
-
-//     NTT(a, false, p, root);
-//     NTT(b, false, p, root);
-
-//     vector<uint64_t> c(n);
-//     for (int i = 0; i < n; i++) {
-//         c[i] = (a[i] * b[i]) % p;
-//     }
-
-//     NTT(c, true, p, root);
-
-//     // Remove trailing zeros
-//     while (!c.empty() && c.back() == 0) c.pop_back();
-//     return c;
-// }
 
 
 vector<uint64_t> Polynomial::multiplyPolynomials(const vector<uint64_t>& poly1, const vector<uint64_t>& poly2, uint64_t p) {
@@ -328,63 +259,6 @@ uint64_t Polynomial::subtractModP(uint64_t a, uint64_t b, uint64_t p) {
     return (a >= b) ? (a - b) % p : (p - (b - a) % p) % p;
 }
 
-// // Function to compute Lagrange basis polynomial L_i(x)
-// vector<uint64_t> Polynomial::LagrangePolynomial(uint64_t i, const vector<uint64_t>& x_values, uint64_t p) {
-//   uint64_t n = x_values.size();
-//   vector<uint64_t> result = {1};  // Start with 1 for the polynomial (constant term)
-//   vector<uint64_t> inv_denominators(n);
-
-//   // Precompute modular inverses of (x_i - x_j) for all j ≠ i
-//   for (uint64_t j = 0; j < n; j++) {
-//     if (j != i) {
-//       uint64_t denominator = (x_values[i] + p - x_values[j]) % p;
-//       inv_denominators[j] = pInverse(denominator, p);
-//     }
-//   }
-
-//   for (uint64_t j = 0; j < n; j++) {
-//     if (j != i) {
-//       vector<uint64_t> term = { static_cast<uint64_t>((p - x_values[j]) % p), 1 };  // (x - x_j)
-//       uint64_t denominator = (x_values[i] + p - x_values[j]) % p;
-//       uint64_t inv_denominator = inv_denominators[j];
-
-//       // Multiply the result by (x - x_j) / (x_i - x_j)
-//       vector<uint64_t> temp = multiplyPolynomials(result, term, p);
-//       for (uint64_t& coef : temp) {
-//         coef = (coef * inv_denominator) % p;
-//       }
-//       result = temp;
-//     }
-//   }
-//   return result;
-// }
-
-// vector<uint64_t> Polynomial::setupLagrangePolynomial(const vector<uint64_t>& x_values, const vector<uint64_t>& y_values, uint64_t p, const std::string& name) {
-//   // Automatically detect number of points
-//   uint64_t num_points = x_values.size();
-
-//   // Compute polynomial(x) polynomial
-//   vector<uint64_t> polynomial(1, 0);  // Start with a zero polynomial
-
-//   for (uint64_t i = 0; i < num_points; i++) {
-//     if (y_values[i] != 0) {  // Only process non-zero y-values
-//       vector<uint64_t> Li = LagrangePolynomial(i, x_values, p);
-//       // printPolynomial(Li, "L" + std::to_string(i + 1));
-
-//       // Multiply the L_i(x) by y_i and add to the final polynomial
-//       for (uint64_t j = 0; j < Li.size(); j++) {
-//         if (j >= polynomial.size()) {
-//           polynomial.push_back(0);  // Ensure polynomial is large enough to accompate all terms
-//         }
-//         polynomial[j] = (polynomial[j] + y_values[i] * Li[j]) % p;
-//       }
-//     }
-//   }
-//   // Print the final polynomial(x) polynomial
-//   printPolynomial(polynomial, name);
-//   return polynomial;
-// }
-
 
 vector<uint64_t> Polynomial::newtonDividedDifferences(const vector<uint64_t>& x_values, const vector<uint64_t>& y_values, uint64_t p) {
     uint64_t n = x_values.size();
@@ -430,7 +304,6 @@ vector<uint64_t> Polynomial::newtonPolynomial(const vector<uint64_t>& coefficien
     return result;
 }
 
-// vector<uint64_t> Polynomial::setupNewtonPolynomial(const vector<uint64_t>& x_values, const vector<uint64_t>& y_values, uint64_t p, const std::string& name) {
 vector<uint64_t> Polynomial::setupNewtonPolynomial(const vector<uint64_t>& x_values, const vector<uint64_t>& y_values, uint64_t p, const std::string& name) {
     // Compute coefficients using divided differences
     vector<uint64_t> coefficients = newtonDividedDifferences(x_values, y_values, p);
@@ -442,8 +315,6 @@ vector<uint64_t> Polynomial::setupNewtonPolynomial(const vector<uint64_t>& x_val
     printPolynomial(polynomial, name);
     return polynomial;
 }
-
-
 
 
 // Function to parse the polynomial string and evaluate it

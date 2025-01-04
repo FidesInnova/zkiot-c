@@ -153,19 +153,37 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
       newAssemblyFileStream << "sw x" << std::to_string(registerMap[rd]) << ", " << std::to_string(spaceSize[registerMap[rd]]) << "(t0)" << endl;
       spaceSize[registerMap[rd]] += 4;
     }
-    else if(currentLineNumber > startLine && currentLineNumber <= endLine){
-      newAssemblyFileStream << line << std::endl;
-      std::stringstream ss(line);
-      std::string opcode, rd, leftStr, rightStr;
-      ss >> opcode >> rd >> leftStr >> rightStr;
-      rd = Polynomial::trim(rd);
-      rd = Polynomial::removeCommas(rd);
-      instructions.push_back(line);
-      rdList.push_back(registerMap[rd]);
-      newAssemblyFileStream << "la t0, x" << std::to_string(registerMap[rd]) << "_array" << endl;
-      newAssemblyFileStream << "sw x" << std::to_string(registerMap[rd]) << ", " << std::to_string(spaceSize[registerMap[rd]]) << "(t0)\n";
-      spaceSize[registerMap[rd]] += 4;
+    else if (currentLineNumber > startLine && currentLineNumber <= endLine) {
+    newAssemblyFileStream << line << std::endl;
+
+    std::stringstream ss(line);
+    std::string opcode, rd, leftStr, rightStr;
+    ss >> opcode >> rd >> leftStr >> rightStr;
+
+    rd = Polynomial::trim(rd);
+    rd = Polynomial::removeCommas(rd);
+    instructions.push_back(line);
+    rdList.push_back(registerMap[rd]);
+
+    // Load the base address of the array
+    newAssemblyFileStream << "la t0, x" << std::to_string(registerMap[rd]) << "_array" << endl;
+
+    // Compute the offset and handle large values
+    uint64_t offset = spaceSize[registerMap[rd]];
+    if (offset <= 2040) {
+        // Offset fits within 12-bit range
+        newAssemblyFileStream << "sw x" << std::to_string(registerMap[rd]) << ", " << offset << "(t0)" << endl;
+    } else {
+        // Offset exceeds 12-bit range
+        newAssemblyFileStream << "li t1, " << offset << endl;  // Load the offset into t1
+        newAssemblyFileStream << "add t1, t1, t0" << endl;     // Compute the effective address
+        newAssemblyFileStream << "sw x" << std::to_string(registerMap[rd]) << ", 0(t1)" << endl;
     }
+
+    // Increment the space size for the next usage
+    spaceSize[registerMap[rd]] += 4;
+}
+
 
     else if (currentLineNumber == endLine + 1){
       // newAssemblyFileStream << "la a0, z_array0" << endl;
@@ -181,27 +199,39 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
       }
       vector<uint64_t> spaceSizeZ(32, 4);
       vector<uint64_t> yList;
-      for(uint64_t i = 0; i < n_g; i++){
-        // if ((i % 511) == 0 && i != 0) {
-        //   z_arrayList++;
-        // }
-        // spaceSizeZ[rdList[i]] += 4;
+      
+      for (uint64_t i = 0; i < n_g; i++) {
         spaceSizeZ[rdList[i]] += 4;
-        // if(spaceSizeZ[rdList[i]] != spaceSize[rdList[i]]) {
-          // newAssemblyFileStream << "la a0, z_array" << std::to_string(z_arrayList) << endl;
-          newAssemblyFileStream << "la a0, z_array" << endl;
-          newAssemblyFileStream << "la a1, x" << std::to_string(rdList[i]) << "_array" << endl;
-          newAssemblyFileStream << "lw t0, " << std::to_string(spaceSizeZ[rdList[i]]-4) << "(a1)" << endl;
-          // newAssemblyFileStream << "sw t0, " << std::to_string(((n_i + i + 1) % 511) * 4) << "(a0)" << endl;
-          newAssemblyFileStream << "sw t0, " << std::to_string((n_i + i + 1) * 4) << "(a0)" << endl;
 
-          // vector_z[0].push_back(rdList[i]);
-          // vector_z[1].push_back(spaceSizeZ[rdList[i]]);
-        // }
-        // else {
-        //   yList.push_back(rdList[i]);
-        // }
+        newAssemblyFileStream << "la a0, z_array" << endl;
+        newAssemblyFileStream << "la a1, x" << std::to_string(rdList[i]) << "_array" << endl;
+
+        // // Load value from x_array
+        // newAssemblyFileStream << "lw t0, " << std::to_string(spaceSizeZ[rdList[i]] - 4) << "(a1)" << endl;
+
+        // Compute effective address for large offsetLW in z_array
+        uint64_t offsetLW = spaceSizeZ[rdList[i]] - 4;
+        if (offsetLW <= 2044) {
+          newAssemblyFileStream << "lw t0, " << offsetLW << "(a1)" << endl;
+        } else {
+          newAssemblyFileStream << "li t1, " << offsetLW << endl; // Load the offsetLW into t1
+          newAssemblyFileStream << "add t1, t1, a1" << endl;    // Compute the effective address
+          newAssemblyFileStream << "lw t0, 0(t1)" << endl;      // Load the value
+        }
+
+        uint64_t offset = (n_i + i + 1) * 4;
+        if (offset <= 2040) {
+          // Offset fits within 12-bit signed range
+          newAssemblyFileStream << "sw t0, " << offset << "(a0)" << endl;
+        } else {
+          // Offset exceeds 12-bit range, use temporary register
+          newAssemblyFileStream << "li t1, " << offset << endl;     // Load offset into t1
+          newAssemblyFileStream << "add t1, t1, a0" << endl;       // Compute effective address
+          newAssemblyFileStream << "sw t0, 0(t1)" << endl;         // Store value at effective address
+        }
       }
+
+
       // for(uint64_t i = 0; i < yList.size(); i++) {
       //   if ((i % 511) == 0) {
       //     z_arrayList++;
