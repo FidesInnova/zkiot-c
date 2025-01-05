@@ -38,6 +38,11 @@ temp_file=$(mktemp)
 jq --argjson line_number "$line_number" --argjson second_value "$second_value" '.code_block = [$line_number, $second_value]' "$config_file" > "$temp_file" && mv "$temp_file" "$config_file"
 
 # Step 7: Run the commitmentGenerator and store the output logs
+# Check if the log directory exists, if not, create it
+log_dir="log"
+if [ ! -d "$log_dir" ]; then
+    mkdir -p "$log_dir"
+fi
 ./commitmentGenerator > log/commitmentGenerator.log 2>&1
 if [ $? -ne 0 ]; then
     echo "commitmentGenerator execution failed"

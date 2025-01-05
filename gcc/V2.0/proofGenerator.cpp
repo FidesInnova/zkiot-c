@@ -238,7 +238,7 @@ extern "C" void proofGenerator() {
     // Set the value in the matrix A
     A[i + n_i + 1][col] = 1;
   }
-  Polynomial::printMatrix(A, "A");
+  // Polynomial::printMatrix(A, "A");
   
 
   for (const auto& entry : nonZeroB) {
@@ -255,13 +255,13 @@ extern "C" void proofGenerator() {
   //   // Set the value in the matrix
   //   B[row][col] = val;
   // }
-  Polynomial::printMatrix(B, "B");
+  // Polynomial::printMatrix(B, "B");
 
   for(uint64_t i = (n - n_g); i < n; i++) {
     // Set the value in the matrix C
     C[i][i] = 1;
   }
-  Polynomial::printMatrix(C, "C");
+  // Polynomial::printMatrix(C, "C");
 
   // vector<uint64_t> z;
 
@@ -311,28 +311,28 @@ extern "C" void proofGenerator() {
       }
     }
   }
-  cout << "Matrice Az under modulo " << p << " is: ";
-  for (uint64_t i = 0; i < n; i++) {
-    cout << Az[i][0] << " ";
-  }
-  cout << endl;
+  // cout << "Matrice Az under modulo " << p << " is: ";
+  // for (uint64_t i = 0; i < n; i++) {
+  //   cout << Az[i][0] << " ";
+  // }
+  // cout << endl;
 
-  cout << "Matrice Bz under modulo " << p << " is: ";
-  for (uint64_t i = 0; i < n; i++) {
-    cout << Bz[i][0] << " ";
-  }
-  cout << endl;
+  // cout << "Matrice Bz under modulo " << p << " is: ";
+  // for (uint64_t i = 0; i < n; i++) {
+  //   cout << Bz[i][0] << " ";
+  // }
+  // cout << endl;
 
-  cout << "Matrice Cz under modulo " << p << " is: ";
-  for (uint64_t i = 0; i < n; i++) {
-    cout << Cz[i][0] << " ";
-  }
-  cout << endl;
+  // cout << "Matrice Cz under modulo " << p << " is: ";
+  // for (uint64_t i = 0; i < n; i++) {
+  //   cout << Cz[i][0] << " ";
+  // }
+  // cout << endl;
 
 
 
   vector<vector<uint64_t>> zA(2);
-  cout << "zA(x):" << endl;
+  // cout << "zA(x):" << endl;
   for (uint64_t i = 0; i < n + b; i++) {
   // for (uint64_t i = 0; i < n; i++) {
     if (i < n) {
@@ -342,14 +342,14 @@ extern "C" void proofGenerator() {
       zA[0].push_back(Polynomial::generateRandomNumber(H, p - n));
       zA[1].push_back(Polynomial::generateRandomNumber(H, p - n));
     }
-    cout << "zA(" << zA[0][i] << ")= " << zA[1][i] << endl;
+    // cout << "zA(" << zA[0][i] << ")= " << zA[1][i] << endl;
   }
 
   vector<uint64_t> z_hatA = Polynomial::setupNewtonPolynomial(zA[0], zA[1], p, "z_hatA(x)");
 
 
   vector<vector<uint64_t>> zB(2);
-  cout << "zB(x):" << endl;
+  // cout << "zB(x):" << endl;
   for (uint64_t i = 0; i < n + b; i++) {
   // for (uint64_t i = 0; i < n; i++) {
     if (i < n) {
@@ -359,12 +359,12 @@ extern "C" void proofGenerator() {
       zB[0].push_back(zA[0][i]);
       zB[1].push_back(Polynomial::generateRandomNumber(H, p - n));
     }
-    cout << "zB(" << zB[0][i] << ")= " << zB[1][i] << endl;
+    // cout << "zB(" << zB[0][i] << ")= " << zB[1][i] << endl;
   }
   vector<uint64_t> z_hatB = Polynomial::setupNewtonPolynomial(zB[0], zB[1], p, "z_hatB(x)");
 
   vector<vector<uint64_t>> zC(2);
-  cout << "zC(x):";
+  // cout << "zC(x):";
   for (uint64_t i = 0; i < n + b; i++) {
   // for (uint64_t i = 0; i < n; i++) {
     if (i < n) {
@@ -374,7 +374,7 @@ extern "C" void proofGenerator() {
       zC[0].push_back(zA[0][i]);
       zC[1].push_back(Polynomial::generateRandomNumber(H, p - n));
     }
-    cout << "zC(" << zC[0][i] << ")= " << zC[1][i] << endl;
+    // cout << "zC(" << zC[0][i] << ")= " << zC[1][i] << endl;
   }
   vector<uint64_t> z_hatC = Polynomial::setupNewtonPolynomial(zC[0], zC[1], p, "z_hatC(x)");
 
@@ -393,7 +393,7 @@ extern "C" void proofGenerator() {
     t_to_n_for_H.push_back(H[i + t]);
     t_to_n_for_z.push_back(z[i + t]);
   }
-  cout << "w_bar(h):" << endl;
+  // cout << "w_bar(h):" << endl;
   vector<uint64_t> w_bar(n - t + b);
   vector<uint64_t> w_bar_numerator(n - t, 1);
   vector<uint64_t> w_bar_denominator(n - t, 1);
@@ -416,20 +416,20 @@ extern "C" void proofGenerator() {
     // if (w_bar[i] < 0) {
     //   w_bar[i] += p;
     // }
-    cout << "w_bar(" << t_to_n_for_H[i] << ")= " << w_bar[i] << endl;
+    // cout << "w_bar(" << t_to_n_for_H[i] << ")= " << w_bar[i] << endl;
   }
 
-  cout << "w_hat(x):" << endl;
+  // cout << "w_hat(x):" << endl;
   vector<vector<uint64_t>> w_hat(2);
   for (uint64_t i = 0; i < n - t; i++) {
     w_hat[0].push_back(t_to_n_for_H[i]);
     w_hat[1].push_back(w_bar[i]);
-    cout << "w_hat(" << w_hat[0][i] << ")= " << w_hat[1][i] << endl;
+    // cout << "w_hat(" << w_hat[0][i] << ")= " << w_hat[1][i] << endl;
   }
   for (uint64_t i = n; i < n + b; i++) {
     w_hat[0].push_back(zA[0][i]);
     w_hat[1].push_back(Polynomial::generateRandomNumber(H, p));
-    cout << "w_hat(" << w_hat[0][i - b] << ")= " << w_hat[1][i - b] << endl;
+    // cout << "w_hat(" << w_hat[0][i - b] << ")= " << w_hat[1][i - b] << endl;
   }
   vector<uint64_t> w_hat_x = Polynomial::setupNewtonPolynomial(w_hat[0], w_hat[1], p, "w_hat(x)");
 

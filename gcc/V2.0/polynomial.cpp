@@ -107,37 +107,40 @@ vector<uint64_t> Polynomial::addPolynomials(const vector<uint64_t>& poly1, const
   size_t maxSize = max(poly1.size(), poly2.size());
   vector<uint64_t> result(maxSize, 0);
 
+  // Resize the smaller polynomial to match the size of the larger one
+  vector<uint64_t> poly1_resized = poly1;
+  vector<uint64_t> poly2_resized = poly2;
+  poly1_resized.resize(maxSize, 0);
+  poly2_resized.resize(maxSize, 0);
+
   // Add the polynomials
   for (size_t i = 0; i < maxSize; ++i) {
-    if (i < poly1.size()) {
-      result[i] = (result[i] + poly1[i]) % p;
-    }
-    if (i < poly2.size()) {
-      result[i] = (result[i] + poly2[i]) % p;
-    }
+    result[i] = (poly1_resized[i] + poly2_resized[i]) % p;
   }
+
   return result;
 }
 
 // Subtract two polynomials with p arithmetic
 vector<uint64_t> Polynomial::subtractPolynomials(const vector<uint64_t>& poly1, const vector<uint64_t>& poly2, uint64_t p) {
+  // Determine the size of the result polynomial (the max size of the two input polynomials)
   size_t maxSize = max(poly1.size(), poly2.size());
-  vector<uint64_t> buf1 = poly1;
-  vector<uint64_t> buf2 = poly2;
   vector<uint64_t> result(maxSize, 0);
 
-  // Subtract the polynomials
-  for (size_t i = 0; i < maxSize; i++) {
-    uint64_t val1 = (i < buf1.size()) ? buf1[i] : 0;
-    uint64_t val2 = (i < buf2.size()) ? buf2[i] : 0;
+  // Resize the smaller polynomial to match the size of the larger one
+  vector<uint64_t> poly1_resized = poly1;
+  vector<uint64_t> poly2_resized = poly2;
+  poly1_resized.resize(maxSize, 0);
+  poly2_resized.resize(maxSize, 0);
 
-    result[i] = Polynomial::subtractModP(val1, val2, p);
+  // Subtract the polynomials
+  for (size_t i = 0; i < maxSize; ++i) {
+    result[i] = (poly1_resized[i] + p - poly2_resized[i]) % p;
   }
 
   return result;
 }
 
-// Function to multiply two polynomials
 
 // Perform NTT or inverse NTT
 void NTT(vector<uint64_t>& a, bool invert, uint64_t p, uint64_t root) {
@@ -180,6 +183,35 @@ void NTT(vector<uint64_t>& a, bool invert, uint64_t p, uint64_t root) {
 }
 
 
+// Function to multiply two polynomials
+// vector<uint64_t> Polynomial::multiplyPolynomials(const vector<uint64_t>& poly1, const vector<uint64_t>& poly2, uint64_t p) {
+//   size_t n = 1;
+//   while (n < poly1.size() + poly2.size() - 1) n <<= 1;
+
+//   vector<uint64_t> a(poly1.begin(), poly1.end());
+//   vector<uint64_t> b(poly2.begin(), poly2.end());
+//   a.resize(n);
+//   b.resize(n);
+
+//   // Define a primitive root for the NTT
+//   uint64_t root = 3; // This should be a primitive root modulo p
+
+//   // Perform NTT on both polynomials
+//   NTT(a, false, p, root);
+//   NTT(b, false, p, root);
+
+//   // Point-wise multiplication
+//   for (size_t i = 0; i < n; ++i) {
+//     a[i] = (a[i] * b[i]) % p;
+//   }
+
+//   // Perform inverse NTT
+//   NTT(a, true, p, root);
+
+//   // Resize the result to the correct size
+//   a.resize(poly1.size() + poly2.size() - 1);
+//   return a;
+// }
 vector<uint64_t> Polynomial::multiplyPolynomials(const vector<uint64_t>& poly1, const vector<uint64_t>& poly2, uint64_t p) {
   vector<uint64_t> result(poly1.size() + poly2.size() - 1, 0);
 
@@ -209,34 +241,24 @@ vector<vector<uint64_t>> Polynomial::dividePolynomials(const vector<uint64_t>& d
     return result;
   }
 
-  // Main loop for polynomial division
-  while (remainder.size() >= divisor.size()) {
-    // Degree of the current term in the quotient
-    int64_t degreeDiff = remainder.size() - divisor.size();
-    uint64_t coef = (remainder.back() * pInverse(divisor.back(), p)) % p;
+  // Normalize the divisor
+  uint64_t inv_lead = Polynomial::pExp(divisor.back(), p - 2, p);
+  vector<uint64_t> normalized_divisor(m);
+  for (size_t i = 0; i < m; i++) {
+    normalized_divisor[i] = (divisor[i] * inv_lead) % p;
+  }
 
-    // Add coefficient to the correct degree in the quotient
-    quotient[degreeDiff] = coef;
-
-    vector<uint64_t> term(degreeDiff + 1, 0);
-    term[degreeDiff] = coef;
-
-    // Multiply the divisor by the current term in the quotient
-    vector<uint64_t> termTimesDivisor = multiplyPolynomials(term, divisor, p);
-    termTimesDivisor.resize(remainder.size(), 0);  // Resize to match remainder size
-
-    // Subtract to update the remainder
-    remainder = subtractPolynomials(remainder, termTimesDivisor, p);
-
-    // Remove leading zeros in the remainder
-    while (remainder.size() > 0 && remainder.back() == 0) {
-      remainder.pop_back();
+  // Perform the division
+  for (int i = n - m; i >= 0; i--) {
+    quotient[i] = (remainder[i + m - 1] * inv_lead) % p;
+    for (size_t j = 0; j < m; j++) {
+      remainder[i + j] = (remainder[i + j] + p - (quotient[i] * normalized_divisor[j]) % p) % p;
     }
   }
 
-  // Remove leading zeros in the quotient if necessary
-  while (quotient.size() > 1 && quotient.back() == 0) {
-    quotient.pop_back();
+  // Remove leading zeros from the remainder
+  while (!remainder.empty() && remainder.back() == 0) {
+    remainder.pop_back();
   }
 
   result.push_back(quotient);
@@ -320,12 +342,13 @@ vector<uint64_t> Polynomial::setupNewtonPolynomial(const vector<uint64_t>& x_val
 // Function to parse the polynomial string and evaluate it
 uint64_t Polynomial::evaluatePolynomial(const vector<uint64_t>& polynomial, uint64_t x, uint64_t p) {
   uint64_t result = 0;
+  uint64_t power_of_x = 1; // x^0 initially
 
   for (size_t i = 0; i < polynomial.size(); i++) {
-    uint64_t termValue = (polynomial[i] * power(x, i, p)) % p;
-    result += termValue;
-    result %= p;
+    result = (result + polynomial[i] * power_of_x) % p;
+    power_of_x = (power_of_x * x) % p;
   }
+
   return result;
 }
 
@@ -564,7 +587,6 @@ uint64_t Polynomial::KZG_Commitment(vector<uint64_t> a, vector<uint64_t> b, uint
   }
   return res;
 }
-
 
 
 // Function to compute the SHA-256 hash of an uint64_t and return the lower 4 bytes as uint64_t, applying a modulo operation
