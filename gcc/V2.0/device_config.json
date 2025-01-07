@@ -1,12 +1,11 @@
 {
-  "Class": 6,
-  "commitmentID": "123456789",
-  "iot_manufacturer_name": "Fidesinnova",
-  "iot_device_name": "test",
-  "device_hardware_version": "1",
-  "firmware_version": "1",
+  "class": 5,
+  "iot_developer_name": "Fidesinnova",
+  "iot_device_name": "zk-MultiSensor",
+  "device_hardware_version": "1.0",
+  "firmware_version": "1.0",
   "code_block": [
-    26291,
-    26354
+    26087,
+    26118
   ]
 }

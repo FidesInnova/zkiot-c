@@ -1,36 +1,9 @@
-#include "fidesinnova.h"
+#include "lib/fidesinnova.h"
 
 int main() {
     int result;
 
     asm volatile (
-        // "li s1, 4\n"
-        // "li s1, 5\n"
-        // "li s1, 26\n"
-        // "add s1, s1, s1\n"
-        // "addi s1, s1, 11\n"
-        // "add s1, s1, s1\n"
-        // "add s1, s1, s1\n"
-
-        // "li s1, 1\n"
-        // "add s1, s1, s1\n"
-        // "addi s1, s1, 11\n"
-        // "add s1, s1, s1\n"
-        // "add s1, s1, s1\n"
-        // "add s1, s1, s1\n"
-        // "add s1, s1, s1\n"
-        // "add s1, s1, s1\n"
-        // "add s1, s1, s1\n"
-
-
-        // "mul s1, s1, s1\n"
-        // "mul s1, s2, s2\n"
-        // "add s2, s3, s1\n"
-        // "add s2, s4, s2\n"
-
-
-
-
         "li s1, 1\n"
         "li s2, 1\n"
         "mul s2, s2, s1\n"

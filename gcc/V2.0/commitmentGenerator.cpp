@@ -23,6 +23,8 @@ using ordered_json = nlohmann::ordered_json;
 #include <regex>
 #include <sstream>
 #include <unordered_map>
+#include <chrono>
+#include <iomanip>
 
 using namespace std;
 
@@ -64,14 +66,11 @@ std::pair<uint64_t, uint64_t> parseDeviceConfig(const std::string &configFile, n
 
   uint64_t startLine = config["code_block"][0].get<uint64_t>();
   uint64_t endLine = config["code_block"][1].get<uint64_t>();
-  Class = config["Class"].get<uint64_t>();
-  commitmentID = config["commitmentID"].get<string>();
-  IoT_Manufacturer_Name = config["iot_manufacturer_name"].get<string>();
+  Class = config["class"].get<uint64_t>();
+  IoT_Manufacturer_Name = config["iot_developer_name"].get<string>();
   IoT_Device_Name = config["iot_device_name"].get<string>();
   Device_Hardware_Version = config["device_hardware_version"].get<string>();
   Firmware_Version = config["firmware_version"].get<string>();
-
-
 
   std::ifstream classFileStream("class.json");
   if (!classFileStream.is_open()) {
@@ -186,12 +185,10 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
 
 
     else if (currentLineNumber == endLine + 1){
-      // newAssemblyFileStream << "la a0, z_array0" << endl;
       newAssemblyFileStream << "la a0, z_array" << endl;
       newAssemblyFileStream << "li t0, 1" << endl;
       newAssemblyFileStream << "sw t0, 0(a0)" << endl;
       for(uint64_t i = 0; i < n_i; i++) {
-        // newAssemblyFileStream << "la a0, z_array0" << endl;
         newAssemblyFileStream << "la a0, z_array" << endl;
         newAssemblyFileStream << "la a1, x" << std::to_string(i) << "_array" << endl;
         newAssemblyFileStream << "lw t0, 0(a1)" << endl;
@@ -205,9 +202,6 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
 
         newAssemblyFileStream << "la a0, z_array" << endl;
         newAssemblyFileStream << "la a1, x" << std::to_string(rdList[i]) << "_array" << endl;
-
-        // // Load value from x_array
-        // newAssemblyFileStream << "lw t0, " << std::to_string(spaceSizeZ[rdList[i]] - 4) << "(a1)" << endl;
 
         // Compute effective address for large offsetLW in z_array
         uint64_t offsetLW = spaceSizeZ[rdList[i]] - 4;
@@ -231,20 +225,6 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
         }
       }
 
-
-      // for(uint64_t i = 0; i < yList.size(); i++) {
-      //   if ((i % 511) == 0) {
-      //     z_arrayList++;
-      //   }
-      //   newAssemblyFileStream << "la a0, z_array" << std::to_string(z_arrayList) << endl;
-      //   newAssemblyFileStream << "la a1, x" << std::to_string(yList[i]) << "_array" << endl;
-      //   newAssemblyFileStream << "lw t0, " << std::to_string(spaceSizeZ[yList[i]]-4) << "(a1)" << endl;
-
-      //   newAssemblyFileStream << "sw t0, " << std::to_string(((n_i + n_g + i - yList.size() + 1) % 511) * 4) << "(a0)" << endl;
-
-      //   vector_z[0].push_back(rdList[i]);
-      //   vector_z[1].push_back(spaceSizeZ[rdList[i]]);
-      // }
       newAssemblyFileStream << "call proofGenerator\n";
       newAssemblyFileStream << line << std::endl;
     }
@@ -256,10 +236,7 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
   }
 
   std::string assemblyCode = ".section .data\n";
-  // for(uint64_t i = 0; i < z_arrayList; i++) {
-  //   assemblyCode += ".global z_array" + std::to_string(i) + "\nz_array" + std::to_string(i) + ":    .space " + std::to_string(511 * 4) + "   # Array for z\n";
-  // }
-      assemblyCode += ".global z_array\nz_array:    .space " + std::to_string((n_i + n_g + 1) * 4) + "   # Array for z\n";
+  assemblyCode += ".global z_array\nz_array:    .space " + std::to_string((n_i + n_g + 1) * 4) + "   # Array for z\n";
 
   assemblyCode += "#### Subroutine Code (`store_registers.s`)\n\n";
   assemblyCode +=
@@ -342,12 +319,9 @@ void modifyAndSaveAssembly(const std::string &assemblyFile, const std::string &n
   // Replace all instances of "{SPACE_SIZE}" with the actual value of spaceSize
   size_t pos = 0;
   while ((pos = assemblyCode.find("{SPACE_SIZE}", pos)) != std::string::npos) {
-    // Convert spaceSize to a string
-    // std::ostringstream oss;
-    // oss << spaceSize[pos];
     std::string spaceSizeStr = std::to_string(spaceSize[pos]);
 
-    assemblyCode.replace(pos, spaceSizeStr.length(), spaceSizeStr); // spaceSize is the length of "{SPACE_SIZE}"
+    assemblyCode.replace(pos, spaceSizeStr.length(), spaceSizeStr);
     pos += spaceSizeStr.length();
   }
 
@@ -539,61 +513,33 @@ void commitmentGenerator() {
  // Create a mapping for the non-zero rows using parameters K and H
   vector<vector<uint64_t>> nonZeroRowsA = Polynomial::getNonZeroRows(A);
   vector<vector<uint64_t>> rowA = Polynomial::createMapping(K, H, nonZeroRowsA);
-  // rowA[1].push_back(1);
-  // rowA[1].push_back(135);
-  // rowA[1].push_back(125);
-  // rowA[1].push_back(59);
-  // rowA[1].push_back(42);
-  // rowA[1].push_back(1);
+  
   Polynomial::printMapping(rowA, "row_A");
   vector<vector<uint64_t>> nonZeroColsA = Polynomial::getNonZeroCols(A);
   vector<vector<uint64_t>> colA = Polynomial::createMapping(K, H, nonZeroColsA);
-  // colA[1].push_back(42);
-  // colA[1].push_back(1);
-  // colA[1].push_back(135);
-  // colA[1].push_back(125);
-  // colA[1].push_back(59);
-  // colA[1].push_back(42);
+  
   Polynomial::printMapping(colA, "col_A");
   vector<vector<uint64_t>> valA = Polynomial::valMapping(K, H, nonZeroRowsA, nonZeroColsA, p);
   Polynomial::printMapping(valA, "val_A");
 
   vector<vector<uint64_t>> nonZeroRowsB = Polynomial::getNonZeroRows(B);
   vector<vector<uint64_t>> rowB = Polynomial::createMapping(K, H, nonZeroRowsB);
-  // rowB[1].push_back(59);
-  // rowB[1].push_back(1);
-  // rowB[1].push_back(42);
-  // rowB[1].push_back(135);
-  // rowB[1].push_back(59);
+  
   Polynomial::printMapping(rowB, "row_B");
   vector<vector<uint64_t>> nonZeroColsB = Polynomial::getNonZeroCols(B);
   vector<vector<uint64_t>> colB = Polynomial::createMapping(K, H, nonZeroColsB);
-  // colB[1].push_back(59);
-  // colB[1].push_back(42);
-  // colB[1].push_back(125);
-  // colB[1].push_back(1);
-  // colB[1].push_back(135);
+  
   Polynomial::printMapping(colB, "col_B");
   vector<vector<uint64_t>> valB = Polynomial::valMapping(K, H, nonZeroRowsB, nonZeroColsB, p);
   Polynomial::printMapping(valB, "val_B");
 
   vector<vector<uint64_t>> nonZeroRowsC = Polynomial::getNonZeroRows(C);
   vector<vector<uint64_t>> rowC = Polynomial::createMapping(K, H, nonZeroRowsC);
-  // rowC[1].push_back(1);
-  // rowC[1].push_back(59);
-  // rowC[1].push_back(125);
-  // rowC[1].push_back(1);
-  // rowC[1].push_back(135);
-  // rowC[1].push_back(42);
+  
   Polynomial::printMapping(rowC, "row_C");
   vector<vector<uint64_t>> nonZeroColsC = Polynomial::getNonZeroCols(C);
   vector<vector<uint64_t>> colC = Polynomial::createMapping(K, H, nonZeroColsC);
-  // colC[1].push_back(125);
-  // colC[1].push_back(59);
-  // colC[1].push_back(1);
-  // colC[1].push_back(1);
-  // colC[1].push_back(42);
-  // colC[1].push_back(59);
+  
   Polynomial::printMapping(colC, "col_C");
   vector<vector<uint64_t>> valC = Polynomial::valMapping(K, H, nonZeroRowsC, nonZeroColsC, p);
   Polynomial::printMapping(valC, "val_C");
@@ -635,9 +581,7 @@ void commitmentGenerator() {
   cout << "}" << endl;
 
   uint64_t Com0_AHP = 0, Com1_AHP = 0, Com2_AHP = 0, Com3_AHP = 0, Com4_AHP = 0, Com5_AHP = 0, Com6_AHP = 0, Com7_AHP = 0, Com8_AHP = 0;
-  // Ensure ck and *_x vectors are of the same size before iterating
-  // size_t minSize = std::min(rowA_x.size(), ck.size()); // **Changed: Added minSize for safer iteration**
-  // for (uint64_t i = 0; i < minSize; i++) { // **Changed: Use minSize in loop condition**
+
   for (uint64_t i = 0; i < rowA_x.size(); i++) {
     Com0_AHP += (ck[i] * rowA_x[i]) % p;
     Com1_AHP += (ck[i] * colA_x[i]) % p;
@@ -671,14 +615,27 @@ void commitmentGenerator() {
   cout << "Com7_AHP = " << Com7_AHP << endl;
   cout << "Com8_AHP = " << Com8_AHP << endl;
 
+// Getting the current timestamp as a string
+  auto now = std::chrono::system_clock::now();
+  auto in_time_t = std::chrono::system_clock::to_time_t(now);
+  // std::cout << "in_time_t: " << in_time_t << std::endl;
+
+  // Concatenate the strings
+  std::stringstream commitment_id_ss;
+  commitment_id_ss << IoT_Manufacturer_Name << IoT_Device_Name << Device_Hardware_Version << Firmware_Version << in_time_t;
+  std::string concatenatedString = commitment_id_ss.str();
+  char* concatenatedStringCStr = const_cast<char*>(concatenatedString.c_str());
+
+  commitmentID = Polynomial::SHA256(concatenatedStringCStr);
+
   ordered_json commitment;
   commitment.clear();
-  commitment["commitmentID"] = commitmentID;
-  commitment["iot_manufacturer_name"] = IoT_Manufacturer_Name;
+  commitment["commitment_id"] = commitmentID;
+  commitment["iot_developer_name"] = IoT_Manufacturer_Name;
   commitment["iot_device_name"] = IoT_Device_Name;
   commitment["device_hardware_version"] = Device_Hardware_Version;
   commitment["firmware_version"] = Firmware_Version;
-  commitment["Class"] = Class;
+  commitment["class"] = Class;
   commitment["m"] = m;
   commitment["n"] = n;
   commitment["p"] = p;

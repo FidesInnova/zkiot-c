@@ -36,7 +36,7 @@ void verifier() {
   nlohmann::json commitmentJsonData;
   commitmentFileStream >> commitmentJsonData;
   commitmentFileStream.close();
-  uint64_t Class = commitmentJsonData["Class"].get<uint64_t>();
+  uint64_t Class = commitmentJsonData["class"].get<uint64_t>();
   vector<uint64_t> rowA_x = commitmentJsonData["RowA"].get<vector<uint64_t>>();
   vector<uint64_t> colA_x = commitmentJsonData["ColA"].get<vector<uint64_t>>();
   vector<uint64_t> valA_x = commitmentJsonData["ValA"].get<vector<uint64_t>>();

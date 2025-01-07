@@ -14,18 +14,6 @@
 
 
 #include "fidesinnova.h"
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include "json.hpp"
-using ordered_json = nlohmann::ordered_json;
-#include <regex>
-#include <random>
-#include <chrono>
-
-using namespace std;
-using namespace chrono;
 
 extern "C" void store_register_instances();
 
@@ -38,7 +26,7 @@ extern "C" void proofGenerator() {
   // nlohmann::json setupJsonData;
   // setupFileStream >> setupJsonData;
   // setupFileStream.close();
-  // int64_t Class = setupJsonData["Class"].get<uint64_t>();
+  // int64_t Class = setupJsonData["class"].get<uint64_t>();
   // vector<uint64_t> ck = setupJsonData["ck"].get<vector<uint64_t>>();
   // int64_t vk = setupJsonData["vk"].get<uint64_t>();
 
@@ -89,7 +77,7 @@ extern "C" void proofGenerator() {
   // classFileStream.close();
   // int64_t n_i, n_g, m, n, p, g;
   // for (const auto& item : classJsonData) {
-  //   if (item["Class"] == Class) {
+  //   if (item["class"] == Class) {
   //     // Number of inputs, gates, m, n, p, and g
   //     n_i = item["n_i"].get<uint64_t>();
   //     n_g = item["n_g"].get<uint64_t>();
@@ -98,7 +86,7 @@ extern "C" void proofGenerator() {
   //     p = item["p"].get<uint64_t>();
   //     g = item["g"].get<uint64_t>();
 
-  //     break; // Stop after finding the first matching "Class"
+  //     break; // Stop after finding the first matching "class"
   //   }
   // }
 
@@ -114,11 +102,11 @@ extern "C" void proofGenerator() {
     commitmentJsonInput += commitmentJsonLines + "\n";
   }
   nlohmann::json commitmentJsonData = nlohmann::json::parse(commitmentJsonInput);
-  uint64_t Class = commitmentJsonData["Class"].get<uint64_t>();
-  string commitmentID = commitmentJsonData["commitmentID"].get<string>();
+  uint64_t Class = commitmentJsonData["class"].get<uint64_t>();
+  string commitmentID = commitmentJsonData["commitment_id"].get<string>();
+  string IoT_Manufacturer_Name = commitmentJsonData["iot_developer_name"].get<string>();
   string IoT_Device_Name = commitmentJsonData["iot_device_name"].get<string>();
   string Firmware_Version = commitmentJsonData["firmware_version"].get<string>();
-  string IoT_Manufacturer_Name = commitmentJsonData["iot_manufacturer_name"].get<string>();
   string Device_Hardware_Version = commitmentJsonData["device_hardware_version"].get<string>();
   vector<uint64_t> rowA_x = commitmentJsonData["RowA"].get<vector<uint64_t>>();
   vector<uint64_t> colA_x = commitmentJsonData["ColA"].get<vector<uint64_t>>();
@@ -836,13 +824,13 @@ extern "C" void proofGenerator() {
   ordered_json proof;
   proof.clear();
   proof.clear(); 
-  proof["commitmentID"] = commitmentID;
-  proof["iot_manufacturer_name"] = IoT_Manufacturer_Name;
-  proof["iot_device_name"] = IoT_Device_Name;
-  proof["device_hardware_version"] = Device_Hardware_Version;
-  proof["firmware_version"] = Firmware_Version;
-  proof["Class"] = Class;
+  proof["commitment_id"] = commitmentID;
+  // proof["iot_developer_name"] = IoT_Manufacturer_Name;
+  // proof["iot_device_name"] = IoT_Device_Name;
+  // proof["device_hardware_version"] = Device_Hardware_Version;
+  // proof["firmware_version"] = Firmware_Version;
   // proof["code_block"] = code_block;
+  proof["class"] = Class;
   proof["P1AHP"] = sigma1;
   proof["P2AHP"] = w_hat_x;
   proof["P3AHP"] = z_hatA;

@@ -50,7 +50,7 @@ void setup(int64_t tau) {
             int64_t p   = classJsonData[Class]["p"].get<int64_t>();
             int64_t g   = classJsonData[Class]["g"].get<int64_t>();
 
-            cout << "Class: " << class_value << endl;
+            cout << "class: " << class_value << endl;
             cout << "  n_g: " << n_g << endl;
             cout << "  n_i: " << n_i << endl;
             cout << "  n: " << n << endl;
@@ -97,7 +97,7 @@ void setup(int64_t tau) {
 
                 // Create JSON object
                 ordered_json setupJson;
-                setupJson["Class"] = class_value;
+                setupJson["class"] = class_value;
                 setupJson["ck"] = ck;
                 setupJson["vk"] = vk;
 
