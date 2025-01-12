@@ -766,7 +766,8 @@ string Polynomial::SHA256(char* data) {
 
 	char s[3];
 	for (int i = 0; i < 32; i++) {
-		sprintf(s, "%02x", hash[i]);
+//		sprintf(s, "%02x", hash[i]);
+        snprintf(s, sizeof(s), "%02x", hash[i]);
 		hashStr += s;
 	}
 

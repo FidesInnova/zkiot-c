@@ -67,12 +67,7 @@ fi
 
 # Step 9: Execute the program using qemu-riscv64-static and store the output logs
 echo "[9/$total_steps] Executing program using emulator"
-spike pk program <<EOF > log/proofGeneration.log 2>&1
-$(cat data/program_commitment.json)
-$(cat data/program_param.json)
-$(cat class.json)
-$(cat data/setup$class_value.json)
-EOF
+spike pk program < data/program_commitment.json data/program_param.json class.json data/setup$class_value.json > log/proofGeneration.log 2>&1
 
 if [ $? -ne 0 ]; then
     echo "Program execution failed"

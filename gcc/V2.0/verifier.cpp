@@ -13,12 +13,12 @@
 // limitations under the License.
 
 
-#include "polynomial.h"
+#include "lib/polynomial.h"
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
-#include "json.hpp"
+#include "lib/json.hpp"
 using ordered_json = nlohmann::ordered_json;
 #include <regex>
 
