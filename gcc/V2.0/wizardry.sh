@@ -51,7 +51,7 @@ log_dir="log"
 if [ ! -d "$log_dir" ]; then
     mkdir -p "$log_dir"
 fi
-./commitmentGeneratorForMac > log/commitmentGenerator.log 2>&1
+./commitmentGenerator > log/commitmentGenerator.log 2>&1
 if [ $? -ne 0 ]; then
     echo "commitmentGenerator execution failed"
     exit 1
@@ -65,19 +65,17 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Step 9: Execute the program using qemu-riscv64-static and store the output logs
+# Step 9: Execute the program using emulator and store the output logs
 echo "[9/$total_steps] Executing program using emulator"
-spike pk program <<EOF > log/proofGeneration.log 2>&1
+qemu-riscv64-static program <<EOF > log/proofGeneration.log 2>&1
 $(cat data/program_commitment.json)
+
 $(cat data/program_param.json)
+
 $(cat class.json)
+
 $(cat data/setup$class_value.json)
 EOF
-
-if [ $? -ne 0 ]; then
-    echo "Program execution failed"
-    exit 1
-fi
 
 # Step 10: Extract the line that starts with {"commitment_id": from proofGeneration.log and store it as a JSON in data/proof.json
 echo "[10/$total_steps] Extracting proof JSON from proofGeneration.log"
@@ -90,7 +88,7 @@ fi
 
 # Step 11: Run the verifier and store the output logs
 echo "[11/$total_steps] Running the verifier"
-./verifierForMac > log/verifier.log 2>&1
+./verifier > log/verifier.log 2>&1
 if [ $? -ne 0 ]; then
     echo "Verifier execution failed"
     exit 1

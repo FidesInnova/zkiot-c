@@ -31,92 +31,28 @@ extern "C" void store_register_instances();
 
 extern "C" void proofGenerator() {
   cout << "\n\n\n\n*** Start proof generation ***" << endl;
-  // std::ifstream setupFileStream("data/setup3.json");
-  // if (!setupFileStream.is_open()) {
-  //     std::cerr << "Could not open the setup3.json file!" << std::endl;
-  // }
-  // nlohmann::json setupJsonData;
-  // setupFileStream >> setupJsonData;
-  // setupFileStream.close();
-  // int64_t Class = setupJsonData["class"].get<uint64_t>();
-  // vector<uint64_t> ck = setupJsonData["ck"].get<vector<uint64_t>>();
-  // int64_t vk = setupJsonData["vk"].get<uint64_t>();
 
-  // std::ifstream commitmentFileStream("~/zkiot_c_source/gcc/V2.0/data/program_commitment.json");
-  // if (!commitmentFileStream.is_open()) {
-  //     std::cerr << "Could not open the program_commitment.json file!" << std::endl;
-  // }
-  // nlohmann::json commitmentJsonData;
-  // commitmentFileStream >> commitmentJsonData;
-  // commitmentFileStream.close();
-  // vector<uint64_t> rowA_x = commitmentJsonData["RowA"].get<vector<uint64_t>>();
-  // vector<uint64_t> colA_x = commitmentJsonData["ColA"].get<vector<uint64_t>>();
-  // vector<uint64_t> valA_x = commitmentJsonData["ValA"].get<vector<uint64_t>>();
-  // vector<uint64_t> rowB_x = commitmentJsonData["RowB"].get<vector<uint64_t>>();
-  // vector<uint64_t> colB_x = commitmentJsonData["ColB"].get<vector<uint64_t>>();
-  // vector<uint64_t> valB_x = commitmentJsonData["ValB"].get<vector<uint64_t>>();
-  // vector<uint64_t> rowC_x = commitmentJsonData["RowC"].get<vector<uint64_t>>();
-  // vector<uint64_t> colC_x = commitmentJsonData["ColC"].get<vector<uint64_t>>();
-  // vector<uint64_t> valC_x = commitmentJsonData["ValC"].get<vector<uint64_t>>();
+  // Hardcoded file path
+  const char* commitmentJsonFilePath = "data/program_commitment.json";
 
-  
-
-  // std::ifstream paramFileStream("~/zkiot_c_source/gcc/V2.0/data/program_param.json");
-  // if (!paramFileStream.is_open()) {
-  //     std::cerr << "Could not open the program_param.json file!" << std::endl;
-  // }
-  // nlohmann::json paramJsonData;
-  // paramFileStream >> paramJsonData;
-  // paramFileStream.close();
-  // vector<uint64_t> nonZeroA = paramJsonData["A"].get<vector<uint64_t>>();
-  // vector<vector<uint64_t>> nonZeroB = paramJsonData["B"].get<vector<vector<uint64_t>>>();
-  // vector<uint64_t> rowA = paramJsonData["rA"].get<vector<uint64_t>>();
-  // vector<uint64_t> colA = paramJsonData["cA"].get<vector<uint64_t>>();
-  // vector<uint64_t> valA = paramJsonData["vA"].get<vector<uint64_t>>();
-  // vector<uint64_t> rowB = paramJsonData["rB"].get<vector<uint64_t>>();
-  // vector<uint64_t> colB = paramJsonData["cB"].get<vector<uint64_t>>();
-  // vector<uint64_t> valB = paramJsonData["vB"].get<vector<uint64_t>>();
-  // vector<uint64_t> rowC = paramJsonData["rC"].get<vector<uint64_t>>();
-  // vector<uint64_t> colC = paramJsonData["cC"].get<vector<uint64_t>>();
-  // vector<uint64_t> valC = paramJsonData["vC"].get<vector<uint64_t>>();
-
-  // std::ifstream classFileStream("data/class.json");
-  // if (!classFileStream.is_open()) {
-  //     std::cerr << "Could not open the file!" << std::endl;
-  // }
-  // nlohmann::json classJsonData;
-  // classFileStream >> classJsonData;
-  // classFileStream.close();
-  // int64_t n_i, n_g, m, n, p, g;
-  // for (const auto& item : classJsonData) {
-  //   if (item["class"] == Class) {
-  //     // Number of inputs, gates, m, n, p, and g
-  //     n_i = item["n_i"].get<uint64_t>();
-  //     n_g = item["n_g"].get<uint64_t>();
-  //     m = item["m"].get<uint64_t>();
-  //     n = item["n"].get<uint64_t>();
-  //     p = item["p"].get<uint64_t>();
-  //     g = item["g"].get<uint64_t>();
-
-  //     break; // Stop after finding the first matching "class"
-  //   }
-  // }
-
-
-
-    // Hardcoded file path
-    const char* commitmentJsonFilePath = "data/program_commitment.json";
-
-    // Parse the JSON file
-    nlohmann::json commitmentJsonData;
-    try {
-        std::ifstream commitmentJsonFile(commitmentJsonFilePath);
-        commitmentJsonFile >> commitmentJsonData;
-        commitmentJsonFile.close();
-    } catch (nlohmann::json::parse_error& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        return;
+  // Parse the JSON file
+  nlohmann::json commitmentJsonData;
+  try {
+    std::ifstream commitmentJsonFile(commitmentJsonFilePath);
+    commitmentJsonFile >> commitmentJsonData;
+    commitmentJsonFile.close();
+  } catch (nlohmann::json::parse_error& e) {
+    cout << "Enter the content of program_commitment.json file! (end with a blank line):" << endl;
+    string commitmentJsonInput;
+    string commitmentJsonLines;
+    while (getline(cin, commitmentJsonLines)) {
+      if (commitmentJsonLines.empty()) break;
+      commitmentJsonInput += commitmentJsonLines + "\n";
     }
+    commitmentJsonData = nlohmann::json::parse(commitmentJsonInput);
+    // std::cerr << "Error: " << e.what() << std::endl;
+    // return;
+  }
 
   // Extract data from the parsed JSON
   uint64_t Class = commitmentJsonData["class"].get<uint64_t>();
@@ -135,54 +71,28 @@ extern "C" void proofGenerator() {
   std::vector<uint64_t> colC_x = commitmentJsonData["ColC"].get<std::vector<uint64_t>>();
   std::vector<uint64_t> valC_x = commitmentJsonData["ValC"].get<std::vector<uint64_t>>();
 
-  // cout << "Enter the content of program_commitment.json file! (end with a blank line):" << endl;
-  // string commitmentJsonInput;
-  // string commitmentJsonLines;
-  // while (getline(cin, commitmentJsonLines)) {
-  //   if (commitmentJsonLines.empty()) break;
-  //   commitmentJsonInput += commitmentJsonLines + "\n";
-  // }
-  // nlohmann::json commitmentJsonData = nlohmann::json::parse(commitmentJsonInput);
-  // uint64_t Class = commitmentJsonData["class"].get<uint64_t>();
-  // string commitmentID = commitmentJsonData["commitment_id"].get<string>();
-  // string IoT_Manufacturer_Name = commitmentJsonData["iot_developer_name"].get<string>();
-  // string IoT_Device_Name = commitmentJsonData["iot_device_name"].get<string>();
-  // string Firmware_Version = commitmentJsonData["firmware_version"].get<string>();
-  // string Device_Hardware_Version = commitmentJsonData["device_hardware_version"].get<string>();
-  // vector<uint64_t> rowA_x = commitmentJsonData["RowA"].get<vector<uint64_t>>();
-  // vector<uint64_t> colA_x = commitmentJsonData["ColA"].get<vector<uint64_t>>();
-  // vector<uint64_t> valA_x = commitmentJsonData["ValA"].get<vector<uint64_t>>();
-  // vector<uint64_t> rowB_x = commitmentJsonData["RowB"].get<vector<uint64_t>>();
-  // vector<uint64_t> colB_x = commitmentJsonData["ColB"].get<vector<uint64_t>>();
-  // vector<uint64_t> valB_x = commitmentJsonData["ValB"].get<vector<uint64_t>>();
-  // vector<uint64_t> rowC_x = commitmentJsonData["RowC"].get<vector<uint64_t>>();
-  // vector<uint64_t> colC_x = commitmentJsonData["ColC"].get<vector<uint64_t>>();
-  // vector<uint64_t> valC_x = commitmentJsonData["ValC"].get<vector<uint64_t>>();
 
+  // Hardcoded file path
+  const char* paramJsonFilePath = "data/program_param.json";
 
-
-
-    // Hardcoded file path
-    const char* paramJsonFilePath = "data/program_param.json";
-
-    // Parse the JSON file
-    nlohmann::json paramJsonData;
-    try {
-        std::ifstream paramJsonFile(paramJsonFilePath);
-        paramJsonFile >> paramJsonData;
-        paramJsonFile.close();
-    } catch (nlohmann::json::parse_error& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        return;
+  // Parse the JSON file
+  nlohmann::json paramJsonData;
+  try {
+    std::ifstream paramJsonFile(paramJsonFilePath);
+    paramJsonFile >> paramJsonData;
+    paramJsonFile.close();
+  } catch (nlohmann::json::parse_error& e) {
+    cout << "Enter the content of program_param.json file! (end with a blank line):" << endl;
+    string paramJsonInput;
+    string paramJsonLines;
+    while (getline(cin, paramJsonLines)) {
+      if (paramJsonLines.empty()) break;
+      paramJsonInput += paramJsonLines + "\n";
     }
-//   cout << "Enter the content of program_param.json file! (end with a blank line):" << endl;
-//   string paramJsonInput;
-//   string paramJsonLines;
-//   while (getline(cin, paramJsonLines)) {
-//     if (paramJsonLines.empty()) break;
-//     paramJsonInput += paramJsonLines + "\n";
-//   }
-//   nlohmann::json paramJsonData = nlohmann::json::parse(paramJsonInput);
+    paramJsonData = nlohmann::json::parse(paramJsonInput);
+    // std::cerr << "Error: " << e.what() << std::endl;
+    // return;
+  }
   vector<uint64_t> nonZeroA = paramJsonData["A"].get<vector<uint64_t>>();
   vector<vector<uint64_t>> nonZeroB = paramJsonData["B"].get<vector<vector<uint64_t>>>();
   vector<uint64_t> rowA = paramJsonData["rA"].get<vector<uint64_t>>();
@@ -196,27 +106,27 @@ extern "C" void proofGenerator() {
   vector<uint64_t> valC = paramJsonData["vC"].get<vector<uint64_t>>();
 
 
-//   cout << "Enter the content of class.json file! (end with a blank line):" << endl;
-//   string classJsonInput;
-//   string classJsonLines;
-//   while (getline(cin, classJsonLines)) {
-//     if (classJsonLines.empty()) break;
-//     classJsonInput += classJsonLines + "\n";
-//   }
-//   nlohmann::json classJsonData = nlohmann::json::parse(classJsonInput);
-    // Hardcoded file path
-    const char* classJsonFilePath = "class.json";
 
-    // Parse the JSON file
-    nlohmann::json classJsonData;
-    try {
-        std::ifstream classJsonFile(classJsonFilePath);
-        classJsonFile >> classJsonData;
-        classJsonFile.close();
-    } catch (nlohmann::json::parse_error& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        return;
+  const char* classJsonFilePath = "class.json";
+
+  // Parse the JSON file
+  nlohmann::json classJsonData;
+  try {
+      std::ifstream classJsonFile(classJsonFilePath);
+      classJsonFile >> classJsonData;
+      classJsonFile.close();
+  } catch (nlohmann::json::parse_error& e) {
+    cout << "Enter the content of class.json file! (end with a blank line):" << endl;
+    string classJsonInput;
+    string classJsonLines;
+    while (getline(cin, classJsonLines)) {
+      if (classJsonLines.empty()) break;
+      classJsonInput += classJsonLines + "\n";
     }
+    classJsonData = nlohmann::json::parse(classJsonInput);
+      // std::cerr << "Error: " << e.what() << std::endl;
+      // return;
+  }
   uint64_t n_i, n_g, m, n, p, g;
   string class_value = to_string(Class); // Convert integer to string class
   n_g = classJsonData[class_value]["n_g"].get<uint64_t>();
@@ -233,28 +143,28 @@ extern "C" void proofGenerator() {
   std::uniform_int_distribution<uint64_t> dis(0, upper_limit);
   int64_t b = dis(gen);
 
-//   cout << "Enter the content of setup" << class_value << ".json file! (end with a blank line):" << endl;
-//   string setupJsonInput;
-//   string setupJsonLines;
-//   while (getline(cin, setupJsonLines)) {
-//     if (setupJsonLines.empty()) break;
-//     setupJsonInput += setupJsonLines + "\n";
-//   }
-//   nlohmann::json setupJsonData = nlohmann::json::parse(setupJsonInput);
-    // Hardcoded file path
-    std::string setupJsonFilePath = "data/setup" + class_value + ".json";
-    const char* setupJsonFilePathCStr = setupJsonFilePath.c_str();
+  // Hardcoded file path
+  std::string setupJsonFilePath = "data/setup" + class_value + ".json";
+  const char* setupJsonFilePathCStr = setupJsonFilePath.c_str();
 
-    // Parse the JSON file
-    nlohmann::json setupJsonData;
-    try {
-        std::ifstream setupJsonFile(setupJsonFilePath);
-        setupJsonFile >> setupJsonData;
-        setupJsonFile.close();
-    } catch (nlohmann::json::parse_error& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        return;
+  // Parse the JSON file
+  nlohmann::json setupJsonData;
+  try {
+      std::ifstream setupJsonFile(setupJsonFilePath);
+      setupJsonFile >> setupJsonData;
+      setupJsonFile.close();
+  } catch (nlohmann::json::parse_error& e) {
+    cout << "Enter the content of setup" << class_value << ".json file! (end with a blank line):" << endl;
+    string setupJsonInput;
+    string setupJsonLines;
+    while (getline(cin, setupJsonLines)) {
+      if (setupJsonLines.empty()) break;
+      setupJsonInput += setupJsonLines + "\n";
     }
+    setupJsonData = nlohmann::json::parse(setupJsonInput);
+      // std::cerr << "Error: " << e.what() << std::endl;
+      // return;
+  }
   vector<uint64_t> ck = setupJsonData["ck"].get<vector<uint64_t>>();
   uint64_t vk = setupJsonData["vk"].get<uint64_t>();
 
@@ -263,11 +173,7 @@ extern "C" void proofGenerator() {
   auto start_time = high_resolution_clock::now();
 
   extern uint32_t z_array[];
-  // vector<uint64_t> z = {1, 0, 126964, 861265, 1299904, 0, 1295808, 1305980, 1678320, 861281, 0, 1, 861285, 0, 30, 5, 1305980, 16, 30, 4, 5, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 31, 806, 20956};
-  // vector<uint64_t> z = {1, 0, 128242, 1823714, 1298680, 0, 1294568, 1304756, 5087280, 1823730, 1, 1, 1823734, 0, 30, 5, 1304756, 16, 30, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 14, 16, 12, 28, 8, 784, 1568};
-  // vector<uint64_t> z = {1, 0, 128234, 1823714, 1298680, 0, 1294568, 1304756, 5087280, 1823730, 1, 1, 1823734, 0, 30, 5, 1304756, 16, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 13, 26, 52, 104, 208, 416, 832};
-  // vector<uint64_t> z = {1, 0, 115706, 2474412, 1115944, 0, 1110288, 2404123, 1302131, 2474428, 9, 1, 2474436, 0, 1126128, 5, 1126096, 1126128, 30, 18, 19, 20, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 342, 30, 400, 380, 780, 400, 608400, 608800};
-
+  
   vector<uint64_t> z;
   for(uint64_t i = 0; i < (1 + n_i + n_g); i++) {
     cout << "z_array" << "[" << i << "] = " << z_array[i] % p << endl;
@@ -951,6 +857,6 @@ extern "C" void proofGenerator() {
       proofFile.close();
       std::cout << "JSON data has been written to proof.json\n";
   } else {
-      std::cerr << "Error opening file for writing proof.json\n";
+      // std::cerr << "Error opening file for writing proof.json\n";
   }
 }
