@@ -4,7 +4,7 @@
 
 
 
-# Zero-Knowledge Internet of Things (zk-IoT) in C++
+# Zero-Knowledge Internet of Things (zk-IoT) in C++ for RISC-V in QEMU Emulator 
 
 <a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
 <a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
@@ -14,8 +14,7 @@
 <a href="https://discord.com/invite/NQdM6JGwcs" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
 <a href="https://twitter.com/fidesinnova" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
 
-
- Welcome to the zk-IoT repository! This repository contains the source code for the smart contracts that power the zk-IoT framework within the Fidesinnova platform. These smart contracts are designed to facilitate secure, transparent, and efficient interactions in decentralized IoT environments.
+Welcome to the zk-IoT repository! This repository contains the source code for the smart contracts that power the zk-IoT framework within the Fidesinnova platform. These smart contracts are designed to facilitate secure, transparent, and efficient interactions in decentralized IoT environments.
 
 ## Function-hiding functional commitment
 This repository is a C++ library for the **function-hiding functional commitment zero-knowledge proof (ZKP)** scheme. This scheme is a tuple _(setup, commit, eval)_ that utilizes the following three protocols:
